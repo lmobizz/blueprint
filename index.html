@@ -131,7 +131,12 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
 .add-goal-input:focus{border-color:var(--gold)}
 .add-goal-btn{font-family:'Syne',sans-serif;font-size:12px;font-weight:500;padding:5px 11px;background:var(--ink);color:var(--paper);border:none;border-radius:7px;cursor:pointer}
 
-/* NARRATIVE */
+/* UNDO TOAST */
+.undo-toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:.75rem 1.25rem;border-radius:var(--r);display:flex;align-items:center;gap:12px;font-size:13px;z-index:999;animation:fadeUp .2s ease;box-shadow:0 4px 20px rgba(0,0,0,.2)}
+.undo-toast.hidden{display:none}
+.undo-btn{font-family:'Syne',sans-serif;font-size:12px;font-weight:600;padding:4px 12px;border-radius:20px;border:1px solid rgba(255,255,255,.3);background:transparent;color:var(--paper);cursor:pointer;transition:all .15s}
+.undo-btn:hover{background:rgba(255,255,255,.15)}
+.undo-progress{position:absolute;bottom:0;left:0;height:3px;background:var(--gold);border-radius:0 0 var(--r) var(--r);transition:width linear}
 .narrative-card{background:var(--ink);color:var(--paper);border-radius:var(--r2);padding:1.75rem 2rem;margin-bottom:1.5rem;position:relative;overflow:hidden}
 .narrative-card::before{content:'';position:absolute;top:-40px;right:-40px;width:160px;height:160px;border-radius:50%;background:rgba(255,255,255,.03)}
 .narrative-label{font-size:10px;text-transform:uppercase;letter-spacing:.12em;color:rgba(255,255,255,.35);margin-bottom:.75rem;display:flex;align-items:center;gap:8px}
@@ -1442,9 +1447,53 @@ function exportPDF(){
 // Ensure people array exists on old data
 if(!D.people) D.people=[];
 
+/* ── UNDO SYSTEM ─────────────────────────────────────── */
+let undoStack=null;
+let undoTimer=null;
+let undoProgressTimer=null;
+
+function showUndoToast(message, undoFn){
+  clearTimeout(undoTimer);
+  clearTimeout(undoProgressTimer);
+  const toast=document.getElementById('undo-toast');
+  const progress=document.getElementById('undo-progress');
+  document.getElementById('undo-message').textContent=message;
+  toast.classList.remove('hidden');
+  progress.style.transition='none';
+  progress.style.width='100%';
+  // start shrinking after a frame
+  requestAnimationFrame(()=>{
+    requestAnimationFrame(()=>{
+      progress.style.transition='width 10s linear';
+      progress.style.width='0%';
+    });
+  });
+  undoStack=undoFn;
+  undoTimer=setTimeout(()=>{
+    toast.classList.add('hidden');
+    undoStack=null;
+  },10000);
+}
+
+function undoAction(){
+  if(undoStack){
+    undoStack();
+    undoStack=null;
+  }
+  clearTimeout(undoTimer);
+  clearTimeout(undoProgressTimer);
+  document.getElementById('undo-toast').classList.add('hidden');
+}
+
 function clearAllPeople(){
-  if(!confirm(`Delete all ${D.people.length} people? This cannot be undone.\n\nTip: Export CSV first to keep a backup.`))return;
-  D.people=[];save();renderPeople();
+  if(!D.people.length)return;
+  const backup=[...D.people];
+  D.people=[];
+  save();renderPeople();
+  showUndoToast(`Cleared ${backup.length} people`, ()=>{
+    D.people=backup;
+    save();renderPeople();
+  });
 }
 
 function daysSinceContact(p){
@@ -1938,6 +1987,13 @@ updateFilterCounts();
 // Supabase is loaded via CDN script tag above — init after DOM ready
 initSupabase();
 </script>
+<!-- UNDO TOAST -->
+<div class="undo-toast hidden" id="undo-toast">
+  <span id="undo-message">Cleared</span>
+  <button class="undo-btn" onclick="undoAction()">Undo</button>
+  <div class="undo-progress" id="undo-progress" style="width:100%"></div>
+</div>
+
 </div><!-- end app-shell -->
 </body>
 </html>
