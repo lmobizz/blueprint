@@ -164,9 +164,31 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
 .mobile-nav-tab{font-family:'Syne',sans-serif;font-size:13px;font-weight:500;padding:10px 16px;border-radius:9px;border:none;background:transparent;color:var(--ink2);cursor:pointer;text-align:left;text-transform:uppercase;letter-spacing:.04em;transition:background .1s}
 .mobile-nav-tab:hover{background:var(--paper2)}
 .mobile-nav-tab.active{background:var(--ink);color:var(--paper)}
-/* MOBILE FILTER ROW */
+/* HOW IT WORKS */
+.hiw-btn{position:fixed;bottom:1.5rem;right:1.5rem;width:36px;height:36px;border-radius:50%;background:var(--ink);color:var(--paper);border:none;cursor:pointer;font-size:15px;font-weight:600;display:flex;align-items:center;justify-content:center;z-index:150;box-shadow:0 2px 12px rgba(0,0,0,.2);transition:transform .15s,background .15s;font-family:'Playfair Display',serif}
+.hiw-btn:hover{transform:scale(1.1);background:var(--ink2)}
+.hiw-modal-bg{position:fixed;inset:0;background:rgba(14,13,12,.5);z-index:400;display:flex;align-items:flex-end;justify-content:center;padding:0}
+.hiw-modal-bg.hidden{display:none}
+.hiw-modal{background:var(--paper);width:100%;max-width:600px;max-height:90vh;overflow-y:auto;border-radius:var(--r2) var(--r2) 0 0;padding:2rem 2rem 3rem;animation:slideUp .3s ease}
+@keyframes slideUp{from{transform:translateY(40px);opacity:0}to{transform:translateY(0);opacity:1}}
+.hiw-close{position:absolute;top:1.25rem;right:1.5rem;background:none;border:none;cursor:pointer;font-size:18px;color:var(--ink3);padding:4px 8px;border-radius:8px}
+.hiw-close:hover{background:var(--paper2);color:var(--ink)}
+.hiw-title{font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:400;margin-bottom:.3rem}
+.hiw-title em{font-style:italic;color:var(--gold)}
+.hiw-intro{font-size:13px;color:var(--ink3);margin-bottom:1.5rem;line-height:1.6}
+.hiw-stack{display:flex;flex-direction:column;gap:12px;margin-bottom:1.5rem}
+.hiw-item{display:flex;gap:14px;align-items:flex-start;background:var(--paper);border:1px solid var(--line);border-radius:var(--r);padding:1rem 1.1rem}
+.hiw-icon{font-size:1.4rem;flex-shrink:0;width:32px;text-align:center}
+.hiw-item-title{font-size:13px;font-weight:600;color:var(--ink);margin-bottom:3px}
+.hiw-item-desc{font-size:12px;color:var(--ink3);line-height:1.55}
+.hiw-item-tag{display:inline-block;font-size:10px;padding:1px 7px;border-radius:20px;font-weight:500;margin-top:5px;background:var(--paper2);color:var(--ink3)}
+.hiw-quote{background:var(--ink);color:rgba(255,255,255,.85);border-radius:var(--r);padding:1rem 1.25rem;font-family:'Playfair Display',serif;font-size:.95rem;font-style:italic;line-height:1.6;margin-bottom:1.5rem}
+.hiw-footer{font-size:11px;color:var(--ink3);line-height:1.6;text-align:center}
+.hiw-footer a{color:var(--gold);text-decoration:none}
+@media(max-width:640px){.hiw-btn{bottom:1rem;right:1rem}.hiw-modal{padding:1.5rem 1.25rem 2.5rem}}
 .mobile-filter-row{display:none;gap:6px;flex-wrap:wrap;margin-bottom:1rem}
 .mobile-filter-row select{font-family:'Syne',sans-serif;font-size:12px;padding:5px 8px;border:1px solid var(--line);border-radius:8px;background:var(--paper);color:var(--ink);outline:none;flex:1;min-width:100px}
+#people-data-dropdown{right:0;top:calc(100% + 4px)}
 
 @media(max-width:640px){
   nav{padding:0 1rem}
@@ -799,8 +821,13 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
           <option value="pri-desc">Priority first</option>
           <option value="next-asc">Next reach-out soonest</option>
         </select>
-        <button class="ppl-btn" onclick="openImportModal()">⬆ Import CSV / Excel</button>
-        <button class="ppl-btn" onclick="exportPeopleCsv()">⬇ Export CSV</button>
+        <div style="position:relative">
+          <button class="backup-menu-btn" onclick="togglePeopleDataMenu()" style="border:1px solid var(--line);border-radius:20px;padding:5px 12px">⋯ Data</button>
+          <div class="backup-dropdown" id="people-data-dropdown">
+            <button class="backup-dropdown-item" onclick="openImportModal();togglePeopleDataMenu()">⬆ Import CSV / Excel</button>
+            <button class="backup-dropdown-item" onclick="exportPeopleCsv();togglePeopleDataMenu()">⬇ Export CSV</button>
+          </div>
+        </div>
       </div>
       <div style="display:flex;gap:8px;align-items:center">
         <button class="ppl-btn primary" onclick="openPersonModal(null)">+ Add person</button>
@@ -1654,6 +1681,10 @@ document.addEventListener('click',e=>{
   }
 });
 
+function togglePeopleDataMenu(){
+  document.getElementById('people-data-dropdown').classList.toggle('open');
+}
+
 function toggleBackupMenu(){
   const dd=document.getElementById('backup-dropdown');
   dd.classList.toggle('open');
@@ -1662,6 +1693,10 @@ document.addEventListener('click',e=>{
   const dd=document.getElementById('backup-dropdown');
   if(dd&&!dd.contains(e.target)&&!e.target.closest('.backup-menu-btn')){
     dd.classList.remove('open');
+  }
+  const pdd=document.getElementById('people-data-dropdown');
+  if(pdd&&!pdd.contains(e.target)&&!e.target.closest('[onclick*="togglePeopleDataMenu"]')){
+    pdd.classList.remove('open');
   }
 });
 
@@ -2536,6 +2571,68 @@ updateFilterCounts();
 initSupabase();
 </script>
 </div><!-- end app-shell -->
+
+<!-- HOW IT WORKS BUTTON -->
+<button class="hiw-btn" onclick="document.getElementById('hiw-modal-bg').classList.remove('hidden')" title="How this works">?</button>
+
+<!-- HOW IT WORKS MODAL -->
+<div class="hiw-modal-bg hidden" id="hiw-modal-bg" onclick="if(event.target===this)this.classList.add('hidden')">
+  <div class="hiw-modal" style="position:relative">
+    <button class="hiw-close" onclick="document.getElementById('hiw-modal-bg').classList.add('hidden')">✕</button>
+    <div class="hiw-title">Behind your <em>Blueprint</em></div>
+    <div class="hiw-intro">You built something real today. Here's exactly what's happening under the hood — explained the way you'd tell a friend.</div>
+
+    <div class="hiw-quote">"Three free tools working together to give you a personal life OS that lives in the cloud, belongs entirely to you, and works from any device on earth."</div>
+
+    <div class="hiw-stack">
+      <div class="hiw-item">
+        <div class="hiw-icon">🐙</div>
+        <div>
+          <div class="hiw-item-title">GitHub Pages — the address</div>
+          <div class="hiw-item-desc">GitHub hosts the Blueprint file (one HTML file) and gives it a real URL: <strong>lmobizz.github.io/blueprint</strong>. Think of it like a free website host. When you open that URL, your browser downloads the file and runs it. Every time you want to update Blueprint, you upload a new version of that file here.</div>
+          <span class="hiw-item-tag">Free forever · github.com/lmobizz/blueprint</span>
+        </div>
+      </div>
+      <div class="hiw-item">
+        <div class="hiw-icon">⚡</div>
+        <div>
+          <div class="hiw-item-title">Supabase — the memory</div>
+          <div class="hiw-item-desc">Every goal, task, person, and story entry you save gets stored in a Supabase database in Virginia (AWS us-east-1). When you sign in on any device, Blueprint fetches your data from there. It's like Google Drive but just for your Blueprint data — tied to your Google account so only you can see it.</div>
+          <span class="hiw-item-tag">Free tier · zugzwnqrhogwivxbpbrw.supabase.co</span>
+        </div>
+      </div>
+      <div class="hiw-item">
+        <div class="hiw-icon">🔐</div>
+        <div>
+          <div class="hiw-item-title">Google Auth — the lock</div>
+          <div class="hiw-item-desc">When you click "Sign in with Google," Google verifies it's really you and hands Blueprint a secure token. Supabase uses that token to make sure only your account can read or write your data. Nobody else — not even someone with the URL — can see your Blueprint.</div>
+          <span class="hiw-item-tag">Row Level Security enabled · your data is private</span>
+        </div>
+      </div>
+      <div class="hiw-item">
+        <div class="hiw-icon">✦</div>
+        <div>
+          <div class="hiw-item-title">Claude (Anthropic) — the intelligence</div>
+          <div class="hiw-item-desc">The morning reflection, your personal narrative, and the AI conversation starters in People all call Claude's API in real time. It reads your actual goals, wins, and habits — so the reflection each morning is about your life, not a generic quote. It's the same Claude you're talking to right now.</div>
+          <span class="hiw-item-tag">Claude Sonnet · api.anthropic.com</span>
+        </div>
+      </div>
+      <div class="hiw-item">
+        <div class="hiw-icon">📁</div>
+        <div>
+          <div class="hiw-item-title">Your data — fully yours</div>
+          <div class="hiw-item-desc">Everything lives in your Supabase project under your Google account. You can export a full backup JSON anytime using the ⋯ Backup button. If you ever want to move, delete, or own your data differently — it's all there. No subscription, no lock-in.</div>
+          <span class="hiw-item-tag">Export anytime · $0/month · yours forever</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="hiw-footer">
+      Built in one session with Claude · Hosted free on GitHub · Data stored free on Supabase<br>
+      <a href="https://github.com/lmobizz/blueprint" target="_blank">github.com/lmobizz/blueprint</a>
+    </div>
+  </div>
+</div>
 
 <!-- UNDO TOAST — outside app shell so position:fixed works -->
 <div class="undo-toast hidden" id="undo-toast">
