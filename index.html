@@ -1220,13 +1220,14 @@ function updateFilterCounts(){
 /* ── GOALS ───────────────────────────────────────────── */
 function allGoals(){
   let a=[];
-  for(const bv of Object.values(D.goals))
-    for(const goals of Object.values(bv)){
-      if(Array.isArray(goals)) a=a.concat(goals);
-      else if(typeof goals==='object')
-        for(const catGoals of Object.values(goals))
-          if(Array.isArray(catGoals)) a=a.concat(catGoals);
+  for(const bk of Object.keys(D.goals)){
+    for(const sub of Object.keys(D.goals[bk])){
+      const val=D.goals[bk][sub];
+      if(Array.isArray(val)) a=a.concat(val);
+      else if(val&&typeof val==='object')
+        for(const v of Object.values(val)) if(Array.isArray(v)) a=a.concat(v);
     }
+  }
   return a;
 }
 
@@ -1271,9 +1272,9 @@ function renderGoals(){
       <div class="sub-buckets" id="sub-${b.key}"></div>`;
     c.appendChild(card);
     const sw=card.querySelector('#sub-'+b.key);
-    Object.entries(subs).forEach(([sn,subVal])=>{
+    Object.keys(subs).forEach((sn)=>{
       ensureSubFormat(b.key,sn);
-      const subData=D.goals[b.key][sn];
+      const subData=D.goals[b.key][sn]; // always re-read after ensureSubFormat
       const sid=b.key+'-'+sn.replace(/\W+/g,'-');
       let subGoals=[];
       for(const v of Object.values(subData)) if(Array.isArray(v)) subGoals=subGoals.concat(v);
