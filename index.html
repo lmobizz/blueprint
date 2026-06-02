@@ -131,7 +131,16 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
 .add-goal-input:focus{border-color:var(--gold)}
 .add-goal-btn{font-family:'Syne',sans-serif;font-size:12px;font-weight:500;padding:5px 11px;background:var(--ink);color:var(--paper);border:none;border-radius:7px;cursor:pointer}
 
-/* PERSON PROFILE PANEL */
+/* PEOPLE FULLSCREEN */
+.people-fullscreen #view-people{position:fixed;inset:0;z-index:150;background:var(--paper);overflow-y:auto}
+.people-fullscreen #view-people .hero{display:none}
+.people-fullscreen #people-page-wrap{max-width:100%;padding:1.5rem 2rem 4rem}
+.people-fullscreen .people-table{min-width:1400px}
+.expand-btn{font-family:'Syne',sans-serif;font-size:12px;font-weight:500;padding:6px 14px;border-radius:20px;border:1px solid var(--line);background:var(--paper);color:var(--ink2);cursor:pointer;display:flex;align-items:center;gap:5px;transition:all .15s}
+.expand-btn:hover{border-color:var(--gold);color:var(--gold);background:var(--gold-l)}
+.expand-btn.active{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+
+/* PEOPLE FULLSCREEN */
 .profile-overlay{position:fixed;inset:0;background:rgba(14,13,12,.5);z-index:300;display:flex;align-items:stretch;justify-content:flex-end;animation:fadeIn .2s ease}
 .profile-overlay.hidden{display:none}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
@@ -388,7 +397,7 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
 .pstat-label{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink3);margin-top:2px}
 
 .people-table-wrap{background:var(--paper);border:1px solid var(--line);border-radius:var(--r2);overflow-x:auto}
-.people-table{width:100%;border-collapse:collapse;font-size:13px;min-width:1100px}
+.people-table{width:100%;border-collapse:collapse;font-size:13px;min-width:900px}
 .people-table th{font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--ink3);font-weight:500;padding:9px 12px;border-bottom:1px solid var(--line);text-align:left;background:var(--paper2);white-space:nowrap;cursor:pointer;user-select:none}
 .people-table th:hover{color:var(--ink)}
 .people-table th .sort-arrow{margin-left:3px;opacity:.4;font-size:9px}
@@ -649,13 +658,13 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
 
 <!-- ═══ PEOPLE ════════════════════════════════════════════ -->
 <div class="view" id="view-people">
-  <div class="hero" style="max-width:100%;padding-left:2rem;padding-right:2rem">
+  <div class="hero">
     <div>
       <div class="hero-title">My <em>People</em></div>
       <div class="hero-sub">Your relationship tracker. Stay intentional about the people who matter most.</div>
     </div>
   </div>
-  <div style="padding:0 2rem 4rem;width:100%;box-sizing:border-box">
+  <div class="page-wrap" id="people-page-wrap">
     <div class="people-stats" id="people-stats"></div>
     <div class="people-toolbar">
       <input class="people-search" id="people-search" placeholder="Search by name, location, notes..." oninput="renderPeople()"/>
@@ -685,6 +694,7 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
       </select>
       <button class="ppl-btn" onclick="openImportModal()">⬆ Import CSV / Excel</button>
       <button class="ppl-btn" onclick="exportPeopleCsv()">⬇ Export CSV</button>
+      <button class="expand-btn" id="people-expand-btn" onclick="togglePeopleFullscreen()" title="Expand to full screen">⛶ Expand</button>
       <button class="ppl-btn" style="color:var(--rose);border-color:var(--rose)" onclick="clearAllPeople()">✕ Clear all</button>
       <button class="ppl-btn primary" onclick="openPersonModal(null)">+ Add person</button>
     </div>
@@ -1542,6 +1552,21 @@ function undoAction(){
   clearTimeout(undoProgressTimer);
   document.getElementById('undo-toast').classList.add('hidden');
 }
+
+function togglePeopleFullscreen(){
+  const isFS=document.body.classList.toggle('people-fullscreen');
+  const btn=document.getElementById('people-expand-btn');
+  btn.textContent=isFS?'✕ Exit fullscreen':'⛶ Expand';
+  btn.classList.toggle('active',isFS);
+  document.body.style.overflow=isFS?'hidden':'';
+}
+
+// Esc key exits fullscreen
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'&&document.body.classList.contains('people-fullscreen')){
+    togglePeopleFullscreen();
+  }
+});
 
 function toggleNameSort(){
   const sel=document.getElementById('pf-sort');
