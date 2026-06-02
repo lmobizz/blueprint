@@ -175,8 +175,7 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
   .nav-logo{font-size:1rem}
   .user-badge .user-name-text{display:none}
   .backup-bar{padding:0 1rem;gap:4px}
-  .backup-bar span{display:none}
-  .backup-btn{font-size:10px;padding:3px 8px}
+  .backup-bar span{font-size:10px}
   .hero{padding:1.5rem 1rem 1rem;grid-template-columns:1fr}
   .hero-date{display:none}
   .hero-title{font-size:1.8rem}
@@ -493,12 +492,19 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
 .col-map-label{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3)}
 
 /* DATA BACKUP */
-.backup-bar{display:flex;align-items:center;gap:6px;padding:0 2rem;height:36px;background:var(--paper2);border-bottom:1px solid var(--line);font-size:11px;color:var(--ink3)}
+.backup-bar{display:flex;align-items:center;gap:6px;padding:0 2rem;height:32px;background:var(--paper2);border-bottom:1px solid var(--line);font-size:11px;color:var(--ink3)}
 .backup-bar span{margin-right:auto}
-.backup-btn{font-family:'Syne',sans-serif;font-size:11px;font-weight:500;padding:3px 11px;border-radius:20px;border:1px solid var(--line);background:var(--paper);color:var(--ink2);cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:4px}
-.backup-btn:hover{border-color:var(--gold);color:var(--gold);background:var(--gold-l)}
-.backup-btn.restore:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-l)}
 .backup-dot{width:6px;height:6px;border-radius:50%;background:var(--green);flex-shrink:0}
+.backup-menu-btn{background:none;border:none;cursor:pointer;font-size:11px;color:var(--ink3);padding:2px 8px;border-radius:6px;font-family:'Syne',sans-serif;transition:all .15s;display:flex;align-items:center;gap:4px}
+.backup-menu-btn:hover{background:var(--paper3);color:var(--ink)}
+.backup-dropdown{position:absolute;right:2rem;top:84px;background:var(--paper);border:1px solid var(--line);border-radius:var(--r);box-shadow:0 4px 20px rgba(0,0,0,.1);z-index:150;min-width:180px;overflow:hidden;display:none}
+.backup-dropdown.open{display:block}
+.backup-dropdown-item{display:flex;align-items:center;gap:8px;padding:9px 14px;font-family:'Syne',sans-serif;font-size:12px;color:var(--ink2);cursor:pointer;border:none;background:none;width:100%;text-align:left;transition:background .1s}
+.backup-dropdown-item:hover{background:var(--paper2)}
+@media(max-width:640px){
+  .backup-bar{padding:0 1rem}
+  .backup-dropdown{right:1rem;top:80px}
+}
 </style>
 </head>
 <body>
@@ -546,10 +552,13 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
 <div class="backup-bar">
   <div class="backup-dot" id="backup-dot"></div>
   <span id="backup-status">Connecting...</span>
-  <button class="backup-btn" onclick="exportData()" title="Download a full backup of all your Blueprint data">⬇ Export backup</button>
-  <button class="backup-btn restore" onclick="document.getElementById('restore-input').click()" title="Restore from a previous backup file">⬆ Restore backup</button>
-  <input type="file" id="restore-input" accept=".json" style="display:none" onchange="importData(event)"/>
+  <button class="backup-menu-btn" onclick="toggleBackupMenu()" title="Backup options">⋯ Backup</button>
 </div>
+<div class="backup-dropdown" id="backup-dropdown">
+  <button class="backup-dropdown-item" onclick="exportData();toggleBackupMenu()">⬇ Export backup</button>
+  <button class="backup-dropdown-item" onclick="document.getElementById('restore-input').click();toggleBackupMenu()">⬆ Restore backup</button>
+</div>
+<input type="file" id="restore-input" accept=".json" style="display:none" onchange="importData(event)"/>
 
 <!-- ═══ OVERVIEW ═══════════════════════════════════════ -->
 <div class="view active" id="view-overview">
@@ -1642,6 +1651,17 @@ document.addEventListener('click',e=>{
   const btn=document.getElementById('hamburger-btn');
   if(menu&&btn&&!menu.contains(e.target)&&!btn.contains(e.target)){
     menu.classList.remove('open');
+  }
+});
+
+function toggleBackupMenu(){
+  const dd=document.getElementById('backup-dropdown');
+  dd.classList.toggle('open');
+}
+document.addEventListener('click',e=>{
+  const dd=document.getElementById('backup-dropdown');
+  if(dd&&!dd.contains(e.target)&&!e.target.closest('.backup-menu-btn')){
+    dd.classList.remove('open');
   }
 });
 
