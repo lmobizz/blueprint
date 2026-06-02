@@ -343,7 +343,9 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
 .todo-tag.horizon-today{background:var(--blue-l);color:var(--blue)}
 .todo-tag.horizon-week{background:var(--teal-l);color:var(--teal)}
 .todo-tag.horizon-longterm{background:var(--paper3);color:var(--ink3)}
-.todo-due-tag{font-size:10px;padding:1px 7px;border-radius:20px;font-weight:500}
+.todo-tag.time-quick{background:#E6F0E9;color:#1E4D30}
+.todo-tag.time-mid{background:#E8EFF7;color:#1A3A5C}
+.todo-tag.time-long{background:#F5E8EA;color:#7A2030}
 .todo-due-tag.overdue{background:var(--rose-l);color:var(--rose)}
 .todo-due-tag.soon{background:var(--gold-l);color:var(--gold)}
 .todo-due-tag.future{background:var(--paper2);color:var(--ink3)}
@@ -568,6 +570,12 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
           <button class="filter-btn" onclick="setTodoFilter('p-med',this)"><div class="filter-dot" style="background:var(--gold)"></div>Medium <span class="filter-count" id="fc-p-med">0</span></button>
           <button class="filter-btn" onclick="setTodoFilter('p-low',this)"><div class="filter-dot" style="background:var(--green)"></div>Low <span class="filter-count" id="fc-p-low">0</span></button>
         </div>
+        <div class="filter-group">
+          <div class="filter-group-label">Time estimate</div>
+          <button class="filter-btn" onclick="setTodoFilter('quick',this)"><div class="filter-dot" style="background:#1E4D30"></div>⚡ Quick <span class="filter-count" id="fc-quick">0</span></button>
+          <button class="filter-btn" onclick="setTodoFilter('mid',this)"><div class="filter-dot" style="background:var(--blue)"></div>⏳ Mid <span class="filter-count" id="fc-mid">0</span></button>
+          <button class="filter-btn" onclick="setTodoFilter('long',this)"><div class="filter-dot" style="background:var(--rose)"></div>🕐 Long <span class="filter-count" id="fc-long">0</span></button>
+        </div>
       </div>
       <div class="todo-main-col">
         <div id="habits-today-wrap"></div>
@@ -586,6 +594,12 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
               <option value="p-low">Low priority</option>
               <option value="p-med">Medium priority</option>
               <option value="p-high">High priority</option>
+            </select>
+            <select class="form-select" id="todo-time">
+              <option value="">⏱ Time est.</option>
+              <option value="quick">⚡ Quick (&lt;15 min)</option>
+              <option value="mid">⏳ Mid (15–60 min)</option>
+              <option value="long">🕐 Long (1hr+)</option>
             </select>
             <input class="form-input" type="date" id="todo-due" title="Due date"/>
           </div>
@@ -838,6 +852,13 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
         <option value="p-low">Low</option><option value="p-med">Medium</option><option value="p-high">High</option>
       </select></div>
     <div class="form-row"><label class="form-label">Due date</label><input class="form-input" type="date" id="et-due"/></div>
+    <div class="form-row"><label class="form-label">Time estimate</label>
+      <select class="form-select" id="et-time">
+        <option value="">None</option>
+        <option value="quick">⚡ Quick (&lt;15 min)</option>
+        <option value="mid">⏳ Mid (15–60 min)</option>
+        <option value="long">🕐 Long (1hr+)</option>
+      </select></div>
     <div class="form-row"><label class="form-label">Note</label><textarea class="form-textarea" id="et-note" placeholder="Additional context..."></textarea></div>
     <div class="modal-actions">
       <button class="modal-cancel" onclick="closeModals()">Cancel</button>
@@ -1081,6 +1102,7 @@ function addTodo(){
     id:Date.now(),text,done:false,
     horizon:document.getElementById('todo-horizon').value,
     priority:document.getElementById('todo-priority').value,
+    time:document.getElementById('todo-time').value||'',
     due:document.getElementById('todo-due').value||'',
     note:''
   });
@@ -1134,6 +1156,9 @@ function filterTodos(){
     if(todoFilter==='p-high')return t.priority==='p-high';
     if(todoFilter==='p-med')return t.priority==='p-med';
     if(todoFilter==='p-low')return t.priority==='p-low';
+    if(todoFilter==='quick')return t.time==='quick';
+    if(todoFilter==='mid')return t.time==='mid';
+    if(todoFilter==='long')return t.time==='long';
     return true;
   });
 }
@@ -1152,6 +1177,7 @@ function renderTodos(){
           <div class="todo-tags">
             <span class="todo-tag horizon-${t.horizon}">${horizonLabel(t.horizon)}</span>
             <span class="todo-tag ${t.priority}">${{'p-low':'Low','p-med':'Medium','p-high':'High'}[t.priority]}</span>
+            ${t.time?`<span class="todo-tag time-${t.time}">${{quick:'⚡ Quick',mid:'⏳ Mid',long:'🕐 Long'}[t.time]}</span>`:''}
             ${dueBadge(t.due)}
           </div>
           ${t.note?`<div class="todo-note">${esc(t.note)}</div>`:''}
@@ -1211,11 +1237,12 @@ function toggleHabitToday(bk,sub,gi,hi,today){
 
 
 function updateFilterCounts(){
-  const counts={all:D.todos.length,today:0,week:0,longterm:0,active:0,done:0,'p-high':0,'p-med':0,'p-low':0};
+  const counts={all:D.todos.length,today:0,week:0,longterm:0,active:0,done:0,'p-high':0,'p-med':0,'p-low':0,quick:0,mid:0,long:0};
   D.todos.forEach(t=>{
     counts[t.horizon]=(counts[t.horizon]||0)+1;
     if(t.done)counts.done++;else counts.active++;
     counts[t.priority]=(counts[t.priority]||0)+1;
+    if(t.time)counts[t.time]=(counts[t.time]||0)+1;
   });
   Object.entries(counts).forEach(([k,v])=>{const el=document.getElementById('fc-'+k);if(el)el.textContent=v;});
 }
@@ -1264,14 +1291,19 @@ function restoreOpenState(open){
     const el=document.getElementById(id);
     if(!el)return;
     el.classList.add('open');
-    // show the add-goal-row for sub-buckets
-    const arId=id.replace('goals-','ar-');
-    const ar=document.getElementById(arId);
-    if(ar)ar.style.display='flex';
-    // chevron
-    const chevId=id.replace('goals-','chev-');
-    const chev=document.getElementById(chevId);
-    if(chev)chev.classList.add('open');
+    // for sub-goals: show add-goal-row
+    if(id.startsWith('goals-')){
+      const sid=id.replace('goals-','');
+      const ar=document.getElementById('ar-'+sid);
+      if(ar)ar.style.display='flex';
+      const chev=document.getElementById('chev-'+sid);
+      if(chev)chev.classList.add('open');
+    }
+    // for cat-goals: show their chevron
+    if(!id.startsWith('goals-')){
+      const chev=document.getElementById('chev-'+id);
+      if(chev)chev.classList.add('open');
+    }
   });
 }
 
@@ -1369,6 +1401,7 @@ function openTodoEdit(id){
   document.getElementById('et-horizon').value=t.horizon;
   document.getElementById('et-priority').value=t.priority;
   document.getElementById('et-due').value=t.due||'';
+  document.getElementById('et-time').value=t.time||'';
   document.getElementById('et-note').value=t.note||'';
   document.getElementById('edit-todo-modal').classList.remove('hidden');
 }
@@ -1378,6 +1411,7 @@ function saveTodoEdit(){
   t.horizon=document.getElementById('et-horizon').value;
   t.priority=document.getElementById('et-priority').value;
   t.due=document.getElementById('et-due').value;
+  t.time=document.getElementById('et-time').value;
   t.note=document.getElementById('et-note').value.trim();
   save();closeModals();renderTodos();updateFilterCounts();
 }
