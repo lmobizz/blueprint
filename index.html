@@ -347,8 +347,8 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
 .pstat-num{font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:600;line-height:1;color:var(--ink)}
 .pstat-label{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink3);margin-top:2px}
 
-.people-table-wrap{background:var(--paper);border:1px solid var(--line);border-radius:var(--r2);overflow:hidden}
-.people-table{width:100%;border-collapse:collapse;font-size:13px}
+.people-table-wrap{background:var(--paper);border:1px solid var(--line);border-radius:var(--r2);overflow-x:auto}
+.people-table{width:100%;border-collapse:collapse;font-size:13px;min-width:900px}
 .people-table th{font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--ink3);font-weight:500;padding:9px 12px;border-bottom:1px solid var(--line);text-align:left;background:var(--paper2);white-space:nowrap;cursor:pointer;user-select:none}
 .people-table th:hover{color:var(--ink)}
 .people-table th .sort-arrow{margin-left:3px;opacity:.4;font-size:9px}
@@ -643,6 +643,7 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
         <thead>
           <tr>
             <th>Name</th>
+            <th>Location</th>
             <th>Relationship</th>
             <th>Last text</th>
             <th>Last call</th>
@@ -1524,7 +1525,8 @@ function renderPeople(){
     const days=daysSinceContact(p);
     const idx=D.people.indexOf(p);
     return`<tr>
-      <td><div class="pname">${esc(p.name||'')}</div><div class="plocation">${esc(p.location||'')}</div></td>
+      <td><div class="pname">${esc(p.name||'')}</div></td>
+      <td style="font-size:12px;color:var(--ink3)">${esc(p.location||'—')}</td>
       <td>${relTag(p.relationship)}</td>
       <td style="font-size:12px;color:var(--ink3)">${p.lastText?fmtDate(new Date(p.lastText+'T12:00:00').getTime()):'—'}</td>
       <td style="font-size:12px;color:var(--ink3)">${p.lastCall?fmtDate(new Date(p.lastCall+'T12:00:00').getTime()):'—'}</td>
@@ -1533,7 +1535,7 @@ function renderPeople(){
       <td class="truncate" title="${esc(p.updates||'')}" style="font-size:12px">${esc(p.updates||'—')}</td>
       <td>${nextBadge(p.nextReachout)}</td>
       <td>${priDot(p.priority)}</td>
-      <td class="truncate" title="${esc(p.notes||'')}" style="font-size:12px">${esc(p.notes||'—')}</td>
+      <td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px" title="${esc(p.notes||'')}">${esc(p.notes||'—')}</td>
       <td><div class="prow-actions">
         <button class="pr-btn" onclick="openPersonModal(${idx})" title="Edit">✎</button>
         <button class="pr-btn del" onclick="deletePerson(${idx})" title="Delete">✕</button>
