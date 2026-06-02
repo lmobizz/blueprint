@@ -78,7 +78,7 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
 /* LEGEND */
 .legend{display:flex;gap:.75rem;flex-wrap:wrap;padding:.7rem 1rem;border:1px solid var(--line);border-radius:var(--r);margin-bottom:1.25rem;background:var(--paper)}
 .leg-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--ink3)}
-.leg-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.leg-dot{width:8px;height:8px;min-width:8px;min-height:8px;border-radius:50%;flex-shrink:0;display:inline-block}
 
 /* BUCKETS */
 .buckets{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:1.5rem}
@@ -532,10 +532,10 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
       <button class="export-btn" onclick="exportPDF()">⬇ Export PDF</button>
     </div>
     <div class="legend">
-      <div class="leg-item"><div class="leg-dot" style="background:#4D9E7A"></div>On track</div>
-      <div class="leg-item"><div class="leg-dot" style="background:#C9900A"></div>In progress</div>
-      <div class="leg-item"><div class="leg-dot" style="background:var(--line)"></div>Not started</div>
-      <div class="leg-item"><div class="leg-dot" style="background:var(--blue)"></div>Achieved</div>
+      <div class="leg-item"><div class="leg-dot" style="background:#4D9E7A;border:1px solid #4D9E7A"></div>On track</div>
+      <div class="leg-item"><div class="leg-dot" style="background:#C9900A;border:1px solid #C9900A"></div>In progress</div>
+      <div class="leg-item"><div class="leg-dot" style="background:var(--paper3);border:1px solid var(--ink3)"></div>Not started</div>
+      <div class="leg-item"><div class="leg-dot" style="background:var(--blue);border:1px solid var(--blue)"></div>Achieved</div>
     </div>
     <div class="buckets" id="buckets-container"></div>
   </div>
