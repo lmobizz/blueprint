@@ -508,7 +508,7 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
 <div class="view active" id="view-overview">
   <div class="hero">
     <div>
-      <div class="hero-title">Your <em>Blueprint</em><br>for everything.</div>
+      <div class="hero-title">Hey <span id="hero-greeting">there</span>, your <em>Blueprint</em><br>for everything.</div>
       <div class="hero-sub">Goals, daily tasks, wins, lessons — your whole life in one place. Don't lose sight of who you're becoming.</div>
     </div>
     <div class="hero-date" id="hero-date"></div>
@@ -904,10 +904,13 @@ function showApp(){
   document.getElementById('login-screen').style.display='none';
   document.getElementById('app-shell').style.display='block';
   const email=currentUser?.email||'';
-  const name=currentUser?.user_metadata?.full_name||email.split('@')[0]||'';
-  const initials=name.split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2)||'?';
-  document.getElementById('user-name').textContent=name;
+  const fullName=currentUser?.user_metadata?.full_name||email.split('@')[0]||'';
+  const firstName=fullName.split(' ')[0]||'there';
+  const initials=fullName.split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2)||'?';
+  document.getElementById('user-name').textContent=fullName;
   document.getElementById('user-avatar').textContent=initials;
+  const greet=document.getElementById('hero-greeting');
+  if(greet) greet.textContent=firstName;
 }
 
 /* ── CLOUD DATA ──────────────────────────────────────── */
