@@ -1501,7 +1501,162 @@ function toggleSub(sid){
   const open=g.classList.toggle('open');
   if(ch)ch.classList.toggle('open',open);
   if(ar)ar.style.display=open?'flex':'none';
-  if(open)setTimeout(()=>document.getElementById('ai-'+sid)?.focus(),50);
+}
+
+function toggleCat(cid){
+  const el=document.getElementById(cid);
+  const ch=document.getElementById('chev-'+cid);
+  if(!el)return;
+  const open=el.classList.toggle('open');
+  if(ch)ch.classList.toggle('open',open);
+}
+
+function toggleCatRow(sid){
+  const row=document.getElementById('cat-row-'+sid);
+  if(!row)return;
+  const show=row.style.display==='none'||row.style.display==='';
+  row.style.display=show?'flex':'none';
+  if(show)setTimeout(()=>document.getElementById('cat-input-'+sid)?.focus(),50);
+}
+
+function addCat(bucket,sub,sid){
+  const inp=document.getElementById('cat-input-'+sid);
+  if(!inp)return;
+  const name=inp.value.trim();
+  if(!name)return;
+  ensureSubFormat(bucket,sub);
+  if(D.goals[bucket][sub][name]){alert('Category already exists');return;}
+  D.goals[bucket][sub][name]=[];
+  inp.value='';
+  save();renderGoals();
+  setTimeout(()=>{
+    const g=document.getElementById('goals-'+sid);
+    const ch=document.getElementById('chev-'+sid);
+    const ar=document.getElementById('ar-'+sid);
+    if(g&&!g.classList.contains('open')){g.classList.add('open');if(ch)ch.classList.add('open');if(ar)ar.style.display='flex';}
+    const cid=sid+'-cat-'+name.replace(/\W+/g,'-');
+    const catEl=document.getElementById(cid);
+    if(catEl){catEl.classList.add('open');const cch=document.getElementById('chev-'+cid);if(cch)cch.classList.add('open');}
+  },20);
+}
+
+function deleteCat(bucket,sub,catName){
+  const goals=D.goals[bucket][sub][catName]||[];
+  if(goals.length&&!confirm(`Delete "${catName}" and its ${goals.length} goal(s)?`))return;
+  delete D.goals[bucket][sub][catName];
+  save();renderGoals();
+}
+
+function addGoal(bucket,sub,cat,sid){
+  // find the right input
+  const catInputId='ai-'+sid+'-cat-'+cat.replace(/\W+/g,'-');
+  const directInputId='ai-'+sid;
+  let inp=document.getElementById(cat==='_goals'?directInputId:catInputId);
+  if(!inp) inp=document.getElementById(directInputId);
+  if(!inp)return;
+  const text=inp.value.trim();if(!text)return;
+  ensureSubFormat(bucket,sub);
+  if(!D.goals[bucket][sub][cat])D.goals[bucket][sub][cat]=[];
+  D.goals[bucket][sub][cat].push({text,status:'not-started',note:'',due:'',identity:'',milestones:[],habits:[]});
+  inp.value='';save();renderGoals();
+  setTimeout(()=>{
+    const g=document.getElementById('goals-'+sid);
+    const ch=document.getElementById('chev-'+sid);
+    const ar=document.getElementById('ar-'+sid);
+    if(g&&!g.classList.contains('open')){g.classList.add('open');if(ch)ch.classList.add('open');if(ar)ar.style.display='flex';}
+    if(cat!=='_goals'){
+      const cid=sid+'-cat-'+cat.replace(/\W+/g,'-');
+      const catEl=document.getElementById(cid);
+      if(catEl&&!catEl.classList.contains('open')){catEl.classList.add('open');const cch=document.getElementById('chev-'+cid);if(cch)cch.classList.add('open');}
+    }
+    let inp2=document.getElementById(cat==='_goals'?directInputId:catInputId);
+    if(!inp2)inp2=document.getElementById(directInputId);
+    if(inp2)inp2.focus();
+  },20);
+}
+
+function cycleStatus(bucket,sub,cat,idx){
+  const order=['not-started','in-progress','on-track','achieved'];
+  const g=D.goals[bucket][sub][cat][idx];
+  if(!g)return;
+  g.status=order[(order.indexOf(g.status)+1)%order.length];
+  save();renderGoals();
+}
+
+function deleteGoal(bucket,sub,cat,idx){
+  if(!confirm('Delete this goal?'))return;
+  D.goals[bucket][sub][cat].splice(idx,1);
+  save();renderGoals();
+}
+
+function openGoalEdit(bucket,sub,cat,idx){
+  editGoalCtx={bucket,sub,cat,idx};
+  const g=D.goals[bucket][sub][cat][idx];
+  document.getElementById('eg-text').value=g.text;
+  document.getElementById('eg-status').value=g.status;
+  document.getElementById('eg-due').value=g.due||'';
+  document.getElementById('eg-note').value=g.note||'';
+  document.getElementById('edit-goal-modal').classList.remove('hidden');
+}
+
+function saveGoalEdit(){
+  if(!editGoalCtx)return;
+  const{bucket,sub,cat,idx}=editGoalCtx;
+  const g=D.goals[bucket][sub][cat][idx];
+  g.text=document.getElementById('eg-text').value.trim();
+  g.status=document.getElementById('eg-status').value;
+  g.due=document.getElementById('eg-due').value;
+  g.note=document.getElementById('eg-note').value.trim();
+  save();closeModals();renderGoals();
+}
+
+function saveIdentity(bucket,sub,cat,idx,val){
+  D.goals[bucket][sub][cat][idx].identity=val;save();
+}
+
+function addMilestone(bucket,sub,cat,idx,sid){
+  const inp=document.getElementById('ms-input-'+sid);
+  const text=inp?.value.trim();if(!text)return;
+  if(!D.goals[bucket][sub][cat][idx].milestones)D.goals[bucket][sub][cat][idx].milestones=[];
+  D.goals[bucket][sub][cat][idx].milestones.push({text,done:false});
+  inp.value='';save();renderGoals();
+  setTimeout(()=>{const el=document.getElementById(sid);if(el)el.style.display='block';},10);
+}
+
+function toggleMilestone(bucket,sub,cat,idx,mi){
+  D.goals[bucket][sub][cat][idx].milestones[mi].done=!D.goals[bucket][sub][cat][idx].milestones[mi].done;
+  save();renderGoals();
+  const sid=`sys-${bucket}-${sub.replace(/\W+/g,'-')}-${cat.replace(/\W+/g,'-')}-${idx}`;
+  setTimeout(()=>{const el=document.getElementById(sid);if(el)el.style.display='block';},10);
+}
+
+function deleteMilestone(bucket,sub,cat,idx,mi){
+  D.goals[bucket][sub][cat][idx].milestones.splice(mi,1);save();renderGoals();
+  const sid=`sys-${bucket}-${sub.replace(/\W+/g,'-')}-${cat.replace(/\W+/g,'-')}-${idx}`;
+  setTimeout(()=>{const el=document.getElementById(sid);if(el)el.style.display='block';},10);
+}
+
+function addHabit(bucket,sub,cat,idx,sid){
+  const inp=document.getElementById('hab-input-'+sid);
+  const freq=document.getElementById('hab-freq-'+sid)?.value||'daily';
+  const text=inp?.value.trim();if(!text)return;
+  if(!D.goals[bucket][sub][cat][idx].habits)D.goals[bucket][sub][cat][idx].habits=[];
+  D.goals[bucket][sub][cat][idx].habits.push({text,freq,checks:{}});
+  inp.value='';save();renderGoals();
+  setTimeout(()=>{const el=document.getElementById(sid);if(el)el.style.display='block';},10);
+}
+
+function deleteHabit(bucket,sub,cat,idx,hi){
+  D.goals[bucket][sub][cat][idx].habits.splice(hi,1);save();renderGoals();
+  const sid=`sys-${bucket}-${sub.replace(/\W+/g,'-')}-${cat.replace(/\W+/g,'-')}-${idx}`;
+  setTimeout(()=>{const el=document.getElementById(sid);if(el)el.style.display='block';},10);
+}
+
+function toggleHabitToday(bucket,sub,cat,idx,hi,today){
+  const h=D.goals[bucket][sub][cat][idx].habits[hi];
+  if(!h.checks)h.checks={};
+  h.checks[today]=!h.checks[today];
+  save();renderHabitsToday();
 }
 
 function toggleSysPanel(sid){
