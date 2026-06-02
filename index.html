@@ -489,6 +489,8 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
 .prel-tag.hs-friend{background:var(--gold-l);color:var(--gold)}
 .prel-tag.work-friend{background:#F0EBF8;color:#5A3A8A}
 .prel-tag.og{background:var(--ink);color:var(--paper)}
+.prel-tag.business{background:#E8F4F0;color:#0E5F6B}
+.prel-tag.org-alumni{background:#FFF0E0;color:#8B5E00}
 .prel-tag.colleague{background:var(--teal-l);color:var(--teal)}
 .prel-tag.mentor{background:var(--gold-l);color:var(--gold)}
 .prel-tag.acquaintance{background:var(--paper3);color:var(--ink3)}
@@ -805,14 +807,13 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
           <option value="">All relationships</option>
           <option value="Girlfriend">Girlfriend</option>
           <option value="Family">Family</option>
-          <option value="Friend">Friend</option>
           <option value="College Friend">College Friend</option>
           <option value="HS Friend">HS Friend</option>
           <option value="Work Friend">Work Friend</option>
               <option value="OG">OG</option>
-          <option value="Colleague">Colleague</option>
           <option value="Mentor">Mentor</option>
-          <option value="Acquaintance">Acquaintance</option>
+          <option value="Business">Business</option>
+          <option value="Org Alumni">Org Alumni</option>
           <option value="Other">Other</option>
         </select>
         <select class="people-filter-select" id="pf-pri" onchange="renderPeople()">
@@ -877,14 +878,13 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
         <select class="form-select" id="pm-rel">
           <option value="Girlfriend">Girlfriend</option>
           <option value="Family">Family</option>
-          <option value="Friend">Friend</option>
           <option value="College Friend">College Friend</option>
           <option value="HS Friend">HS Friend</option>
           <option value="Work Friend">Work Friend</option>
               <option value="OG">OG</option>
-          <option value="Colleague">Colleague</option>
           <option value="Mentor">Mentor</option>
-          <option value="Acquaintance">Acquaintance</option>
+          <option value="Business">Business</option>
+          <option value="Org Alumni">Org Alumni</option>
           <option value="Other">Other</option>
         </select></div>
       <div class="form-row"><label class="form-label">Priority</label>
@@ -2705,15 +2705,14 @@ window.addEventListener('beforeunload',e=>{
             <select class="form-select" id="pp-f-rel">
               <option value="Girlfriend">Girlfriend</option>
               <option value="Family">Family</option>
-              <option value="Friend">Friend</option>
               <option value="College Friend">College Friend</option>
               <option value="HS Friend">HS Friend</option>
               <option value="Work Friend">Work Friend</option>
               <option value="OG">OG</option>
-              <option value="Colleague">Colleague</option>
               <option value="Mentor">Mentor</option>
-              <option value="Acquaintance">Acquaintance</option>
-              <option value="Other">Other</option>
+              <option value="Business">Business</option>
+          <option value="Org Alumni">Org Alumni</option>
+          <option value="Other">Other</option>
             </select></div>
           <div class="profile-field"><label>Priority</label>
             <select class="form-select" id="pp-f-pri">
