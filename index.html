@@ -953,12 +953,23 @@ async function loadFromCloud(){
     if(data?.data){
       D=Object.assign(D,data.data);
       if(!D.people)D.people=[];
-      // migrate old bucket names
+      let needsSave=false;
+      // migrate old bucket name
       if(D.goals?.professional?.['My Company']!==undefined){
         D.goals.professional['Current Company: BCG']=D.goals.professional['My Company'];
         delete D.goals.professional['My Company'];
-        save();
+        needsSave=true;
       }
+      // migrate all sub-buckets from array to object format
+      for(const bk of Object.keys(D.goals)){
+        for(const sub of Object.keys(D.goals[bk])){
+          if(Array.isArray(D.goals[bk][sub])){
+            D.goals[bk][sub]={_goals:D.goals[bk][sub]};
+            needsSave=true;
+          }
+        }
+      }
+      if(needsSave) save();
     }
     updateBackupStatus('Loaded · '+new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}));
   }catch(e){
@@ -1233,9 +1244,7 @@ function getSubGoals(bucket,sub){
 function ensureSubFormat(bucket,sub){
   const val=D.goals[bucket][sub];
   if(Array.isArray(val)){
-    // migrate: wrap existing goals into _goals
     D.goals[bucket][sub]={_goals:val};
-    save();
   }
 }
 
@@ -1548,30 +1557,26 @@ function deleteCat(bucket,sub,catName){
 }
 
 function addGoal(bucket,sub,cat,sid){
-  // find the right input
-  const catInputId='ai-'+sid+'-cat-'+cat.replace(/\W+/g,'-');
-  const directInputId='ai-'+sid;
-  let inp=document.getElementById(cat==='_goals'?directInputId:catInputId);
-  if(!inp) inp=document.getElementById(directInputId);
+  // sid is either the sub-sid (for _goals) or the cat-id (for categories)
+  const inp=document.getElementById('ai-'+sid);
   if(!inp)return;
   const text=inp.value.trim();if(!text)return;
   ensureSubFormat(bucket,sub);
   if(!D.goals[bucket][sub][cat])D.goals[bucket][sub][cat]=[];
   D.goals[bucket][sub][cat].push({text,status:'not-started',note:'',due:'',identity:'',milestones:[],habits:[]});
   inp.value='';save();renderGoals();
+  // reopen after render
+  const subSid=bucket+'-'+sub.replace(/\W+/g,'-');
   setTimeout(()=>{
-    const g=document.getElementById('goals-'+sid);
-    const ch=document.getElementById('chev-'+sid);
-    const ar=document.getElementById('ar-'+sid);
+    const g=document.getElementById('goals-'+subSid);
+    const ch=document.getElementById('chev-'+subSid);
+    const ar=document.getElementById('ar-'+subSid);
     if(g&&!g.classList.contains('open')){g.classList.add('open');if(ch)ch.classList.add('open');if(ar)ar.style.display='flex';}
     if(cat!=='_goals'){
-      const cid=sid+'-cat-'+cat.replace(/\W+/g,'-');
-      const catEl=document.getElementById(cid);
-      if(catEl&&!catEl.classList.contains('open')){catEl.classList.add('open');const cch=document.getElementById('chev-'+cid);if(cch)cch.classList.add('open');}
+      const catEl=document.getElementById(sid);
+      if(catEl&&!catEl.classList.contains('open')){catEl.classList.add('open');const cch=document.getElementById('chev-'+sid);if(cch)cch.classList.add('open');}
     }
-    let inp2=document.getElementById(cat==='_goals'?directInputId:catInputId);
-    if(!inp2)inp2=document.getElementById(directInputId);
-    if(inp2)inp2.focus();
+    document.getElementById('ai-'+sid)?.focus();
   },20);
 }
 
