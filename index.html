@@ -1252,9 +1252,33 @@ function ensureSubFormat(bucket,sub){
   }
 }
 
+function getOpenState(){
+  const open={};
+  document.querySelectorAll('.sub-goals.open').forEach(el=>open[el.id]=true);
+  document.querySelectorAll('.cat-goals.open').forEach(el=>open[el.id]=true);
+  return open;
+}
+
+function restoreOpenState(open){
+  Object.keys(open).forEach(id=>{
+    const el=document.getElementById(id);
+    if(!el)return;
+    el.classList.add('open');
+    // show the add-goal-row for sub-buckets
+    const arId=id.replace('goals-','ar-');
+    const ar=document.getElementById(arId);
+    if(ar)ar.style.display='flex';
+    // chevron
+    const chevId=id.replace('goals-','chev-');
+    const chev=document.getElementById(chevId);
+    if(chev)chev.classList.add('open');
+  });
+}
+
 function makeId(str){return str.replace(/[^a-zA-Z0-9]/g,'_');}
 
 function renderGoals(){
+  const wasOpen=getOpenState();
   const c=document.getElementById('buckets-container');c.innerHTML='';
   [{key:'personal',label:'Personal',cls:'personal',icon:'🌱'},{key:'professional',label:'Professional',cls:'professional',icon:'🚀'}].forEach(b=>{
     const subs=D.goals[b.key];
@@ -1336,6 +1360,7 @@ function renderGoals(){
       sw.appendChild(el);
     });
   });
+  restoreOpenState(wasOpen);
 }
 function openTodoEdit(id){
   editTodoCtx=id;
