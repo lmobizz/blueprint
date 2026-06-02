@@ -636,6 +636,7 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
       </select>
       <button class="ppl-btn" onclick="openImportModal()">⬆ Import CSV / Excel</button>
       <button class="ppl-btn" onclick="exportPeopleCsv()">⬇ Export CSV</button>
+      <button class="ppl-btn" style="color:var(--rose);border-color:var(--rose)" onclick="clearAllPeople()">✕ Clear all</button>
       <button class="ppl-btn primary" onclick="openPersonModal(null)">+ Add person</button>
     </div>
     <div class="people-table-wrap">
@@ -1440,6 +1441,11 @@ function exportPDF(){
 /* ── PEOPLE ──────────────────────────────────────────── */
 // Ensure people array exists on old data
 if(!D.people) D.people=[];
+
+function clearAllPeople(){
+  if(!confirm(`Delete all ${D.people.length} people? This cannot be undone.\n\nTip: Export CSV first to keep a backup.`))return;
+  D.people=[];save();renderPeople();
+}
 
 function daysSinceContact(p){
   const dates=[p.lastText,p.lastCall].filter(Boolean).map(d=>new Date(d).getTime());
