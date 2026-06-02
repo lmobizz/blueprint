@@ -131,6 +131,41 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
 .add-goal-input:focus{border-color:var(--gold)}
 .add-goal-btn{font-family:'Syne',sans-serif;font-size:12px;font-weight:500;padding:5px 11px;background:var(--ink);color:var(--paper);border:none;border-radius:7px;cursor:pointer}
 
+/* PERSON PROFILE PANEL */
+.profile-overlay{position:fixed;inset:0;background:rgba(14,13,12,.5);z-index:300;display:flex;align-items:stretch;justify-content:flex-end;animation:fadeIn .2s ease}
+.profile-overlay.hidden{display:none}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.profile-panel{width:min(680px,100vw);background:var(--paper);height:100vh;overflow-y:auto;display:flex;flex-direction:column;animation:slideInRight .25s ease}
+@keyframes slideInRight{from{transform:translateX(40px);opacity:0}to{transform:translateX(0);opacity:1}}
+.profile-header{padding:1.5rem 2rem 1rem;border-bottom:1px solid var(--line);display:flex;align-items:flex-start;gap:16px;position:sticky;top:0;background:var(--paper);z-index:10}
+.profile-avatar{width:52px;height:52px;border-radius:50%;background:var(--gold-l);border:2px solid var(--gold);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:600;color:var(--gold);flex-shrink:0}
+.profile-name-block{flex:1}
+.profile-name{font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:600;color:var(--ink);line-height:1.2}
+.profile-sub{font-size:13px;color:var(--ink3);margin-top:3px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.profile-close{background:none;border:none;cursor:pointer;font-size:20px;color:var(--ink3);padding:4px 8px;border-radius:8px;transition:all .15s;flex-shrink:0}
+.profile-close:hover{background:var(--paper2);color:var(--ink)}
+.profile-body{padding:1.5rem 2rem;flex:1}
+.profile-section{margin-bottom:1.75rem}
+.profile-section-label{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--ink3);font-weight:600;margin-bottom:.75rem;padding-bottom:.4rem;border-bottom:1px solid var(--line)}
+.profile-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.profile-field{display:flex;flex-direction:column;gap:4px}
+.profile-field label{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3)}
+.profile-days-badge{display:inline-flex;align-items:center;gap:6px;font-size:13px;padding:6px 14px;border-radius:20px;font-weight:500;margin-bottom:1rem}
+.profile-days-badge.urgent{background:var(--rose-l);color:var(--rose)}
+.profile-days-badge.warn{background:var(--gold-l);color:var(--gold)}
+.profile-days-badge.good{background:var(--green-l);color:var(--green)}
+.profile-days-badge.none{background:var(--paper2);color:var(--ink3)}
+.profile-footer{padding:1rem 2rem 1.5rem;border-top:1px solid var(--line);display:flex;gap:8px;justify-content:flex-end;position:sticky;bottom:0;background:var(--paper)}
+.profile-save-btn{font-family:'Syne',sans-serif;font-size:13px;font-weight:600;padding:9px 20px;background:var(--ink);color:var(--paper);border:none;border-radius:9px;cursor:pointer}
+.profile-save-btn:hover{background:var(--ink2)}
+.profile-del-btn{font-family:'Syne',sans-serif;font-size:13px;padding:9px 16px;background:transparent;color:var(--rose);border:1px solid var(--rose-l);border-radius:9px;cursor:pointer;margin-right:auto}
+.profile-del-btn:hover{background:var(--rose-l)}
+.profile-cancel-btn{font-family:'Syne',sans-serif;font-size:13px;padding:9px 16px;background:transparent;color:var(--ink3);border:1px solid var(--line);border-radius:9px;cursor:pointer}
+.profile-cancel-btn:hover{background:var(--paper2)}
+.ai-suggest-btn{font-family:'Syne',sans-serif;font-size:12px;font-weight:500;padding:6px 14px;border-radius:20px;border:1px solid var(--gold);background:var(--gold-l);color:var(--gold);cursor:pointer;transition:all .15s}
+.ai-suggest-btn:hover{background:var(--gold);color:white}
+.ai-suggestion-box{background:var(--ink);color:rgba(255,255,255,.9);border-radius:var(--r);padding:1rem 1.1rem;margin-top:.75rem;font-size:13px;line-height:1.65;font-style:italic}
+
 /* UNDO TOAST */
 .undo-toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:.75rem 1.25rem;border-radius:var(--r);display:flex;align-items:center;gap:12px;font-size:13px;z-index:999;animation:fadeUp .2s ease;box-shadow:0 4px 20px rgba(0,0,0,.2)}
 .undo-toast.hidden{display:none}
@@ -832,7 +867,7 @@ const KEY='blueprint_v2';
 let D={
   goals:{
     personal:{'Athletic & Fitness':[],'Relationships':[],'Personal Passions':[],'Investments':[]},
-    professional:{'My Company':[],'Learning & Development':[],'Side Business / Secondary Income':[]}
+    professional:{'Current Company: BCG':[],'Learning & Development':[],'Side Business / Secondary Income':[]}
   },
   story:[],todos:[],people:[],lastReflect:0,reflectSnoozed:0
 };
@@ -1579,7 +1614,7 @@ function renderPeople(){
   tbody.innerHTML=list.map(p=>{
     const days=daysSinceContact(p);
     const idx=D.people.indexOf(p);
-    return`<tr>
+    return`<tr style="cursor:pointer" onclick="openProfile(${idx})">
       <td><div class="pname">${esc(p.name||'')}</div></td>
       <td style="font-size:12px;color:var(--ink3)">${esc(p.location||'—')}</td>
       <td>${relTag(p.relationship)}</td>
@@ -1591,12 +1626,122 @@ function renderPeople(){
       <td>${nextBadge(p.nextReachout)}</td>
       <td>${priDot(p.priority)}</td>
       <td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px" title="${esc(p.notes||'')}">${esc(p.notes||'—')}</td>
-      <td><div class="prow-actions">
-        <button class="pr-btn" onclick="openPersonModal(${idx})" title="Edit">✎</button>
+      <td><div class="prow-actions" onclick="event.stopPropagation()">
+        <button class="pr-btn" onclick="openProfile(${idx})" title="Edit">✎</button>
         <button class="pr-btn del" onclick="deletePerson(${idx})" title="Delete">✕</button>
       </div></td>
     </tr>`;
   }).join('');
+}
+
+/* ── PERSON PROFILE PANEL ────────────────────────────── */
+let profileIdx=null;
+
+function openProfile(idx){
+  profileIdx=idx;
+  const p=D.people[idx];
+  const days=daysSinceContact(p);
+  const initials=(p.name||'?').split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2);
+  document.getElementById('pp-avatar').textContent=initials;
+  document.getElementById('pp-name').textContent=p.name||'—';
+  document.getElementById('pp-sub').innerHTML=`
+    ${p.location?`<span>📍 ${esc(p.location)}</span>`:''}
+    ${relTag(p.relationship)}
+    <span>${priDot(p.priority)}</span>`;
+  // days badge
+  let badgeHtml='';
+  if(days===null) badgeHtml='<div class="profile-days-badge none">No contact date logged</div>';
+  else if(days>30) badgeHtml=`<div class="profile-days-badge urgent">⚠ ${days} days since last contact</div>`;
+  else if(days>14) badgeHtml=`<div class="profile-days-badge warn">⏱ ${days} days since last contact</div>`;
+  else badgeHtml=`<div class="profile-days-badge good">✓ ${days} days since last contact</div>`;
+  document.getElementById('pp-days-badge').innerHTML=badgeHtml;
+  // fill fields
+  document.getElementById('pp-f-name').value=p.name||'';
+  document.getElementById('pp-f-location').value=p.location||'';
+  document.getElementById('pp-f-rel').value=p.relationship||'Friend';
+  document.getElementById('pp-f-pri').value=p.priority||'m';
+  document.getElementById('pp-f-text').value=p.lastText||'';
+  document.getElementById('pp-f-call').value=p.lastCall||'';
+  document.getElementById('pp-f-next').value=p.nextReachout||'';
+  document.getElementById('pp-f-convo').value=p.convo||'';
+  document.getElementById('pp-f-updates').value=p.updates||'';
+  document.getElementById('pp-f-notes').value=p.notes||'';
+  document.getElementById('pp-ai-box').style.display='none';
+  document.getElementById('pp-ai-box').textContent='';
+  document.getElementById('profile-overlay').classList.remove('hidden');
+  document.body.style.overflow='hidden';
+}
+
+function closeProfile(){
+  document.getElementById('profile-overlay').classList.add('hidden');
+  document.body.style.overflow='';
+  profileIdx=null;
+}
+
+function handleOverlayClick(e){
+  if(e.target===document.getElementById('profile-overlay')) closeProfile();
+}
+
+function savePersonFromProfile(){
+  if(profileIdx===null)return;
+  const p=D.people[profileIdx];
+  p.name=document.getElementById('pp-f-name').value.trim();
+  p.location=document.getElementById('pp-f-location').value.trim();
+  p.relationship=document.getElementById('pp-f-rel').value;
+  p.priority=document.getElementById('pp-f-pri').value;
+  p.lastText=document.getElementById('pp-f-text').value;
+  p.lastCall=document.getElementById('pp-f-call').value;
+  p.nextReachout=document.getElementById('pp-f-next').value;
+  p.convo=document.getElementById('pp-f-convo').value.trim();
+  p.updates=document.getElementById('pp-f-updates').value.trim();
+  p.notes=document.getElementById('pp-f-notes').value.trim();
+  save();closeProfile();renderPeople();
+  showUndoToast('Changes saved',()=>{});
+}
+
+function deletePersonFromProfile(){
+  if(profileIdx===null)return;
+  const backup={...D.people[profileIdx]};
+  const idx=profileIdx;
+  D.people.splice(idx,1);
+  save();closeProfile();renderPeople();
+  showUndoToast(`Deleted ${backup.name}`,()=>{
+    D.people.splice(idx,0,backup);
+    save();renderPeople();
+  });
+}
+
+async function generateConvoStarter(){
+  if(profileIdx===null)return;
+  const p=D.people[profileIdx];
+  const box=document.getElementById('pp-ai-box');
+  const btn=document.querySelector('.ai-suggest-btn');
+  box.style.display='block';
+  box.textContent='Generating...';
+  btn.textContent='Generating...';btn.disabled=true;
+  const days=daysSinceContact(p);
+  const prompt=`Generate a natural, warm conversation starter for reaching out to ${p.name||'this person'}.
+
+About them: ${p.relationship||'friend'} based in ${p.location||'unknown location'}.
+Last conversation topic: ${p.convo||'not recorded'}.
+Their life updates: ${p.updates||'not recorded'}.
+Days since last contact: ${days!==null?days+'days':'unknown'}.
+Next planned reach-out: ${p.nextReachout||'not set'}.
+
+Write 2-3 sentences as if you are the user reaching out. Make it feel genuine and personal, not generic. Reference something specific about their life if available. Don't start with "Hey" or "Hi". Just the message text, nothing else.`;
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:prompt}]})
+    });
+    const data=await res.json();
+    const text=data.content?.find(b=>b.type==='text')?.text||'';
+    box.textContent=text||'Could not generate — try again.';
+  }catch(e){
+    box.textContent='Could not generate — check connection.';
+  }
+  btn.textContent='✦ Regenerate';btn.disabled=false;
 }
 
 let editPersonIdx=null;
@@ -1831,7 +1976,7 @@ function importData(e){
       if(!confirmed)return;
       // deep merge — keep structure, overwrite with backup
       D=Object.assign({
-        goals:{personal:{'Athletic & Fitness':[],'Relationships':[],'Personal Passions':[],'Investments':[]},professional:{'My Company':[],'Learning & Development':[],'Side Business / Secondary Income':[]}},
+        goals:{personal:{'Athletic & Fitness':[],'Relationships':[],'Personal Passions':[],'Investments':[]},professional:{'Current Company: BCG':[],'Learning & Development':[],'Side Business / Secondary Income':[]}},
         story:[],todos:[],people:[],lastReflect:0,reflectSnoozed:0
       },incoming);
       save();
@@ -1994,6 +2139,66 @@ initSupabase();
   <span id="undo-message">Cleared</span>
   <button class="undo-btn" onclick="undoAction()">Undo</button>
   <div class="undo-progress" id="undo-progress" style="width:100%"></div>
+</div>
+
+<!-- PERSON PROFILE PANEL -->
+<div class="profile-overlay hidden" id="profile-overlay" onclick="handleOverlayClick(event)">
+  <div class="profile-panel" id="profile-panel">
+    <div class="profile-header">
+      <div class="profile-avatar" id="pp-avatar">?</div>
+      <div class="profile-name-block">
+        <div class="profile-name" id="pp-name">—</div>
+        <div class="profile-sub" id="pp-sub"></div>
+      </div>
+      <button class="profile-close" onclick="closeProfile()">✕</button>
+    </div>
+    <div class="profile-body">
+      <div id="pp-days-badge"></div>
+      <div class="profile-section">
+        <div class="profile-section-label">Contact info</div>
+        <div class="profile-grid">
+          <div class="profile-field"><label>Name</label><input class="form-input" id="pp-f-name"/></div>
+          <div class="profile-field"><label>Location</label><input class="form-input" id="pp-f-location" placeholder="City, State"/></div>
+          <div class="profile-field"><label>Relationship</label>
+            <select class="form-select" id="pp-f-rel">
+              <option>Girlfriend</option><option>Family</option><option>Friend</option>
+              <option>Colleague</option><option>Mentor</option><option>Acquaintance</option><option>Other</option>
+            </select></div>
+          <div class="profile-field"><label>Priority</label>
+            <select class="form-select" id="pp-f-pri">
+              <option value="h">High</option><option value="m">Medium</option><option value="l">Low</option>
+            </select></div>
+        </div>
+      </div>
+      <div class="profile-section">
+        <div class="profile-section-label">Last contact</div>
+        <div class="profile-grid">
+          <div class="profile-field"><label>Last text</label><input class="form-input" type="date" id="pp-f-text"/></div>
+          <div class="profile-field"><label>Last call</label><input class="form-input" type="date" id="pp-f-call"/></div>
+          <div class="profile-field"><label>Next reach-out</label><input class="form-input" type="date" id="pp-f-next"/></div>
+        </div>
+      </div>
+      <div class="profile-section">
+        <div class="profile-section-label">Conversation</div>
+        <div class="profile-field" style="margin-bottom:12px"><label>Convo left on</label><input class="form-input" id="pp-f-convo" placeholder="Where did you leave things?"/></div>
+        <div class="profile-field"><label>Their life updates</label><textarea class="form-textarea" id="pp-f-updates" placeholder="What's going on in their life?"></textarea></div>
+      </div>
+      <div class="profile-section">
+        <div class="profile-section-label">Notes</div>
+        <div class="profile-field"><textarea class="form-textarea" id="pp-f-notes" placeholder="Anything else to remember..."></textarea></div>
+      </div>
+      <div class="profile-section">
+        <div class="profile-section-label">✦ AI conversation starter</div>
+        <button class="ai-suggest-btn" onclick="generateConvoStarter()">✦ Generate conversation starter</button>
+        <div id="pp-ai-box" style="display:none" class="ai-suggestion-box"></div>
+      </div>
+    </div>
+    <div class="profile-footer">
+      <button class="profile-del-btn" onclick="deletePersonFromProfile()">Delete</button>
+      <button class="profile-cancel-btn" onclick="closeProfile()">Cancel</button>
+      <button class="profile-save-btn" onclick="savePersonFromProfile()">Save changes</button>
+    </div>
+  </div>
 </div>
 </body>
 </html>
