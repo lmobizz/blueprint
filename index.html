@@ -671,6 +671,7 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
       <select class="people-filter-select" id="pf-sort" onchange="renderPeople()">
         <option value="days-desc">Overdue first</option>
         <option value="name-asc">Name A–Z</option>
+        <option value="name-desc">Name Z–A</option>
         <option value="pri-desc">Priority first</option>
         <option value="next-asc">Next reach-out soonest</option>
       </select>
@@ -683,7 +684,7 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
       <table class="people-table">
         <thead>
           <tr>
-            <th>Name</th>
+            <th onclick="toggleNameSort()" style="cursor:pointer;user-select:none" id="th-name">Name <span id="name-sort-arrow" style="font-size:10px;opacity:.5">↕</span></th>
             <th>Location</th>
             <th>Relationship</th>
             <th>Last text</th>
@@ -905,6 +906,12 @@ async function loadFromCloud(){
     if(data?.data){
       D=Object.assign(D,data.data);
       if(!D.people)D.people=[];
+      // migrate old bucket names
+      if(D.goals?.professional?.['My Company']!==undefined){
+        D.goals.professional['Current Company: BCG']=D.goals.professional['My Company'];
+        delete D.goals.professional['My Company'];
+        save();
+      }
     }
     updateBackupStatus('Loaded · '+new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}));
   }catch(e){
@@ -1520,6 +1527,19 @@ function undoAction(){
   document.getElementById('undo-toast').classList.add('hidden');
 }
 
+function toggleNameSort(){
+  const sel=document.getElementById('pf-sort');
+  const arrow=document.getElementById('name-sort-arrow');
+  if(sel.value==='name-asc'){
+    sel.value='name-desc';
+    arrow.textContent='↓';arrow.style.opacity='1';
+  } else {
+    sel.value='name-asc';
+    arrow.textContent='↑';arrow.style.opacity='1';
+  }
+  renderPeople();
+}
+
 function clearAllPeople(){
   if(!D.people.length)return;
   const backup=[...D.people];
@@ -1580,6 +1600,7 @@ function filterSortPeople(){
   const priOrder={h:0,m:1,l:2};
   list.sort((a,b)=>{
     if(sort==='name-asc') return(a.name||'').localeCompare(b.name||'');
+    if(sort==='name-desc') return(b.name||'').localeCompare(a.name||'');
     if(sort==='pri-desc') return(priOrder[a.priority]||1)-(priOrder[b.priority]||1);
     if(sort==='next-asc'){
       const da=a.nextReachout?new Date(a.nextReachout).getTime():Infinity;
@@ -1595,6 +1616,14 @@ function filterSortPeople(){
 }
 
 function renderPeople(){
+  // sync name sort arrow with dropdown
+  const sort=document.getElementById('pf-sort')?.value||'';
+  const arrow=document.getElementById('name-sort-arrow');
+  if(arrow){
+    if(sort==='name-asc'){arrow.textContent='↑';arrow.style.opacity='1';}
+    else if(sort==='name-desc'){arrow.textContent='↓';arrow.style.opacity='1';}
+    else{arrow.textContent='↕';arrow.style.opacity='.5';}
+  }
   renderPeopleStats();
   const list=filterSortPeople();
   const tbody=document.getElementById('people-tbody');
