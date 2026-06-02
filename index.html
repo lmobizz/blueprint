@@ -75,7 +75,23 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
 .tl-date{font-size:11px;color:var(--ink3)}
 .tl-body{font-size:12px;color:var(--ink2);margin-top:2px;line-height:1.45}
 
-/* LEGEND */
+/* GOAL CATEGORIES */
+.cat-header{display:flex;align-items:center;gap:7px;padding:.35rem .6rem .35rem 1.4rem;border-radius:7px;cursor:pointer;transition:background .1s;user-select:none}
+.cat-header:hover{background:var(--paper3)}
+.cat-label{font-size:12px;font-weight:600;color:var(--ink);flex:1;letter-spacing:.01em}
+.cat-count{font-size:10px;color:var(--ink3);background:var(--paper3);padding:1px 6px;border-radius:20px;border:1px solid var(--line)}
+.cat-actions{display:flex;gap:2px;opacity:0;transition:opacity .15s}
+.cat-header:hover .cat-actions{opacity:1}
+.cat-action-btn{background:none;border:none;cursor:pointer;font-size:11px;color:var(--ink3);padding:1px 4px;border-radius:4px}
+.cat-action-btn:hover{background:var(--paper2);color:var(--ink)}
+.cat-action-btn.del:hover{color:var(--rose)}
+.cat-goals{padding:0 .6rem .2rem 2.2rem;display:none}
+.cat-goals.open{display:block}
+.add-cat-row{display:flex;gap:6px;padding:.4rem .6rem .4rem 1.4rem}
+.add-cat-input{flex:1;font-family:'Syne',sans-serif;font-size:11px;padding:4px 8px;border:1px solid var(--line);border-radius:6px;background:var(--paper);color:var(--ink);outline:none}
+.add-cat-input:focus{border-color:var(--gold)}
+.add-cat-btn{font-size:11px;padding:4px 10px;background:var(--paper2);border:1px solid var(--line);border-radius:6px;cursor:pointer;font-family:'Syne',sans-serif;color:var(--ink2)}
+.add-cat-btn:hover{border-color:var(--gold);color:var(--gold)}
 .legend{display:flex;gap:.75rem;flex-wrap:wrap;padding:.7rem 1rem;border:1px solid var(--line);border-radius:var(--r);margin-bottom:1.25rem;background:var(--paper)}
 .leg-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--ink3)}
 .leg-dot{width:8px;height:8px;min-width:8px;min-height:8px;border-radius:50%;flex-shrink:0;display:inline-block}
@@ -469,7 +485,7 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
   <span class="nav-logo">My <em>Blueprint</em></span>
   <div class="nav-tabs">
     <button class="nav-tab active" onclick="showView('overview',this)">Overview</button>
-    <button class="nav-tab" onclick="showView('todo',this)">Today</button>
+    <button class="nav-tab" onclick="showView('todo',this)">To-Do</button>
     <button class="nav-tab" onclick="showView('goals',this)">Goals</button>
     <button class="nav-tab" onclick="showView('story',this)">My Story</button>
     <button class="nav-tab" onclick="showView('people',this)">People</button>
@@ -526,7 +542,7 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
 <div class="view" id="view-todo">
   <div class="hero">
     <div>
-      <div class="hero-title">Today &amp; <em>Beyond</em></div>
+      <div class="hero-title">To-Do &amp; <em>Beyond</em></div>
       <div class="hero-sub">Your daily tasks plus short and long-term horizon items — all connected to your bigger goals.</div>
     </div>
   </div>
@@ -1142,16 +1158,20 @@ function renderHabitsToday(){
   // collect all habits from all goals
   const due=[];
   for(const [bk,bv] of Object.entries(D.goals)){
-    for(const [sub,goals] of Object.entries(bv)){
-      goals.forEach((g,gi)=>{
-        (g.habits||[]).forEach((h,hi)=>{
-          const shouldShow=h.freq==='daily'||(h.freq==='weekdays'&&['mon','tue','wed','thu','fri'].includes(dayName))||(h.freq==='weekly');
-          if(shouldShow){
-            const checked=(h.checks||{})[today]||false;
-            due.push({h,hi,gi,bk,sub,goalText:g.text,checked});
-          }
+    for(const [sub,subVal] of Object.entries(bv)){
+      const subData=Array.isArray(subVal)?{'_goals':subVal}:subVal;
+      for(const [cat,goals] of Object.entries(subData)){
+        if(!Array.isArray(goals))continue;
+        goals.forEach((g,gi)=>{
+          (g.habits||[]).forEach((h,hi)=>{
+            const shouldShow=h.freq==='daily'||(h.freq==='weekdays'&&['mon','tue','wed','thu','fri'].includes(dayName))||(h.freq==='weekly');
+            if(shouldShow){
+              const checked=(h.checks||{})[today]||false;
+              due.push({h,hi,gi,bk,sub,cat,goalText:g.text,checked});
+            }
+          });
         });
-      });
+      }
     }
   }
   if(!due.length){wrap.innerHTML='';return;}
@@ -1160,7 +1180,7 @@ function renderHabitsToday(){
     <h4>⚡ Habits due today <span style="font-size:11px;font-weight:400;color:rgba(184,134,11,.7)">${doneCount}/${due.length} done</span></h4>
     ${due.map(({h,hi,gi,bk,sub,goalText,checked})=>`
       <div class="habit-today-item">
-        <div class="ht-check${checked?' done':''}" onclick="toggleHabitToday('${bk}','${sub}',${gi},${hi},'${today}')">${checked?'✓':''}</div>
+        <div class="ht-check${checked?' done':''}" onclick="toggleHabitToday('${bk}','${sub}','${cat}',${gi},${hi},'${today}')">${checked?'✓':''}</div>
         <span class="ht-label${checked?' done':''}">${esc(h.text)}</span>
         <span class="ht-source">${esc(goalText.length>22?goalText.slice(0,22)+'…':goalText)}</span>
       </div>`).join('')}
@@ -1187,222 +1207,122 @@ function updateFilterCounts(){
 }
 
 /* ── GOALS ───────────────────────────────────────────── */
+function allGoals(){
+  let a=[];
+  for(const bv of Object.values(D.goals))
+    for(const goals of Object.values(bv)){
+      if(Array.isArray(goals)) a=a.concat(goals);
+      else if(typeof goals==='object')
+        for(const catGoals of Object.values(goals))
+          if(Array.isArray(catGoals)) a=a.concat(catGoals);
+    }
+  return a;
+}
+
+// get flat goals array from a sub-bucket (handles both old array and new {cats} format)
+function getSubGoals(bucket,sub){
+  const val=D.goals[bucket][sub];
+  if(Array.isArray(val)) return val;
+  // new format: {_goals:[], cat1:[], cat2:[]}
+  let flat=[];
+  for(const [k,v] of Object.entries(val)) if(Array.isArray(v)) flat=flat.concat(v);
+  return flat;
+}
+
+// ensure sub-bucket is in new format
+function ensureSubFormat(bucket,sub){
+  const val=D.goals[bucket][sub];
+  if(Array.isArray(val)){
+    // migrate: wrap existing goals into _goals
+    D.goals[bucket][sub]={_goals:val};
+    save();
+  }
+}
+
 function renderGoals(){
   const c=document.getElementById('buckets-container');c.innerHTML='';
   [{key:'personal',label:'Personal',cls:'personal',icon:'🌱'},{key:'professional',label:'Professional',cls:'professional',icon:'🚀'}].forEach(b=>{
     const subs=D.goals[b.key];
-    const allG=Object.values(subs).flat();
-    const achG=allG.filter(g=>g.status==='achieved').length;
-    const pct=allG.length?Math.round(achG/allG.length*100):0;
+    let bucketGoals=[];
+    for(const val of Object.values(subs)){
+      if(Array.isArray(val)) bucketGoals=bucketGoals.concat(val);
+      else if(typeof val==='object') for(const v of Object.values(val)) if(Array.isArray(v)) bucketGoals=bucketGoals.concat(v);
+    }
+    const achG=bucketGoals.filter(g=>g.status==='achieved').length;
+    const pct=bucketGoals.length?Math.round(achG/bucketGoals.length*100):0;
     const card=document.createElement('div');
     card.className='bucket '+b.cls;
     card.innerHTML=`
       <div class="bucket-header">
         <span class="bucket-icon">${b.icon}</span>
         <span class="bucket-name">${b.label}</span>
-        <span class="bucket-meta">${achG}/${allG.length} · ${pct}%</span>
+        <span class="bucket-meta">${achG}/${bucketGoals.length} · ${pct}%</span>
       </div>
       <div class="bucket-prog"><div class="bucket-prog-fill" style="width:${pct}%"></div></div>
       <div class="sub-buckets" id="sub-${b.key}"></div>`;
     c.appendChild(card);
     const sw=card.querySelector('#sub-'+b.key);
-    Object.entries(subs).forEach(([sn,goals])=>{
+    Object.entries(subs).forEach(([sn,subVal])=>{
+      ensureSubFormat(b.key,sn);
+      const subData=D.goals[b.key][sn];
       const sid=b.key+'-'+sn.replace(/\W+/g,'-');
-      const ach=goals.filter(g=>g.status==='achieved').length;
-      const p=goals.length?Math.round(ach/goals.length*100):0;
+      let subGoals=[];
+      for(const v of Object.values(subData)) if(Array.isArray(v)) subGoals=subGoals.concat(v);
+      const ach=subGoals.filter(g=>g.status==='achieved').length;
+      const p=subGoals.length?Math.round(ach/subGoals.length*100):0;
       const el=document.createElement('div');
       el.className='sub-bucket';
+      const uncatGoals=subData['_goals']||[];
+      const cats=Object.entries(subData);
+      let catsHTML='';
+      if(uncatGoals.length) catsHTML+=uncatGoals.map((g,i)=>goalHTML(b.key,sn,'_goals',i,g)).join('');
+      cats.filter(([k])=>k!=='_goals').forEach(([catName,catGoals])=>{
+        if(!Array.isArray(catGoals))return;
+        const cid=sid+'-cat-'+catName.replace(/\W+/g,'-');
+        const catAch=catGoals.filter(g=>g.status==='achieved').length;
+        const catPct=catGoals.length?Math.round(catAch/catGoals.length*100):0;
+        catsHTML+=`<div class="sub-bucket" style="margin-bottom:2px">
+          <div class="cat-header" onclick="toggleCat('${cid}')">
+            <span class="chevron" id="chev-${cid}" style="font-size:8px">▶</span>
+            <span class="cat-label">📁 ${esc(catName)}</span>
+            <span style="font-size:10px;color:var(--gold);margin-right:4px;font-weight:600">${catPct}%</span>
+            <span class="cat-count">${catGoals.length}</span>
+            <div class="cat-actions">
+              <button class="cat-action-btn del" onclick="event.stopPropagation();deleteCat('${b.key}','${sn}','${catName}')" title="Delete category">✕</button>
+            </div>
+          </div>
+          <div class="cat-goals" id="${cid}">
+            ${catGoals.length?catGoals.map((g,i)=>goalHTML(b.key,sn,catName,i,g)).join(''):'<div class="empty-note" style="padding-left:.5rem">No goals yet.</div>'}
+            <div class="add-goal-row" id="ar-${cid}" style="display:flex;padding-left:.5rem">
+              <input class="add-goal-input" id="ai-${cid}" placeholder="Add a goal…" onkeydown="if(event.key==='Enter')addGoal('${b.key}','${sn}','${catName}','${cid}')"/>
+              <button class="add-goal-btn" onclick="addGoal('${b.key}','${sn}','${catName}','${cid}')">+</button>
+            </div>
+          </div>
+        </div>`;
+      });
       el.innerHTML=`
         <div class="sub-header" onclick="toggleSub('${sid}')">
           <span class="chevron" id="chev-${sid}">▶</span>
           <span class="sub-label">${sn}</span>
           <span class="sub-prog">${p}%</span>
-          <span class="sub-count">${goals.length}</span>
+          <span class="sub-count">${subGoals.length}</span>
         </div>
         <div class="sub-goals" id="goals-${sid}">
-          ${goals.length?goals.map((g,i)=>goalHTML(b.key,sn,i,g)).join(''):'<div class="empty-note">No goals yet — add one below.</div>'}
+          ${catsHTML||'<div class="empty-note">No goals yet.</div>'}
+          <div class="add-cat-row" id="cat-row-${sid}" style="display:none;border-top:1px dashed var(--line);margin-top:6px;padding-top:6px">
+            <input class="add-cat-input" id="cat-input-${sid}" placeholder="New category name…" onkeydown="if(event.key==='Enter')addCat('${b.key}','${sn}','${sid}')"/>
+            <button class="add-cat-btn" onclick="addCat('${b.key}','${sn}','${sid}')">+ Category</button>
+          </div>
         </div>
-        <div class="add-goal-row" id="ar-${sid}">
-          <input class="add-goal-input" id="ai-${sid}" placeholder="Add a goal…" onkeydown="if(event.key==='Enter')addGoal('${b.key}','${sn}','${sid}')"/>
-          <button class="add-goal-btn" onclick="addGoal('${b.key}','${sn}','${sid}')">+</button>
+        <div class="add-goal-row" id="ar-${sid}" style="border-top:1px dashed var(--line);margin-top:4px">
+          <input class="add-goal-input" id="ai-${sid}" placeholder="Add a goal (uncategorized)…" onkeydown="if(event.key==='Enter')addGoal('${b.key}','${sn}','_goals','${sid}')"/>
+          <button class="add-goal-btn" onclick="addGoal('${b.key}','${sn}','_goals','${sid}')">+</button>
+          <button class="add-cat-btn" onclick="toggleCatRow('${sid}')" title="Add a category">📁 + Category</button>
         </div>`;
       sw.appendChild(el);
     });
   });
 }
-
-function goalHTML(bucket,sub,idx,g){
-  const sym={'not-started':'','in-progress':'◑','on-track':'●','achieved':'✓'};
-  let dueBadgeHtml='';
-  if(g.due){
-    const d=new Date(g.due+'T12:00:00');
-    const diff=Math.round((d-NOW)/(1000*60*60*24));
-    const cls=diff<0?'overdue':diff<=7?'soon':'future';
-    dueBadgeHtml=`<span class="goal-due ${cls}">${diff<0?'Overdue':'Due'} ${fmtDate(d.getTime())}</span>`;
-  }
-  const sid=`sys-${bucket}-${sub.replace(/\W+/g,'-')}-${idx}`;
-  const habits=g.habits||[];
-  const milestones=g.milestones||[];
-  const today=NOW.toISOString().split('T')[0];
-  const msHTML=milestones.length?milestones.map((m,mi)=>`
-    <div class="milestone-item">
-      <div class="ms-check${m.done?' done':''}" onclick="toggleMilestone('${bucket}','${sub}',${idx},${mi})">${m.done?'✓':''}</div>
-      <span class="ms-text${m.done?' done':''}">${esc(m.text)}</span>
-      <button class="ms-del" onclick="deleteMilestone('${bucket}','${sub}',${idx},${mi})">✕</button>
-    </div>`).join(''):'';
-  const habHTML=habits.map((h,hi)=>{
-    const checked=(h.checks||{})[today]||false;
-    return`<div class="habit-item">
-      <div class="ht-check${checked?' done':''}" onclick="toggleHabitToday('${bucket}','${sub}',${idx},${hi},'${today}')" style="width:14px;height:14px;border-radius:3px;border:1.5px solid #D4A827;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:8px;transition:all .15s;${checked?'background:var(--gold);border-color:var(--gold);color:white':''}">${checked?'✓':''}</div>
-      <span style="flex:1;font-size:12px;color:var(--ink2)">${esc(h.text)}</span>
-      <span class="habit-freq">${h.freq}</span>
-      <button class="habit-del" onclick="deleteHabit('${bucket}','${sub}',${idx},${hi})">✕</button>
-    </div>`;
-  }).join('');
-  return`<div class="goal-item" style="flex-direction:column;align-items:stretch;padding:0">
-    <div style="display:flex;align-items:flex-start;gap:8px;padding:7px 0">
-      <div class="goal-dot ${g.status}" onclick="cycleStatus('${bucket}','${sub}',${idx})" title="Click to cycle status">${sym[g.status]||''}</div>
-      <div class="goal-info">
-        <div class="goal-text">${esc(g.text)}</div>
-        <div class="goal-meta">
-          ${g.note?`<span class="goal-note">${esc(g.note)}</span>`:''}
-          ${dueBadgeHtml}
-          ${g.identity?`<span style="font-size:11px;color:var(--blue);font-style:italic">→ ${esc(g.identity)}</span>`:''}
-        </div>
-      </div>
-      <div class="goal-actions">
-        <button class="g-btn sys-toggle" onclick="toggleSysPanel('${sid}')" title="System">⚡</button>
-        <button class="g-btn" onclick="openGoalEdit('${bucket}','${sub}',${idx})">✎</button>
-        <button class="g-btn del" onclick="deleteGoal('${bucket}','${sub}',${idx})">✕</button>
-      </div>
-    </div>
-    <div class="system-panel" id="${sid}" style="display:none">
-      <div class="sys-section">
-        <div class="sys-section-label">🧠 Identity — I am someone who…</div>
-        <input class="identity-input" placeholder="e.g. shows up consistently for the people I love" value="${esc(g.identity||'')}" onchange="saveIdentity('${bucket}','${sub}',${idx},this.value)"/>
-      </div>
-      <div class="sys-section">
-        <div class="sys-section-label">🪜 Milestones</div>
-        <div class="milestone-list">${msHTML}</div>
-        <div class="add-ms-row">
-          <input class="add-ms-input" id="ms-input-${sid}" placeholder="Add a milestone…" onkeydown="if(event.key==='Enter')addMilestone('${bucket}','${sub}',${idx},'${sid}')"/>
-          <button class="add-ms-btn" onclick="addMilestone('${bucket}','${sub}',${idx},'${sid}')">+</button>
-        </div>
-      </div>
-      <div class="sys-section">
-        <div class="sys-section-label">🔁 Habits</div>
-        <div class="habit-list">${habHTML}</div>
-        <div class="add-habit-row">
-          <input class="add-habit-input" id="hab-input-${sid}" placeholder="Add a habit…" onkeydown="if(event.key==='Enter')addHabit('${bucket}','${sub}',${idx},'${sid}')"/>
-          <select class="add-habit-freq" id="hab-freq-${sid}">
-            <option value="daily">Daily</option>
-            <option value="weekdays">Weekdays</option>
-            <option value="weekly">Weekly</option>
-          </select>
-          <button class="add-habit-btn" onclick="addHabit('${bucket}','${sub}',${idx},'${sid}')">+</button>
-        </div>
-      </div>
-    </div>
-  </div>`;
-}
-
-function toggleSysPanel(sid){
-  const el=document.getElementById(sid);
-  if(el) el.style.display=el.style.display==='none'?'block':'none';
-}
-function saveIdentity(bucket,sub,idx,val){
-  D.goals[bucket][sub][idx].identity=val;save();
-}
-function addMilestone(bucket,sub,idx,sid){
-  const inp=document.getElementById('ms-input-'+sid);
-  const text=inp.value.trim();if(!text)return;
-  if(!D.goals[bucket][sub][idx].milestones)D.goals[bucket][sub][idx].milestones=[];
-  D.goals[bucket][sub][idx].milestones.push({text,done:false});
-  inp.value='';save();renderGoals();
-  // reopen system panel
-  setTimeout(()=>{const el=document.getElementById(sid);if(el)el.style.display='block';},10);
-}
-function toggleMilestone(bucket,sub,idx,mi){
-  const m=D.goals[bucket][sub][idx].milestones[mi];
-  m.done=!m.done;save();renderGoals();
-  setTimeout(()=>{const el=document.getElementById(`sys-${bucket}-${sub.replace(/\W+/g,'-')}-${idx}`);if(el)el.style.display='block';},10);
-}
-function deleteMilestone(bucket,sub,idx,mi){
-  D.goals[bucket][sub][idx].milestones.splice(mi,1);save();renderGoals();
-  setTimeout(()=>{const el=document.getElementById(`sys-${bucket}-${sub.replace(/\W+/g,'-')}-${idx}`);if(el)el.style.display='block';},10);
-}
-function addHabit(bucket,sub,idx,sid){
-  const inp=document.getElementById('hab-input-'+sid);
-  const freq=document.getElementById('hab-freq-'+sid).value;
-  const text=inp.value.trim();if(!text)return;
-  if(!D.goals[bucket][sub][idx].habits)D.goals[bucket][sub][idx].habits=[];
-  D.goals[bucket][sub][idx].habits.push({text,freq,checks:{}});
-  inp.value='';save();renderGoals();
-  setTimeout(()=>{const el=document.getElementById(sid);if(el)el.style.display='block';},10);
-}
-function deleteHabit(bucket,sub,idx,hi){
-  D.goals[bucket][sub][idx].habits.splice(hi,1);save();renderGoals();
-  setTimeout(()=>{const el=document.getElementById(`sys-${bucket}-${sub.replace(/\W+/g,'-')}-${idx}`);if(el)el.style.display='block';},10);
-}
-
-function toggleSub(sid){
-  const g=document.getElementById('goals-'+sid);
-  const ch=document.getElementById('chev-'+sid);
-  const ar=document.getElementById('ar-'+sid);
-  const open=g.classList.toggle('open');
-  ch.classList.toggle('open',open);
-  if(ar)ar.style.display=open?'flex':'none';
-  if(open)setTimeout(()=>document.getElementById('ai-'+sid)?.focus(),50);
-}
-
-function addGoal(bucket,sub,sid){
-  const inp=document.getElementById('ai-'+sid);
-  const text=inp.value.trim();if(!text)return;
-  D.goals[bucket][sub].push({text,status:'not-started',note:'',due:''});
-  inp.value='';save();renderGoals();
-  setTimeout(()=>{
-    const g=document.getElementById('goals-'+sid);
-    const ch=document.getElementById('chev-'+sid);
-    const ar=document.getElementById('ar-'+sid);
-    if(g&&!g.classList.contains('open')){g.classList.add('open');ch.classList.add('open');if(ar)ar.style.display='flex';}
-    document.getElementById('ai-'+sid)?.focus();
-  },10);
-}
-
-function cycleStatus(bucket,sub,idx){
-  const order=['not-started','in-progress','on-track','achieved'];
-  const g=D.goals[bucket][sub][idx];
-  g.status=order[(order.indexOf(g.status)+1)%order.length];
-  save();renderGoals();
-}
-function deleteGoal(bucket,sub,idx){
-  if(!confirm('Delete this goal?'))return;
-  D.goals[bucket][sub].splice(idx,1);
-  save();renderGoals();
-}
-
-let editGoalCtx=null;
-function openGoalEdit(bucket,sub,idx){
-  editGoalCtx={bucket,sub,idx};
-  const g=D.goals[bucket][sub][idx];
-  document.getElementById('eg-text').value=g.text;
-  document.getElementById('eg-status').value=g.status;
-  document.getElementById('eg-due').value=g.due||'';
-  document.getElementById('eg-note').value=g.note||'';
-  document.getElementById('edit-goal-modal').classList.remove('hidden');
-}
-function saveGoalEdit(){
-  if(!editGoalCtx)return;
-  const{bucket,sub,idx}=editGoalCtx;
-  const g=D.goals[bucket][sub][idx];
-  g.text=document.getElementById('eg-text').value.trim();
-  g.status=document.getElementById('eg-status').value;
-  g.due=document.getElementById('eg-due').value;
-  g.note=document.getElementById('eg-note').value.trim();
-  save();closeModals();renderGoals();
-}
-
-let editTodoCtx=null;
 function openTodoEdit(id){
   editTodoCtx=id;
   const t=D.todos.find(t=>t.id===id);if(!t)return;
@@ -1572,6 +1492,22 @@ document.addEventListener('keydown',e=>{
     togglePeopleFullscreen();
   }
 });
+
+function toggleSub(sid){
+  const g=document.getElementById('goals-'+sid);
+  const ch=document.getElementById('chev-'+sid);
+  const ar=document.getElementById('ar-'+sid);
+  if(!g)return;
+  const open=g.classList.toggle('open');
+  if(ch)ch.classList.toggle('open',open);
+  if(ar)ar.style.display=open?'flex':'none';
+  if(open)setTimeout(()=>document.getElementById('ai-'+sid)?.focus(),50);
+}
+
+function toggleSysPanel(sid){
+  const el=document.getElementById(sid);
+  if(el) el.style.display=el.style.display==='none'?'block':'none';
+}
 
 function clearAllPeople(){
   if(!D.people.length)return;
