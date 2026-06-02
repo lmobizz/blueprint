@@ -164,6 +164,10 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
 .mobile-nav-tab{font-family:'Syne',sans-serif;font-size:13px;font-weight:500;padding:10px 16px;border-radius:9px;border:none;background:transparent;color:var(--ink2);cursor:pointer;text-align:left;text-transform:uppercase;letter-spacing:.04em;transition:background .1s}
 .mobile-nav-tab:hover{background:var(--paper2)}
 .mobile-nav-tab.active{background:var(--ink);color:var(--paper)}
+/* MOBILE FILTER ROW */
+.mobile-filter-row{display:none;gap:6px;flex-wrap:wrap;margin-bottom:1rem}
+.mobile-filter-row select{font-family:'Syne',sans-serif;font-size:12px;padding:5px 8px;border:1px solid var(--line);border-radius:8px;background:var(--paper);color:var(--ink);outline:none;flex:1;min-width:100px}
+
 @media(max-width:640px){
   nav{padding:0 1rem}
   .nav-tabs{display:none}
@@ -179,8 +183,9 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
   .page-wrap{padding:0 1rem 3rem}
   .buckets{grid-template-columns:1fr}
   .story-layout{grid-template-columns:1fr}
-  .todo-layout{grid-template-columns:1fr}
-  .todo-sidebar{position:static}
+  .todo-layout{display:block}
+  .todo-sidebar{display:none}
+  .mobile-filter-row{display:flex}
   .stat-grid{grid-template-columns:repeat(2,1fr)}
   .people-stats{grid-template-columns:repeat(2,1fr)}
   .profile-panel{width:100vw}
@@ -619,6 +624,28 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
       </div>
       <div class="todo-main-col">
         <div id="habits-today-wrap"></div>
+        <div class="mobile-filter-row">
+          <select onchange="setTodoFilter(this.value,this);updateFilterCounts()">
+            <option value="all">All tasks</option>
+            <option value="today">Today</option>
+            <option value="week">This week</option>
+            <option value="longterm">Long-term</option>
+            <option value="active">Active</option>
+            <option value="done">Completed</option>
+          </select>
+          <select onchange="setTodoFilter(this.value,this);updateFilterCounts()">
+            <option value="all">All priorities</option>
+            <option value="p-high">High</option>
+            <option value="p-med">Medium</option>
+            <option value="p-low">Low</option>
+          </select>
+          <select onchange="setTodoFilter(this.value,this);updateFilterCounts()">
+            <option value="all">All times</option>
+            <option value="quick">⚡ Quick</option>
+            <option value="mid">⏳ Mid</option>
+            <option value="long">🕐 Long</option>
+          </select>
+        </div>
         <div class="add-todo-section">
           <div class="add-todo-row">
             <input class="add-todo-input" id="todo-new" placeholder="Add a task..." onkeydown="if(event.key==='Enter')addTodo()"/>
@@ -1167,8 +1194,11 @@ function deleteTodo(id){
 
 function setTodoFilter(f,btn){
   todoFilter=f;
-  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
+  // only update active class on buttons, not selects
+  if(btn&&btn.tagName==='BUTTON'){
+    document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+  }
   renderTodos();
 }
 
