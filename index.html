@@ -388,7 +388,7 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
 .pstat-label{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink3);margin-top:2px}
 
 .people-table-wrap{background:var(--paper);border:1px solid var(--line);border-radius:var(--r2);overflow-x:auto}
-.people-table{width:100%;border-collapse:collapse;font-size:13px;min-width:900px}
+.people-table{width:100%;border-collapse:collapse;font-size:13px;min-width:1100px}
 .people-table th{font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--ink3);font-weight:500;padding:9px 12px;border-bottom:1px solid var(--line);text-align:left;background:var(--paper2);white-space:nowrap;cursor:pointer;user-select:none}
 .people-table th:hover{color:var(--ink)}
 .people-table th .sort-arrow{margin-left:3px;opacity:.4;font-size:9px}
@@ -649,13 +649,13 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
 
 <!-- ═══ PEOPLE ════════════════════════════════════════════ -->
 <div class="view" id="view-people">
-  <div class="hero">
+  <div class="hero" style="max-width:100%;padding-left:2rem;padding-right:2rem">
     <div>
       <div class="hero-title">My <em>People</em></div>
       <div class="hero-sub">Your relationship tracker. Stay intentional about the people who matter most.</div>
     </div>
   </div>
-  <div class="page-wrap">
+  <div style="padding:0 2rem 4rem;width:100%;box-sizing:border-box">
     <div class="people-stats" id="people-stats"></div>
     <div class="people-toolbar">
       <input class="people-search" id="people-search" placeholder="Search by name, location, notes..." oninput="renderPeople()"/>
