@@ -1062,6 +1062,8 @@ function save(){
   saveTimer=setTimeout(async()=>{
     if(!currentUser||!sbClient){updateBackupStatus('Not connected');return;}
     try{
+      // write to localStorage cache immediately
+      localStorage.setItem('blueprint_cache_'+currentUser.id, JSON.stringify(D));
       const{error}=await sbClient.from('blueprint_data').upsert({
         user_id:currentUser.id,
         data:D,
@@ -1078,65 +1080,85 @@ function save(){
 
 async function loadFromCloud(){
   if(!currentUser||!sbClient)return;
-  updateBackupStatus('Loading your data...');
+
+  // INSTANT LOAD: show cached data immediately while cloud syncs in background
+  const cached=localStorage.getItem('blueprint_cache_'+currentUser.id);
+  if(cached){
+    try{
+      const cachedData=JSON.parse(cached);
+      applyData(cachedData);
+      updateBackupStatus('Loaded from cache · syncing...');
+      renderOverview();
+      updateFilterCounts();
+      fetchMorningQuote();
+    }catch(e){}
+  }
+
+  // BACKGROUND SYNC: fetch from Supabase with a timeout
   try{
-    const{data,error}=await sbClient.from('blueprint_data')
+    const fetchPromise=sbClient.from('blueprint_data')
       .select('data').eq('user_id',currentUser.id).single();
+    const timeoutPromise=new Promise((_,reject)=>setTimeout(()=>reject(new Error('timeout')),8000));
+    const{data,error}=await Promise.race([fetchPromise,timeoutPromise]);
     if(error&&error.code!=='PGRST116'){throw error;}
     if(data?.data){
-      // deep replace — don't shallow merge, fully replace with cloud data
-      const cloud=data.data;
-      D.story=cloud.story||[];
-      D.todos=cloud.todos||[];
-      D.people=cloud.people||[];
-      D.lastReflect=cloud.lastReflect||0;
-      D.reflectSnoozed=cloud.reflectSnoozed||0;
-      D.quoteDate=cloud.quoteDate||'';
-      D.quoteText=cloud.quoteText||'';
-      D.quoteSub=cloud.quoteSub||'';
-      D.narrativeText=cloud.narrativeText||'';
-      D.narrativeDate=cloud.narrativeDate||0;
-      // goals: deep replace but preserve structure
-      if(cloud.goals){
-        D.goals=cloud.goals;
-      }
-      let needsSave=false;
-      // migrate old bucket name
-      if(D.goals?.professional?.['My Company']!==undefined){
-        D.goals.professional['Current Company: BCG']=D.goals.professional['My Company'];
-        delete D.goals.professional['My Company'];
-        needsSave=true;
-      }
-      // ensure all sub-buckets are in object format (not arrays)
-      for(const bk of Object.keys(D.goals)){
-        for(const sub of Object.keys(D.goals[bk])){
-          if(Array.isArray(D.goals[bk][sub])){
-            D.goals[bk][sub]={_goals:D.goals[bk][sub]};
-            needsSave=true;
-          }
-        }
-      }
-      // ensure all expected sub-buckets exist
-      const defaults={
-        personal:['Athletic & Fitness','Relationships','Personal Passions','Investments'],
-        professional:['Current Company: BCG','Learning & Development','Side Business / Secondary Income']
-      };
-      for(const[bk,subs] of Object.entries(defaults)){
-        if(!D.goals[bk])D.goals[bk]={};
-        for(const sub of subs){
-          if(!D.goals[bk][sub]){D.goals[bk][sub]={_goals:[]};needsSave=true;}
-        }
-      }
-      if(needsSave) save();
+      applyData(data.data);
+      // update cache
+      localStorage.setItem('blueprint_cache_'+currentUser.id, JSON.stringify(D));
+      updateBackupStatus('Saved to cloud · '+new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}));
+      renderOverview();
+      updateFilterCounts();
+    } else {
+      updateBackupStatus('Ready');
     }
-    updateBackupStatus('Loaded · '+new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}));
   }catch(e){
-    updateBackupStatus('⚠ Load failed');
+    if(e.message==='timeout'){
+      updateBackupStatus('⚠ Slow connection — showing cached data');
+    } else {
+      updateBackupStatus('⚠ Sync failed — showing cached data');
+    }
     console.error('Load error:',e);
   }
-  renderOverview();
-  updateFilterCounts();
-  fetchMorningQuote();
+}
+
+function applyData(cloud){
+  D.story=cloud.story||[];
+  D.todos=cloud.todos||[];
+  D.people=cloud.people||[];
+  D.lastReflect=cloud.lastReflect||0;
+  D.reflectSnoozed=cloud.reflectSnoozed||0;
+  D.quoteDate=cloud.quoteDate||'';
+  D.quoteText=cloud.quoteText||'';
+  D.quoteSub=cloud.quoteSub||'';
+  D.narrativeText=cloud.narrativeText||'';
+  D.narrativeDate=cloud.narrativeDate||0;
+  if(cloud.goals) D.goals=cloud.goals;
+  if(!D.people) D.people=[];
+  let needsSave=false;
+  if(D.goals?.professional?.['My Company']!==undefined){
+    D.goals.professional['Current Company: BCG']=D.goals.professional['My Company'];
+    delete D.goals.professional['My Company'];
+    needsSave=true;
+  }
+  for(const bk of Object.keys(D.goals)){
+    for(const sub of Object.keys(D.goals[bk])){
+      if(Array.isArray(D.goals[bk][sub])){
+        D.goals[bk][sub]={_goals:D.goals[bk][sub]};
+        needsSave=true;
+      }
+    }
+  }
+  const defaults={
+    personal:['Athletic & Fitness','Relationships','Personal Passions','Investments'],
+    professional:['Current Company: BCG','Learning & Development','Side Business / Secondary Income']
+  };
+  for(const[bk,subs] of Object.entries(defaults)){
+    if(!D.goals[bk])D.goals[bk]={};
+    for(const sub of subs){
+      if(!D.goals[bk][sub]){D.goals[bk][sub]={_goals:[]};needsSave=true;}
+    }
+  }
+  if(needsSave) save();
 }
 
 /* ── VIEWS ───────────────────────────────────────────── */
