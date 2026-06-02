@@ -485,6 +485,10 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
 .prel-tag.girlfriend{background:#FDE8F0;color:#8B2050}
 .prel-tag.family{background:var(--blue-l);color:var(--blue)}
 .prel-tag.friend{background:var(--green-l);color:var(--green)}
+.prel-tag.college-friend{background:var(--teal-l);color:var(--teal)}
+.prel-tag.hs-friend{background:var(--gold-l);color:var(--gold)}
+.prel-tag.work-friend{background:#F0EBF8;color:#5A3A8A}
+.prel-tag.og{background:var(--ink);color:var(--paper)}
 .prel-tag.colleague{background:var(--teal-l);color:var(--teal)}
 .prel-tag.mentor{background:var(--gold-l);color:var(--gold)}
 .prel-tag.acquaintance{background:var(--paper3);color:var(--ink3)}
@@ -804,7 +808,8 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
           <option value="Friend">Friend</option>
           <option value="College Friend">College Friend</option>
           <option value="HS Friend">HS Friend</option>
-          <option value="OG">OG</option>
+          <option value="Work Friend">Work Friend</option>
+              <option value="OG">OG</option>
           <option value="Colleague">Colleague</option>
           <option value="Mentor">Mentor</option>
           <option value="Acquaintance">Acquaintance</option>
@@ -875,7 +880,8 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
           <option value="Friend">Friend</option>
           <option value="College Friend">College Friend</option>
           <option value="HS Friend">HS Friend</option>
-          <option value="OG">OG</option>
+          <option value="Work Friend">Work Friend</option>
+              <option value="OG">OG</option>
           <option value="Colleague">Colleague</option>
           <option value="Mentor">Mentor</option>
           <option value="Acquaintance">Acquaintance</option>
@@ -1067,7 +1073,7 @@ function save(){
       updateBackupStatus('⚠ Save failed — check connection');
       console.error('Save error:',e);
     }
-  },800);
+  },300);
 }
 
 async function loadFromCloud(){
@@ -1078,8 +1084,22 @@ async function loadFromCloud(){
       .select('data').eq('user_id',currentUser.id).single();
     if(error&&error.code!=='PGRST116'){throw error;}
     if(data?.data){
-      D=Object.assign(D,data.data);
-      if(!D.people)D.people=[];
+      // deep replace — don't shallow merge, fully replace with cloud data
+      const cloud=data.data;
+      D.story=cloud.story||[];
+      D.todos=cloud.todos||[];
+      D.people=cloud.people||[];
+      D.lastReflect=cloud.lastReflect||0;
+      D.reflectSnoozed=cloud.reflectSnoozed||0;
+      D.quoteDate=cloud.quoteDate||'';
+      D.quoteText=cloud.quoteText||'';
+      D.quoteSub=cloud.quoteSub||'';
+      D.narrativeText=cloud.narrativeText||'';
+      D.narrativeDate=cloud.narrativeDate||0;
+      // goals: deep replace but preserve structure
+      if(cloud.goals){
+        D.goals=cloud.goals;
+      }
       let needsSave=false;
       // migrate old bucket name
       if(D.goals?.professional?.['My Company']!==undefined){
@@ -1087,13 +1107,24 @@ async function loadFromCloud(){
         delete D.goals.professional['My Company'];
         needsSave=true;
       }
-      // migrate all sub-buckets from array to object format
+      // ensure all sub-buckets are in object format (not arrays)
       for(const bk of Object.keys(D.goals)){
         for(const sub of Object.keys(D.goals[bk])){
           if(Array.isArray(D.goals[bk][sub])){
             D.goals[bk][sub]={_goals:D.goals[bk][sub]};
             needsSave=true;
           }
+        }
+      }
+      // ensure all expected sub-buckets exist
+      const defaults={
+        personal:['Athletic & Fitness','Relationships','Personal Passions','Investments'],
+        professional:['Current Company: BCG','Learning & Development','Side Business / Secondary Income']
+      };
+      for(const[bk,subs] of Object.entries(defaults)){
+        if(!D.goals[bk])D.goals[bk]={};
+        for(const sub of subs){
+          if(!D.goals[bk][sub]){D.goals[bk][sub]={_goals:[]};needsSave=true;}
         }
       }
       if(needsSave) save();
@@ -1103,7 +1134,6 @@ async function loadFromCloud(){
     updateBackupStatus('⚠ Load failed');
     console.error('Load error:',e);
   }
-  // render everything now that data is loaded
   renderOverview();
   updateFilterCounts();
   fetchMorningQuote();
@@ -1161,7 +1191,14 @@ function goReflect(){
 /* ── OVERVIEW ────────────────────────────────────────── */
 function allGoals(){
   let a=[];
-  for(const b of Object.values(D.goals))for(const l of Object.values(b))a=a.concat(l);
+  for(const bk of Object.keys(D.goals)){
+    for(const sub of Object.keys(D.goals[bk])){
+      const val=D.goals[bk][sub];
+      if(Array.isArray(val)) a=a.concat(val);
+      else if(val&&typeof val==='object')
+        for(const v of Object.values(val)) if(Array.isArray(v)) a=a.concat(v);
+    }
+  }
   return a;
 }
 function renderOverview(){
@@ -1333,12 +1370,7 @@ function renderHabitsToday(){
   </div>`;
 }
 
-function toggleHabitToday(bk,sub,gi,hi,today){
-  const h=D.goals[bk][sub][gi].habits[hi];
-  if(!h.checks)h.checks={};
-  h.checks[today]=!h.checks[today];
-  save();renderHabitsToday();
-}
+
 
 
 
@@ -1354,18 +1386,6 @@ function updateFilterCounts(){
 }
 
 /* ── GOALS ───────────────────────────────────────────── */
-function allGoals(){
-  let a=[];
-  for(const bk of Object.keys(D.goals)){
-    for(const sub of Object.keys(D.goals[bk])){
-      const val=D.goals[bk][sub];
-      if(Array.isArray(val)) a=a.concat(val);
-      else if(val&&typeof val==='object')
-        for(const v of Object.values(val)) if(Array.isArray(v)) a=a.concat(v);
-    }
-  }
-  return a;
-}
 
 // get flat goals array from a sub-bucket (handles both old array and new {cats} format)
 function getSubGoals(bucket,sub){
@@ -1583,13 +1603,21 @@ function exportPDF(){
   let goalsHTML='';
   [{key:'personal',label:'Personal 🌱'},{key:'professional',label:'Professional 🚀'}].forEach(b=>{
     goalsHTML+=`<h2 style="font-size:16px;margin:18px 0 6px;color:#1A3A5C">${b.label}</h2>`;
-    Object.entries(D.goals[b.key]).forEach(([sn,goals])=>{
+    Object.entries(D.goals[b.key]).forEach(([sn,subVal])=>{
       goalsHTML+=`<h3 style="font-size:13px;margin:10px 0 4px;color:#3A3836">${sn}</h3>`;
-      if(!goals.length){goalsHTML+='<p style="font-size:12px;color:#7A7570;font-style:italic">No goals set</p>';return;}
-      goals.forEach(g=>{
-        const statusColor={'not-started':'#888','in-progress':'#C9900A','on-track':'#4D9E7A','achieved':'#1A3A5C'}[g.status];
-        goalsHTML+=`<div style="display:flex;gap:8px;align-items:baseline;padding:4px 0;border-bottom:1px dashed #eee"><span style="color:${statusColor};font-size:11px;min-width:70px;font-weight:600">${g.status.replace('-',' ')}</span><span style="font-size:12px">${g.text}${g.due?' <em style="color:#888;font-size:11px">· Due '+g.due+'</em>':''}${g.note?' — <em style="color:#888;font-size:11px">'+g.note+'</em>':''}</span></div>`;
+      // handle both old array format and new {_goals, cat...} format
+      const subData=Array.isArray(subVal)?{'_goals':subVal}:subVal;
+      let hasAny=false;
+      Object.entries(subData).forEach(([catName,goals])=>{
+        if(!Array.isArray(goals)||!goals.length)return;
+        hasAny=true;
+        if(catName!=='_goals') goalsHTML+=`<div style="font-size:12px;font-weight:600;color:#555;margin:6px 0 3px">📁 ${catName}</div>`;
+        goals.forEach(g=>{
+          const statusColor={'not-started':'#888','in-progress':'#C9900A','on-track':'#4D9E7A','achieved':'#1A3A5C'}[g.status];
+          goalsHTML+=`<div style="display:flex;gap:8px;align-items:baseline;padding:4px 0 4px 8px;border-bottom:1px dashed #eee"><span style="color:${statusColor};font-size:11px;min-width:70px;font-weight:600">${(g.status||'').replace('-',' ')}</span><span style="font-size:12px">${g.text||''}${g.due?' <em style="color:#888;font-size:11px">· Due '+g.due+'</em>':''}${g.note?' — <em style="color:#888;font-size:11px">'+g.note+'</em>':''}</span></div>`;
+        });
       });
+      if(!hasAny) goalsHTML+='<p style="font-size:12px;color:#7A7570;font-style:italic;padding-left:8px">No goals set</p>';
     });
   });
   let storyHTML='<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:8px">';
@@ -2578,8 +2606,11 @@ function fmtDate(ts){return new Date(ts).toLocaleDateString('en-US',{month:'shor
 
 /* ── INIT ────────────────────────────────────────────── */
 updateFilterCounts();
-// Supabase is loaded via CDN script tag above — init after DOM ready
 initSupabase();
+// warn if user tries to leave while a save is pending
+window.addEventListener('beforeunload',e=>{
+  if(saveTimer){e.preventDefault();e.returnValue='';}
+});
 </script>
 </div><!-- end app-shell -->
 
@@ -2677,6 +2708,7 @@ initSupabase();
               <option value="Friend">Friend</option>
               <option value="College Friend">College Friend</option>
               <option value="HS Friend">HS Friend</option>
+              <option value="Work Friend">Work Friend</option>
               <option value="OG">OG</option>
               <option value="Colleague">Colleague</option>
               <option value="Mentor">Mentor</option>
