@@ -661,8 +661,16 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
       <input class="people-search" id="people-search" placeholder="Search by name, location, notes..." oninput="renderPeople()"/>
       <select class="people-filter-select" id="pf-rel" onchange="renderPeople()">
         <option value="">All relationships</option>
-        <option>Girlfriend</option><option>Family</option><option>Friend</option>
-        <option>Colleague</option><option>Mentor</option><option>Acquaintance</option><option>Other</option>
+        <option value="Girlfriend">Girlfriend</option>
+        <option value="Family">Family</option>
+        <option value="Friend">Friend</option>
+        <option value="College Friend">College Friend</option>
+        <option value="HS Friend">HS Friend</option>
+        <option value="OG">OG</option>
+        <option value="Colleague">Colleague</option>
+        <option value="Mentor">Mentor</option>
+        <option value="Acquaintance">Acquaintance</option>
+        <option value="Other">Other</option>
       </select>
       <select class="people-filter-select" id="pf-pri" onchange="renderPeople()">
         <option value="">All priorities</option>
@@ -714,8 +722,16 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
       <div class="form-row"><label class="form-label">Location</label><input class="form-input" id="pm-location" placeholder="City, State"/></div>
       <div class="form-row"><label class="form-label">Relationship</label>
         <select class="form-select" id="pm-rel">
-          <option>Girlfriend</option><option>Family</option><option>Friend</option>
-          <option>Colleague</option><option>Mentor</option><option>Acquaintance</option><option>Other</option>
+          <option value="Girlfriend">Girlfriend</option>
+          <option value="Family">Family</option>
+          <option value="Friend">Friend</option>
+          <option value="College Friend">College Friend</option>
+          <option value="HS Friend">HS Friend</option>
+          <option value="OG">OG</option>
+          <option value="Colleague">Colleague</option>
+          <option value="Mentor">Mentor</option>
+          <option value="Acquaintance">Acquaintance</option>
+          <option value="Other">Other</option>
         </select></div>
       <div class="form-row"><label class="form-label">Priority</label>
         <select class="form-select" id="pm-pri">
@@ -1595,7 +1611,7 @@ function filterSortPeople(){
   const sort=document.getElementById('pf-sort').value||'days-desc';
   let list=[...D.people];
   if(q) list=list.filter(p=>[p.name,p.location,p.notes,p.updates,p.convo].join(' ').toLowerCase().includes(q));
-  if(rel) list=list.filter(p=>(p.relationship||'').toLowerCase()===rel);
+  if(rel) list=list.filter(p=>(p.relationship||'').toLowerCase()===rel.toLowerCase());
   if(pri) list=list.filter(p=>p.priority===pri);
   const priOrder={h:0,m:1,l:2};
   list.sort((a,b)=>{
@@ -2190,8 +2206,16 @@ initSupabase();
           <div class="profile-field"><label>Location</label><input class="form-input" id="pp-f-location" placeholder="City, State"/></div>
           <div class="profile-field"><label>Relationship</label>
             <select class="form-select" id="pp-f-rel">
-              <option>Girlfriend</option><option>Family</option><option>Friend</option>
-              <option>Colleague</option><option>Mentor</option><option>Acquaintance</option><option>Other</option>
+              <option value="Girlfriend">Girlfriend</option>
+              <option value="Family">Family</option>
+              <option value="Friend">Friend</option>
+              <option value="College Friend">College Friend</option>
+              <option value="HS Friend">HS Friend</option>
+              <option value="OG">OG</option>
+              <option value="Colleague">Colleague</option>
+              <option value="Mentor">Mentor</option>
+              <option value="Acquaintance">Acquaintance</option>
+              <option value="Other">Other</option>
             </select></div>
           <div class="profile-field"><label>Priority</label>
             <select class="form-select" id="pp-f-pri">
