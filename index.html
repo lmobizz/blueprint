@@ -22,7 +22,7 @@
 }
 html{scroll-behavior:smooth}
 body{font-family:'Syne',sans-serif;background:var(--paper);color:var(--ink);min-height:100vh}
- 
+
 /* NAV */
 nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:0;padding:0 2rem;height:52px;}
 .nav-logo{font-family:'Playfair Display',serif;font-size:1.15rem;color:var(--ink);margin-right:auto;letter-spacing:-0.3px;flex-shrink:0}
@@ -31,12 +31,12 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
 .nav-tab{font-family:'Syne',sans-serif;font-size:11px;font-weight:500;padding:5px 12px;border-radius:20px;border:none;background:transparent;color:var(--ink3);cursor:pointer;letter-spacing:.04em;text-transform:uppercase;transition:all .15s}
 .nav-tab:hover{color:var(--ink);background:var(--paper2)}
 .nav-tab.active{background:var(--ink);color:var(--paper)}
- 
+
 /* VIEWS */
 .view{display:none;animation:fadeUp .3s ease}
 .view.active{display:block}
 @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
- 
+
 /* HERO */
 .hero{padding:2.5rem 2rem 1.5rem;max-width:960px;margin:0 auto;display:grid;grid-template-columns:1fr auto;gap:1rem;align-items:end}
 .hero-title{font-family:'Playfair Display',serif;font-size:clamp(1.8rem,3.5vw,2.7rem);font-weight:400;line-height:1.15;color:var(--ink)}
@@ -44,7 +44,7 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
 .hero-sub{margin-top:.4rem;font-size:13px;color:var(--ink3);line-height:1.6;max-width:380px}
 .hero-date{font-size:11px;color:var(--ink3);text-align:right;line-height:1.8;text-transform:uppercase;letter-spacing:.06em}
 .page-wrap{max-width:960px;margin:0 auto;padding:0 2rem 4rem}
- 
+
 /* STAT CARDS */
 .stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:1.5rem}
 .stat-card{background:var(--paper);border:1px solid var(--line);border-radius:var(--r);padding:.9rem 1rem}
@@ -52,7 +52,7 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
 .stat-label{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink3);margin-top:3px}
 .stat-bar{height:3px;background:var(--line);border-radius:99px;margin-top:8px;overflow:hidden}
 .stat-bar-fill{height:100%;border-radius:99px;background:var(--gold);transition:width .5s ease}
- 
+
 /* REFLECTION BANNER */
 .reflection-banner{background:var(--gold-l);border:1px solid #D4A827;border-radius:var(--r);padding:1rem 1.25rem;margin-bottom:1.5rem;display:flex;align-items:flex-start;gap:12px}
 .reflection-banner.hidden{display:none}
@@ -64,7 +64,7 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
 .ref-btn{font-family:'Syne',sans-serif;font-size:12px;font-weight:500;padding:5px 12px;border-radius:7px;cursor:pointer;border:1px solid #D4A827}
 .ref-btn.primary{background:var(--gold);color:white;border-color:var(--gold)}
 .ref-btn.secondary{background:transparent;color:var(--gold)}
- 
+
 /* TIMELINE */
 .timeline h2{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:400;margin-bottom:.9rem}
 .tl-item{display:flex;gap:12px;margin-bottom:.9rem;align-items:flex-start}
@@ -74,7 +74,7 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
 .tl-title{font-size:13px;font-weight:600;color:var(--ink)}
 .tl-date{font-size:11px;color:var(--ink3)}
 .tl-body{font-size:12px;color:var(--ink2);margin-top:2px;line-height:1.45}
- 
+
 /* BUCKETS */
 .buckets{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:1.5rem}
 @media(max-width:640px){.buckets{grid-template-columns:1fr}}
@@ -98,7 +98,7 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
 .chevron.open{transform:rotate(90deg)}
 .sub-goals{padding:0 .6rem .2rem 1.7rem;display:none}
 .sub-goals.open{display:block}
- 
+
 .goal-item{display:flex;align-items:flex-start;gap:8px;padding:7px 0;border-bottom:1px dashed var(--line)}
 .goal-item:last-child{border-bottom:none}
 .goal-dot{width:14px;height:14px;border-radius:50%;border:1.5px solid var(--line);cursor:pointer;flex-shrink:0;margin-top:2px;display:flex;align-items:center;justify-content:center;transition:all .15s;font-size:7px}
@@ -120,12 +120,12 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
 .g-btn{background:none;border:none;cursor:pointer;font-size:12px;color:var(--ink3);padding:2px 5px;border-radius:5px}
 .g-btn:hover{background:var(--paper3);color:var(--ink)}
 .g-btn.del:hover{color:var(--rose)}
- 
+
 .add-goal-row{display:flex;gap:6px;margin-top:5px;padding:0 .6rem .3rem 1.7rem;display:none}
 .add-goal-input{flex:1;font-family:'Syne',sans-serif;font-size:12px;padding:5px 9px;border:1px solid var(--line);border-radius:7px;background:var(--paper);color:var(--ink);outline:none}
 .add-goal-input:focus{border-color:var(--gold)}
 .add-goal-btn{font-family:'Syne',sans-serif;font-size:12px;font-weight:500;padding:5px 11px;background:var(--ink);color:var(--paper);border:none;border-radius:7px;cursor:pointer}
- 
+
 /* MORNING QUOTE */
 .morning-quote{background:var(--ink);color:var(--paper);border-radius:var(--r2);padding:1.5rem 1.75rem;margin-bottom:1.5rem;position:relative;overflow:hidden;min-height:90px}
 .morning-quote::before{content:'';position:absolute;top:-30px;right:-30px;width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,.04)}
@@ -139,7 +139,7 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
 @keyframes pulse{from{opacity:.3}to{opacity:1}}
 .mq-refresh{position:absolute;top:12px;right:14px;background:none;border:none;color:rgba(255,255,255,.3);cursor:pointer;font-size:14px;padding:4px;border-radius:6px;transition:color .15s}
 .mq-refresh:hover{color:rgba(255,255,255,.7)}
- 
+
 /* SYSTEMS */
 .system-panel{background:var(--paper2);border-top:1px dashed var(--line);padding:.75rem .75rem .5rem;margin-top:0}
 .sys-section{margin-bottom:.6rem}
@@ -178,7 +178,7 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
 .add-habit-btn{font-size:11px;padding:4px 9px;background:var(--paper3);border:1px solid var(--line);border-radius:6px;cursor:pointer;font-family:'Syne',sans-serif}
 .sys-toggle{font-size:10px;color:var(--ink3);background:none;border:none;cursor:pointer;padding:0 4px;text-decoration:underline;text-underline-offset:2px}
 .sys-toggle:hover{color:var(--gold)}
- 
+
 /* HABITS IN TODAY */
 .habits-today-section{background:var(--gold-l);border:1px solid #D4A827;border-radius:var(--r);padding:.9rem 1rem;margin-bottom:1rem}
 .habits-today-section h4{font-family:'Playfair Display',serif;font-size:.95rem;font-weight:600;color:var(--gold);margin-bottom:.65rem;display:flex;align-items:center;gap:7px}
@@ -189,7 +189,7 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
 .ht-label{flex:1;font-size:13px;color:var(--ink2)}
 .ht-label.done{text-decoration:line-through;color:var(--ink3)}
 .ht-source{font-size:10px;color:var(--gold);background:rgba(184,134,11,.12);padding:1px 7px;border-radius:20px}
- 
+
 /* STORY */
 .story-layout{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 @media(max-width:640px){.story-layout{grid-template-columns:1fr}}
@@ -208,7 +208,7 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
 .e-btn{background:none;border:none;cursor:pointer;font-size:12px;color:var(--ink3);padding:2px 5px;border-radius:5px}
 .e-btn:hover{background:var(--paper2)}
 .e-btn.del:hover{color:var(--rose)}
- 
+
 /* FORMS */
 .add-entry-card{background:var(--paper);border:1px dashed var(--line);border-radius:var(--r);padding:1rem}
 .add-entry-card h3{font-size:13px;font-weight:600;margin-bottom:.7rem;color:var(--ink2)}
@@ -219,7 +219,7 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
 .form-textarea{resize:vertical;min-height:65px}
 .form-submit{font-family:'Syne',sans-serif;font-size:12px;font-weight:600;padding:7px 16px;background:var(--ink);color:var(--paper);border:none;border-radius:8px;cursor:pointer;letter-spacing:.04em;transition:background .1s}
 .form-submit:hover{background:var(--ink2)}
- 
+
 /* TODO */
 .todo-layout{display:grid;grid-template-columns:1fr 2fr;gap:16px;align-items:start}
 @media(max-width:640px){.todo-layout{grid-template-columns:1fr}}
@@ -233,7 +233,7 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
 .filter-btn.active{background:var(--paper2);color:var(--ink);font-weight:500}
 .filter-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
 .filter-count{margin-left:auto;font-size:11px;color:var(--ink3);background:var(--paper3);padding:1px 6px;border-radius:20px}
- 
+
 .add-todo-section{background:var(--paper);border:1px solid var(--line);border-radius:var(--r);padding:.9rem 1rem;margin-bottom:1rem}
 .add-todo-row{display:flex;gap:7px;margin-bottom:7px}
 .add-todo-input{flex:1;font-family:'Syne',sans-serif;font-size:14px;padding:8px 12px;border:1px solid var(--line);border-radius:9px;background:var(--paper2);color:var(--ink);outline:none;transition:border-color .15s}
@@ -242,7 +242,7 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
 .todo-meta-row{display:flex;gap:7px;flex-wrap:wrap}
 .todo-meta-row .form-select{font-size:12px;padding:4px 8px;flex:1}
 .todo-meta-row .form-input{font-size:12px;padding:4px 8px;flex:1}
- 
+
 .todo-list{display:flex;flex-direction:column;gap:7px}
 .todo-card{background:var(--paper);border:1px solid var(--line);border-radius:var(--r);padding:10px 12px;transition:opacity .2s;animation:fadeUp .2s ease}
 .todo-card.done{opacity:.5}
@@ -271,7 +271,7 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
 .t-btn:hover{background:var(--paper3);color:var(--ink)}
 .t-btn.del:hover{color:var(--rose)}
 .todo-note{font-size:12px;color:var(--ink3);font-style:italic;margin-top:3px;padding-top:4px;border-top:1px dashed var(--line)}
- 
+
 /* MODAL */
 .modal-bg{position:fixed;inset:0;background:rgba(14,13,12,.5);z-index:200;display:flex;align-items:center;justify-content:center;padding:1rem}
 .modal-bg.hidden{display:none}
@@ -280,20 +280,20 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
 .modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:1rem}
 .modal-cancel{font-family:'Syne',sans-serif;font-size:13px;padding:7px 14px;border:1px solid var(--line);border-radius:8px;background:transparent;cursor:pointer;color:var(--ink2)}
 .modal-save{font-family:'Syne',sans-serif;font-size:13px;font-weight:600;padding:7px 14px;background:var(--ink);color:var(--paper);border:none;border-radius:8px;cursor:pointer}
- 
+
 /* PDF / EXPORT */
 .export-bar{display:flex;gap:8px;justify-content:flex-end;margin-bottom:1rem}
 .export-btn{font-family:'Syne',sans-serif;font-size:12px;font-weight:500;padding:6px 14px;border:1px solid var(--line);border-radius:20px;background:var(--paper);color:var(--ink2);cursor:pointer;display:flex;align-items:center;gap:5px;transition:all .15s}
 .export-btn:hover{background:var(--paper2);border-color:var(--gold);color:var(--gold)}
- 
+
 /* SECTION DIVIDER */
 .sec-div{display:flex;align-items:center;gap:10px;margin:1.5rem 0 1rem}
 .sec-div h2{font-family:'Playfair Display',serif;font-size:1.15rem;font-weight:400;white-space:nowrap;color:var(--ink)}
 .sec-div-line{flex:1;height:1px;background:var(--line)}
- 
+
 .empty-note{font-size:13px;color:var(--ink3);font-style:italic;padding:.4rem 0}
 .section-sep{height:1px;background:var(--line);margin:1.5rem 0}
- 
+
 /* LOGIN SCREEN */
 #login-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;background:var(--paper);padding:2rem}
 .login-card{background:var(--paper);border:1px solid var(--line);border-radius:var(--r2);padding:3rem 2.5rem;max-width:400px;width:100%;text-align:center;box-shadow:0 8px 40px rgba(0,0,0,.08)}
@@ -306,14 +306,14 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
 .google-btn:disabled{opacity:.6;cursor:not-allowed}
 .google-icon{width:18px;height:18px}
 .login-note{font-size:11px;color:var(--ink3);margin-top:1rem;line-height:1.5}
- 
+
 /* USER BADGE */
 .user-badge{display:flex;align-items:center;gap:7px;margin-left:8px}
 .user-avatar{width:26px;height:26px;border-radius:50%;background:var(--gold-l);border:1px solid var(--gold);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:var(--gold);flex-shrink:0}
 .user-name-text{font-size:12px;color:var(--ink2);max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .signout-btn{font-family:'Syne',sans-serif;font-size:11px;padding:3px 10px;border-radius:20px;border:1px solid var(--line);background:transparent;color:var(--ink3);cursor:pointer;transition:all .15s}
 .signout-btn:hover{border-color:var(--rose);color:var(--rose)}
- 
+
 /* PEOPLE */
 .people-toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:1.25rem}
 .people-search{flex:1;min-width:160px;font-family:'Syne',sans-serif;font-size:13px;padding:7px 12px;border:1px solid var(--line);border-radius:9px;background:var(--paper);color:var(--ink);outline:none}
@@ -324,12 +324,12 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
 .ppl-btn:hover{background:var(--paper2);border-color:var(--gold);color:var(--gold)}
 .ppl-btn.primary{background:var(--ink);color:var(--paper);border-color:var(--ink)}
 .ppl-btn.primary:hover{background:var(--ink2);border-color:var(--ink2);color:var(--paper)}
- 
+
 .people-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin-bottom:1.25rem}
 .pstat{background:var(--paper);border:1px solid var(--line);border-radius:var(--r);padding:.7rem .9rem}
 .pstat-num{font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:600;line-height:1;color:var(--ink)}
 .pstat-label{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink3);margin-top:2px}
- 
+
 .people-table-wrap{background:var(--paper);border:1px solid var(--line);border-radius:var(--r2);overflow:hidden}
 .people-table{width:100%;border-collapse:collapse;font-size:13px}
 .people-table th{font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--ink3);font-weight:500;padding:9px 12px;border-bottom:1px solid var(--line);text-align:left;background:var(--paper2);white-space:nowrap;cursor:pointer;user-select:none}
@@ -364,7 +364,7 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
 .pr-btn:hover{background:var(--paper3);color:var(--ink)}
 .pr-btn.del:hover{color:var(--rose)}
 .truncate{max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
- 
+
 .import-zone{border:2px dashed var(--line);border-radius:var(--r);padding:2rem;text-align:center;cursor:pointer;transition:all .2s;margin-bottom:1rem}
 .import-zone:hover,.import-zone.drag{border-color:var(--gold);background:var(--gold-l)}
 .import-zone p{font-size:13px;color:var(--ink3);margin-top:.5rem}
@@ -372,7 +372,7 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
 .col-map-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:1rem 0;max-height:300px;overflow-y:auto}
 .col-map-row{display:flex;flex-direction:column;gap:3px}
 .col-map-label{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3)}
- 
+
 /* DATA BACKUP */
 .backup-bar{display:flex;align-items:center;gap:6px;padding:0 2rem;height:36px;background:var(--paper2);border-bottom:1px solid var(--line);font-size:11px;color:var(--ink3)}
 .backup-bar span{margin-right:auto}
@@ -383,7 +383,7 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
 </style>
 </head>
 <body>
- 
+
 <!-- LOGIN SCREEN -->
 <div id="login-screen" style="display:flex">
   <div class="login-card">
@@ -396,7 +396,7 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
     <div class="login-note">Your data is private and encrypted.<br>Only you can access your Blueprint.</div>
   </div>
 </div>
- 
+
 <!-- APP SHELL -->
 <div id="app-shell" style="display:none">
 <nav>
@@ -421,7 +421,7 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
   <button class="backup-btn restore" onclick="document.getElementById('restore-input').click()" title="Restore from a previous backup file">⬆ Restore backup</button>
   <input type="file" id="restore-input" accept=".json" style="display:none" onchange="importData(event)"/>
 </div>
- 
+
 <!-- ═══ OVERVIEW ═══════════════════════════════════════ -->
 <div class="view active" id="view-overview">
   <div class="hero">
@@ -455,7 +455,7 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
     <div id="overview-todos"></div>
   </div>
 </div>
- 
+
 <!-- ═══ TODAY / TODO ════════════════════════════════════ -->
 <div class="view" id="view-todo">
   <div class="hero">
@@ -513,7 +513,7 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
     </div>
   </div>
 </div>
- 
+
 <!-- ═══ GOALS ═══════════════════════════════════════════ -->
 <div class="view" id="view-goals">
   <div class="hero">
@@ -535,7 +535,7 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
     <div class="buckets" id="buckets-container"></div>
   </div>
 </div>
- 
+
 <!-- ═══ STORY ════════════════════════════════════════════ -->
 <div class="view" id="view-story">
   <div class="hero">
@@ -576,7 +576,7 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
     </div>
   </div>
 </div>
- 
+
 <!-- ═══ PEOPLE ════════════════════════════════════════════ -->
 <div class="view" id="view-people">
   <div class="hero">
@@ -631,7 +631,7 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
     <div id="people-empty" class="empty-note" style="display:none;text-align:center;padding:2rem 0">No people yet — add one or import your Excel file.</div>
   </div>
 </div>
- 
+
 <!-- ═══ MODALS ══════════════════════════════════════════ -->
 <div class="modal-bg hidden" id="person-modal">
   <div class="modal" style="max-width:560px">
@@ -662,7 +662,7 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
     </div>
   </div>
 </div>
- 
+
 <div class="modal-bg hidden" id="import-modal">
   <div class="modal" style="max-width:540px">
     <h3>Import from Excel / CSV</h3>
@@ -684,7 +684,7 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
     </div>
   </div>
 </div>
- 
+
 <div class="modal-bg hidden" id="edit-goal-modal">
   <div class="modal">
     <h3>Edit goal</h3>
@@ -704,7 +704,7 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
     </div>
   </div>
 </div>
- 
+
 <div class="modal-bg hidden" id="edit-todo-modal">
   <div class="modal">
     <h3>Edit task</h3>
@@ -725,7 +725,7 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
     </div>
   </div>
 </div>
- 
+
 <script>
 /* ── DATA ─────────────────────────────────────────────── */
 /* ── SUPABASE CONFIG ─────────────────────────────────── */
@@ -733,7 +733,7 @@ const SUPABASE_URL='https://zugzwnqrhogwivxbpbrw.supabase.co';
 const SUPABASE_KEY='sb_publishable_3L2hNi1S-jG89KbgjfsUmQ_ulFewidj';
 let sbClient=null;
 let currentUser=null;
- 
+
 async function initSupabase(){
   // load supabase from CDN
   const {createClient}=window.supabase_js||{};
@@ -760,7 +760,7 @@ async function initSupabase(){
     }
   });
 }
- 
+
 async function signInWithGoogle(){
   const btn=document.getElementById('google-signin-btn');
   btn.textContent='Signing in...';btn.disabled=true;
@@ -770,16 +770,16 @@ async function signInWithGoogle(){
   });
   if(error){btn.textContent='Sign in with Google';btn.disabled=false;alert('Sign in failed: '+error.message);}
 }
- 
+
 async function signOut(){
   await sbClient.auth.signOut();
 }
- 
+
 function showLogin(){
   document.getElementById('login-screen').style.display='flex';
   document.getElementById('app-shell').style.display='none';
 }
- 
+
 function showApp(){
   document.getElementById('login-screen').style.display='none';
   document.getElementById('app-shell').style.display='block';
@@ -789,7 +789,7 @@ function showApp(){
   document.getElementById('user-name').textContent=name;
   document.getElementById('user-avatar').textContent=initials;
 }
- 
+
 /* ── CLOUD DATA ──────────────────────────────────────── */
 const KEY='blueprint_v2';
 let D={
@@ -799,7 +799,7 @@ let D={
   },
   story:[],todos:[],people:[],lastReflect:0,reflectSnoozed:0
 };
- 
+
 let saveTimer=null;
 function save(){
   // update backup status immediately
@@ -822,7 +822,7 @@ function save(){
     }
   },800);
 }
- 
+
 async function loadFromCloud(){
   if(!currentUser||!sbClient)return;
   updateBackupStatus('Loading your data...');
@@ -844,7 +844,7 @@ async function loadFromCloud(){
   updateFilterCounts();
   fetchMorningQuote();
 }
- 
+
 /* ── VIEWS ───────────────────────────────────────────── */
 function showView(v,btn){
   document.querySelectorAll('.view').forEach(el=>el.classList.remove('active'));
@@ -857,13 +857,13 @@ function showView(v,btn){
   if(v==='todo'){renderTodos();updateFilterCounts();}
   if(v==='people')renderPeople();
 }
- 
+
 /* ── DATE / HERO ─────────────────────────────────────── */
 const NOW=new Date();
 document.getElementById('hero-date').innerHTML=
   NOW.toLocaleDateString('en-US',{weekday:'long'})+'<br>'+
   NOW.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
- 
+
 /* ── REFLECTION ──────────────────────────────────────── */
 const PROMPTS=[
   "It's been a week — take 2 minutes to log a win or a lesson you picked up.",
@@ -893,7 +893,7 @@ function goReflect(){
   document.getElementById('reflection-banner').classList.add('hidden');
   document.querySelector('[onclick*="story"]').click();
 }
- 
+
 /* ── OVERVIEW ────────────────────────────────────────── */
 function allGoals(){
   let a=[];
@@ -930,7 +930,7 @@ function renderOverview(){
     :'<div class="empty-note">No tasks set for today.</div>';
 }
 renderOverview();
- 
+
 /* ── TODOS ───────────────────────────────────────────── */
 let todoFilter='all';
 function addTodo(){
@@ -949,7 +949,7 @@ function addTodo(){
   save();renderTodos();updateFilterCounts();
 }
 document.getElementById('todo-new').addEventListener('keydown',e=>{if(e.key==='Enter')addTodo();});
- 
+
 function quickToggleTodo(id){
   const t=D.todos.find(t=>t.id===id);
   if(t){t.done=!t.done;save();renderOverview();}
@@ -962,14 +962,14 @@ function deleteTodo(id){
   D.todos=D.todos.filter(t=>t.id!==id);
   save();renderTodos();updateFilterCounts();
 }
- 
+
 function setTodoFilter(f,btn){
   todoFilter=f;
   document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
   renderTodos();
 }
- 
+
 function dueBadge(due){
   if(!due)return'';
   const d=new Date(due+'T12:00:00');
@@ -978,11 +978,11 @@ function dueBadge(due){
   if(diff<=3)return`<span class="todo-due-tag soon">Due ${fmtDate(d.getTime())}</span>`;
   return`<span class="todo-due-tag future">Due ${fmtDate(d.getTime())}</span>`;
 }
- 
+
 function horizonLabel(h){
   return{today:'Today',week:'This week',longterm:'Long-term'}[h]||h;
 }
- 
+
 function filterTodos(){
   return D.todos.filter(t=>{
     if(todoFilter==='all')return true;
@@ -997,7 +997,7 @@ function filterTodos(){
     return true;
   });
 }
- 
+
 function renderTodos(){
   renderHabitsToday();
   const list=document.getElementById('todo-list');
@@ -1023,7 +1023,7 @@ function renderTodos(){
       </div>
     </div>`).join('');
 }
- 
+
 function renderHabitsToday(){
   const wrap=document.getElementById('habits-today-wrap');
   if(!wrap)return;
@@ -1056,16 +1056,16 @@ function renderHabitsToday(){
       </div>`).join('')}
   </div>`;
 }
- 
+
 function toggleHabitToday(bk,sub,gi,hi,today){
   const h=D.goals[bk][sub][gi].habits[hi];
   if(!h.checks)h.checks={};
   h.checks[today]=!h.checks[today];
   save();renderHabitsToday();
 }
- 
- 
- 
+
+
+
 function updateFilterCounts(){
   const counts={all:D.todos.length,today:0,week:0,longterm:0,active:0,done:0,'p-high':0,'p-med':0,'p-low':0};
   D.todos.forEach(t=>{
@@ -1075,7 +1075,7 @@ function updateFilterCounts(){
   });
   Object.entries(counts).forEach(([k,v])=>{const el=document.getElementById('fc-'+k);if(el)el.textContent=v;});
 }
- 
+
 /* ── GOALS ───────────────────────────────────────────── */
 function renderGoals(){
   const c=document.getElementById('buckets-container');c.innerHTML='';
@@ -1120,7 +1120,7 @@ function renderGoals(){
     });
   });
 }
- 
+
 function goalHTML(bucket,sub,idx,g){
   const sym={'not-started':'','in-progress':'◑','on-track':'●','achieved':'✓'};
   let dueBadgeHtml='';
@@ -1195,7 +1195,7 @@ function goalHTML(bucket,sub,idx,g){
     </div>
   </div>`;
 }
- 
+
 function toggleSysPanel(sid){
   const el=document.getElementById(sid);
   if(el) el.style.display=el.style.display==='none'?'block':'none';
@@ -1234,7 +1234,7 @@ function deleteHabit(bucket,sub,idx,hi){
   D.goals[bucket][sub][idx].habits.splice(hi,1);save();renderGoals();
   setTimeout(()=>{const el=document.getElementById(`sys-${bucket}-${sub.replace(/\W+/g,'-')}-${idx}`);if(el)el.style.display='block';},10);
 }
- 
+
 function toggleSub(sid){
   const g=document.getElementById('goals-'+sid);
   const ch=document.getElementById('chev-'+sid);
@@ -1244,7 +1244,7 @@ function toggleSub(sid){
   if(ar)ar.style.display=open?'flex':'none';
   if(open)setTimeout(()=>document.getElementById('ai-'+sid)?.focus(),50);
 }
- 
+
 function addGoal(bucket,sub,sid){
   const inp=document.getElementById('ai-'+sid);
   const text=inp.value.trim();if(!text)return;
@@ -1258,7 +1258,7 @@ function addGoal(bucket,sub,sid){
     document.getElementById('ai-'+sid)?.focus();
   },10);
 }
- 
+
 function cycleStatus(bucket,sub,idx){
   const order=['not-started','in-progress','on-track','achieved'];
   const g=D.goals[bucket][sub][idx];
@@ -1270,7 +1270,7 @@ function deleteGoal(bucket,sub,idx){
   D.goals[bucket][sub].splice(idx,1);
   save();renderGoals();
 }
- 
+
 let editGoalCtx=null;
 function openGoalEdit(bucket,sub,idx){
   editGoalCtx={bucket,sub,idx};
@@ -1291,7 +1291,7 @@ function saveGoalEdit(){
   g.note=document.getElementById('eg-note').value.trim();
   save();closeModals();renderGoals();
 }
- 
+
 let editTodoCtx=null;
 function openTodoEdit(id){
   editTodoCtx=id;
@@ -1312,13 +1312,13 @@ function saveTodoEdit(){
   t.note=document.getElementById('et-note').value.trim();
   save();closeModals();renderTodos();updateFilterCounts();
 }
- 
+
 function closeModals(){
   document.querySelectorAll('.modal-bg').forEach(m=>m.classList.add('hidden'));
   editGoalCtx=null;editTodoCtx=null;editPersonIdx=null;
 }
 document.querySelectorAll('.modal-bg').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)closeModals();}));
- 
+
 /* ── STORY ───────────────────────────────────────────── */
 function renderStory(){
   const wins=[...D.story].filter(e=>e.type==='win').sort((a,b)=>b.date-a.date);
@@ -1354,7 +1354,7 @@ function deleteEntry(idx){
   if(!confirm('Delete this entry?'))return;
   D.story.splice(idx,1);save();renderStory();renderOverview();
 }
- 
+
 /* ── PDF EXPORT ──────────────────────────────────────── */
 function exportPDF(){
   const win=window.open('','_blank');
@@ -1396,35 +1396,35 @@ function exportPDF(){
   </body></html>`);
   win.document.close();
 }
- 
+
 /* ── PEOPLE ──────────────────────────────────────────── */
 // Ensure people array exists on old data
 if(!D.people) D.people=[];
- 
+
 function daysSinceContact(p){
   const dates=[p.lastText,p.lastCall].filter(Boolean).map(d=>new Date(d).getTime());
   if(!dates.length) return null;
   const latest=Math.max(...dates);
   return Math.floor((Date.now()-latest)/(1000*60*60*24));
 }
- 
+
 function daysBadge(days){
   if(days===null) return '<span class="days-badge none">—</span>';
   if(days>30)  return`<span class="days-badge urgent">${days}d ago</span>`;
   if(days>14)  return`<span class="days-badge warn">${days}d ago</span>`;
   return`<span class="days-badge good">${days}d ago</span>`;
 }
- 
+
 function relTag(rel){
   const cls=(rel||'other').toLowerCase().replace(/\s+/g,'-');
   return`<span class="prel-tag ${cls}">${esc(rel||'—')}</span>`;
 }
- 
+
 function priDot(p){
   const label={h:'High',m:'Med',l:'Low'}[p]||p||'—';
   return`<span class="ppri-dot ${p||''}"></span>${label}`;
 }
- 
+
 function renderPeopleStats(){
   const ps=D.people;
   const overdue=ps.filter(p=>{ const d=daysSinceContact(p); return d!==null&&d>30;}).length;
@@ -1437,7 +1437,7 @@ function renderPeopleStats(){
     <div class="pstat"><div class="pstat-num">${highPri}</div><div class="pstat-label">High priority</div></div>
   `;
 }
- 
+
 function filterSortPeople(){
   const q=(document.getElementById('people-search').value||'').toLowerCase();
   const rel=(document.getElementById('pf-rel').value||'').toLowerCase();
@@ -1463,7 +1463,7 @@ function filterSortPeople(){
   });
   return list;
 }
- 
+
 function renderPeople(){
   renderPeopleStats();
   const list=filterSortPeople();
@@ -1502,7 +1502,7 @@ function renderPeople(){
     </tr>`;
   }).join('');
 }
- 
+
 let editPersonIdx=null;
 function openPersonModal(idx){
   editPersonIdx=idx;
@@ -1545,7 +1545,7 @@ function deletePerson(idx){
   if(!confirm('Remove this person?'))return;
   D.people.splice(idx,1);save();renderPeople();
 }
- 
+
 /* IMPORT */
 let importRows=[];
 let importHeaders=[];
@@ -1562,7 +1562,7 @@ const PEOPLE_FIELDS=[
   {key:'priority',label:'Priority (h/m/l)'},
   {key:'notes',label:'Notes'}
 ];
- 
+
 function openImportModal(){
   importRows=[];importHeaders=[];
   document.getElementById('import-mapping').style.display='none';
@@ -1570,7 +1570,7 @@ function openImportModal(){
   document.getElementById('import-file-input').value='';
   document.getElementById('import-modal').classList.remove('hidden');
 }
- 
+
 function handleDrop(e){
   e.preventDefault();
   document.getElementById('import-zone').classList.remove('drag');
@@ -1581,7 +1581,7 @@ function handleFileSelect(e){
   const file=e.target.files[0];
   if(file) parseCSVFile(file);
 }
- 
+
 function parseCSVFile(file){
   const reader=new FileReader();
   reader.onload=function(e){
@@ -1594,7 +1594,7 @@ function parseCSVFile(file){
   };
   reader.readAsText(file);
 }
- 
+
 function parseCSV(text){
   const rows=[];
   const lines=text.split(/\r?\n/);
@@ -1613,7 +1613,7 @@ function parseCSV(text){
   }
   return rows;
 }
- 
+
 function buildColumnMapper(){
   const grid=document.getElementById('col-map-grid');
   // auto-guess mappings
@@ -1627,7 +1627,7 @@ function buildColumnMapper(){
     });
     if(match>=0) guesses[f.key]=match;
   });
- 
+
   grid.innerHTML=PEOPLE_FIELDS.map(f=>`
     <div class="col-map-row">
       <div class="col-map-label">${f.label}</div>
@@ -1636,12 +1636,12 @@ function buildColumnMapper(){
         ${importHeaders.map((h,i)=>`<option value="${i}"${guesses[f.key]===i?' selected':''}>${h}</option>`).join('')}
       </select>
     </div>`).join('');
- 
+
   document.getElementById('import-preview-note').textContent=`Found ${importRows.length} rows in your file.`;
   document.getElementById('import-mapping').style.display='block';
   document.getElementById('import-confirm-btn').style.display='inline-block';
 }
- 
+
 function confirmImport(){
   const getCol=(key)=>{
     const sel=document.getElementById('map-'+key);
@@ -1661,7 +1661,7 @@ function confirmImport(){
     if(!isNaN(d.getTime())) return d.toISOString().split('T')[0];
     return'';
   };
- 
+
   let added=0;
   importRows.forEach(row=>{
     const get=(key)=>{ const c=getCol(key); return c!==null?(row[c]||'').trim():''; };
@@ -1687,7 +1687,7 @@ function confirmImport(){
   save();closeModals();renderPeople();
   alert(`Imported ${added} people successfully!${importRows.length-added>0?' ('+( importRows.length-added)+' skipped — duplicates or missing name)':''}`);
 }
- 
+
 function exportPeopleCsv(){
   const headers=['Name','Location','Relationship','Last Text','Last Call','Days Since','Convo Left On','Their Life Updates','Next Reach-Out','Priority','Notes'];
   const rows=D.people.map(p=>[
@@ -1701,7 +1701,7 @@ function exportPeopleCsv(){
   a.download='blueprint-people.csv';
   a.click();
 }
- 
+
 /* ── DATA BACKUP / RESTORE ───────────────────────────── */
 function exportData(){
   const payload={
@@ -1718,7 +1718,7 @@ function exportData(){
   a.click();
   updateBackupStatus(`Last exported ${fmtDate(Date.now())}`);
 }
- 
+
 function importData(e){
   const file=e.target.files[0];
   if(!file)return;
@@ -1750,12 +1750,12 @@ function importData(e){
   reader.readAsText(file);
   e.target.value='';
 }
- 
+
 function updateBackupStatus(msg){
   const el=document.getElementById('backup-status');
   if(el) el.textContent=msg;
 }
- 
+
 /* ── MORNING QUOTE ───────────────────────────────────── */
 async function fetchMorningQuote(force=false){
   const today=NOW.toISOString().split('T')[0];
@@ -1769,12 +1769,12 @@ async function fetchMorningQuote(force=false){
   const habits=[];
   for(const bv of Object.values(D.goals))for(const goals of Object.values(bv))for(const g of goals)(g.habits||[]).forEach(h=>habits.push(h.text));
   const prompt=`You are a personal coach for someone building their life with intentionality. Generate a single short motivational reflection (2–3 sentences max) for their morning. Make it feel personal and specific to their context, not generic.
- 
+
 Their active goals include: ${topGoals||'setting goals and building systems'}.
 Their daily habits include: ${habits.slice(0,4).join(', ')||'building new habits'}.
 ${recentWin?'A recent win they logged: '+recentWin.title+'.':''}
 Today is ${NOW.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'})}.
- 
+
 Write something that feels like a trusted friend who knows their journey — grounded, real, and motivating. No clichés. No hashtags. No "Remember:" prefix. Just the reflection itself, followed by a single line attribution like "— inspired by [relevant thinker/idea]".`;
   try{
     const res=await fetch('https://api.anthropic.com/v1/messages',{
@@ -1807,11 +1807,11 @@ function renderQuoteFallback(){
   D.quoteDate=NOW.toISOString().split('T')[0];D.quoteText=q;D.quoteSub='— Atomic Habits principles';save();
   renderQuote(q,'— Atomic Habits principles');
 }
- 
+
 /* ── UTILS ───────────────────────────────────────────── */
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');}
 function fmtDate(ts){return new Date(ts).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});}
- 
+
 /* ── INIT ────────────────────────────────────────────── */
 updateFilterCounts();
 // Supabase is loaded via CDN script tag above — init after DOM ready
@@ -1820,4 +1820,3 @@ initSupabase();
 </div><!-- end app-shell -->
 </body>
 </html>
- 
