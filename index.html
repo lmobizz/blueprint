@@ -381,7 +381,7 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
 .signout-btn:hover{border-color:var(--rose);color:var(--rose)}
 
 /* PEOPLE */
-.people-toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:1.25rem}
+.people-toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:1.25rem;justify-content:flex-start}
 .people-search{flex:1;min-width:160px;font-family:'Syne',sans-serif;font-size:13px;padding:7px 12px;border:1px solid var(--line);border-radius:9px;background:var(--paper);color:var(--ink);outline:none}
 .people-search:focus{border-color:var(--gold)}
 .people-filter-select{font-family:'Syne',sans-serif;font-size:12px;padding:6px 10px;border:1px solid var(--line);border-radius:9px;background:var(--paper);color:var(--ink);outline:none;cursor:pointer}
@@ -666,43 +666,48 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
   </div>
   <div class="page-wrap" id="people-page-wrap">
     <div class="people-stats" id="people-stats"></div>
-    <div class="people-toolbar">
-      <input class="people-search" id="people-search" placeholder="Search by name, location, notes..." oninput="renderPeople()"/>
-      <select class="people-filter-select" id="pf-rel" onchange="renderPeople()">
-        <option value="">All relationships</option>
-        <option value="Girlfriend">Girlfriend</option>
-        <option value="Family">Family</option>
-        <option value="Friend">Friend</option>
-        <option value="College Friend">College Friend</option>
-        <option value="HS Friend">HS Friend</option>
-        <option value="OG">OG</option>
-        <option value="Colleague">Colleague</option>
-        <option value="Mentor">Mentor</option>
-        <option value="Acquaintance">Acquaintance</option>
-        <option value="Other">Other</option>
-      </select>
-      <select class="people-filter-select" id="pf-pri" onchange="renderPeople()">
-        <option value="">All priorities</option>
-        <option value="h">High</option><option value="m">Medium</option><option value="l">Low</option>
-      </select>
-      <select class="people-filter-select" id="pf-sort" onchange="renderPeople()">
-        <option value="days-desc">Overdue first</option>
-        <option value="name-asc">Name A–Z</option>
-        <option value="name-desc">Name Z–A</option>
-        <option value="pri-desc">Priority first</option>
-        <option value="next-asc">Next reach-out soonest</option>
-      </select>
-      <button class="ppl-btn" onclick="openImportModal()">⬆ Import CSV / Excel</button>
-      <button class="ppl-btn" onclick="exportPeopleCsv()">⬇ Export CSV</button>
-      <button class="expand-btn" id="people-expand-btn" onclick="togglePeopleFullscreen()" title="Expand to full screen">⛶ Expand</button>
-      <button class="ppl-btn" style="color:var(--rose);border-color:var(--rose)" onclick="clearAllPeople()">✕ Clear all</button>
-      <button class="ppl-btn primary" onclick="openPersonModal(null)">+ Add person</button>
+    <div style="margin-bottom:1.25rem">
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px">
+        <input class="people-search" id="people-search" placeholder="Search by name, location, notes..." oninput="renderPeople()"/>
+        <select class="people-filter-select" id="pf-rel" onchange="renderPeople()">
+          <option value="">All relationships</option>
+          <option value="Girlfriend">Girlfriend</option>
+          <option value="Family">Family</option>
+          <option value="Friend">Friend</option>
+          <option value="College Friend">College Friend</option>
+          <option value="HS Friend">HS Friend</option>
+          <option value="OG">OG</option>
+          <option value="Colleague">Colleague</option>
+          <option value="Mentor">Mentor</option>
+          <option value="Acquaintance">Acquaintance</option>
+          <option value="Other">Other</option>
+        </select>
+        <select class="people-filter-select" id="pf-pri" onchange="renderPeople()">
+          <option value="">All priorities</option>
+          <option value="h">High</option><option value="m">Medium</option><option value="l">Low</option>
+        </select>
+        <select class="people-filter-select" id="pf-sort" onchange="renderPeople()">
+          <option value="days-desc">Overdue first</option>
+          <option value="name-asc">Name A–Z</option>
+          <option value="name-desc">Name Z–A</option>
+          <option value="pri-desc">Priority first</option>
+          <option value="next-asc">Next reach-out soonest</option>
+        </select>
+        <button class="ppl-btn" onclick="openImportModal()">⬆ Import CSV / Excel</button>
+        <button class="ppl-btn" onclick="exportPeopleCsv()">⬇ Export CSV</button>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button class="ppl-btn primary" onclick="openPersonModal(null)">+ Add person</button>
+        <div style="flex:1"></div>
+        <button class="expand-btn" id="people-expand-btn" onclick="togglePeopleFullscreen()">⛶ Expand</button>
+        <button class="ppl-btn" style="color:var(--rose);border-color:var(--rose)" onclick="clearAllPeople()">✕ Clear all</button>
+      </div>
     </div>
     <div class="people-table-wrap">
       <table class="people-table">
         <thead>
           <tr>
-            <th onclick="toggleNameSort()" style="cursor:pointer;user-select:none" id="th-name">Name <span id="name-sort-arrow" style="font-size:10px;opacity:.5">↕</span></th>
+            <th>Name</th>
             <th>Location</th>
             <th>Relationship</th>
             <th>Last text</th>
@@ -1568,19 +1573,6 @@ document.addEventListener('keydown',e=>{
   }
 });
 
-function toggleNameSort(){
-  const sel=document.getElementById('pf-sort');
-  const arrow=document.getElementById('name-sort-arrow');
-  if(sel.value==='name-asc'){
-    sel.value='name-desc';
-    arrow.textContent='↓';arrow.style.opacity='1';
-  } else {
-    sel.value='name-asc';
-    arrow.textContent='↑';arrow.style.opacity='1';
-  }
-  renderPeople();
-}
-
 function clearAllPeople(){
   if(!D.people.length)return;
   const backup=[...D.people];
@@ -1657,14 +1649,6 @@ function filterSortPeople(){
 }
 
 function renderPeople(){
-  // sync name sort arrow with dropdown
-  const sort=document.getElementById('pf-sort')?.value||'';
-  const arrow=document.getElementById('name-sort-arrow');
-  if(arrow){
-    if(sort==='name-asc'){arrow.textContent='↑';arrow.style.opacity='1';}
-    else if(sort==='name-desc'){arrow.textContent='↓';arrow.style.opacity='1';}
-    else{arrow.textContent='↕';arrow.style.opacity='.5';}
-  }
   renderPeopleStats();
   const list=filterSortPeople();
   const tbody=document.getElementById('people-tbody');
