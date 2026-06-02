@@ -156,6 +156,36 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
 .expand-btn:hover{border-color:var(--gold);color:var(--gold);background:var(--gold-l)}
 .expand-btn.active{background:var(--ink);color:var(--paper);border-color:var(--ink)}
 
+/* MOBILE */
+.hamburger{display:none;background:none;border:none;cursor:pointer;padding:4px;color:var(--ink);flex-direction:column;gap:5px;margin-left:8px}
+.hamburger span{display:block;width:20px;height:2px;background:var(--ink);border-radius:2px}
+.mobile-menu{display:none;position:fixed;top:52px;left:0;right:0;background:var(--paper);border-bottom:1px solid var(--line);z-index:99;padding:.5rem;flex-direction:column;gap:2px;box-shadow:0 4px 20px rgba(0,0,0,.08)}
+.mobile-menu.open{display:flex}
+.mobile-nav-tab{font-family:'Syne',sans-serif;font-size:13px;font-weight:500;padding:10px 16px;border-radius:9px;border:none;background:transparent;color:var(--ink2);cursor:pointer;text-align:left;text-transform:uppercase;letter-spacing:.04em;transition:background .1s}
+.mobile-nav-tab:hover{background:var(--paper2)}
+.mobile-nav-tab.active{background:var(--ink);color:var(--paper)}
+@media(max-width:640px){
+  nav{padding:0 1rem}
+  .nav-tabs{display:none}
+  .hamburger{display:flex}
+  .nav-logo{font-size:1rem}
+  .user-badge .user-name-text{display:none}
+  .backup-bar{padding:0 1rem;gap:4px}
+  .backup-bar span{display:none}
+  .backup-btn{font-size:10px;padding:3px 8px}
+  .hero{padding:1.5rem 1rem 1rem;grid-template-columns:1fr}
+  .hero-date{display:none}
+  .hero-title{font-size:1.8rem}
+  .page-wrap{padding:0 1rem 3rem}
+  .buckets{grid-template-columns:1fr}
+  .story-layout{grid-template-columns:1fr}
+  .todo-layout{grid-template-columns:1fr}
+  .todo-sidebar{position:static}
+  .stat-grid{grid-template-columns:repeat(2,1fr)}
+  .people-stats{grid-template-columns:repeat(2,1fr)}
+  .profile-panel{width:100vw}
+}
+
 /* PEOPLE FULLSCREEN */
 .profile-overlay{position:fixed;inset:0;background:rgba(14,13,12,.5);z-index:300;display:flex;align-items:stretch;justify-content:flex-end;animation:fadeIn .2s ease}
 .profile-overlay.hidden{display:none}
@@ -497,7 +527,17 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
     <span class="user-name-text" id="user-name"></span>
     <button class="signout-btn" onclick="signOut()">Sign out</button>
   </div>
+  <button class="hamburger" id="hamburger-btn" onclick="toggleMobileMenu()" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
 </nav>
+<div class="mobile-menu" id="mobile-menu">
+  <button class="mobile-nav-tab active" onclick="mobileNav('overview',this)">Overview</button>
+  <button class="mobile-nav-tab" onclick="mobileNav('todo',this)">To-Do</button>
+  <button class="mobile-nav-tab" onclick="mobileNav('goals',this)">Goals</button>
+  <button class="mobile-nav-tab" onclick="mobileNav('story',this)">My Story</button>
+  <button class="mobile-nav-tab" onclick="mobileNav('people',this)">People</button>
+</div>
 <div class="backup-bar">
   <div class="backup-dot" id="backup-dot"></div>
   <span id="backup-status">Connecting...</span>
@@ -1550,6 +1590,30 @@ function undoAction(){
   clearTimeout(undoProgressTimer);
   document.getElementById('undo-toast').classList.add('hidden');
 }
+
+function toggleMobileMenu(){
+  const menu=document.getElementById('mobile-menu');
+  menu.classList.toggle('open');
+}
+function mobileNav(v,btn){
+  document.querySelectorAll('.mobile-nav-tab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  // also update desktop tabs
+  document.querySelectorAll('.nav-tab').forEach(b=>{
+    if(b.getAttribute('onclick')&&b.getAttribute('onclick').includes("'"+v+"'"))b.classList.add('active');
+    else b.classList.remove('active');
+  });
+  document.getElementById('mobile-menu').classList.remove('open');
+  showView(v,document.querySelector(`.nav-tab[onclick*="'${v}'"]`)||btn);
+}
+// close mobile menu when clicking outside
+document.addEventListener('click',e=>{
+  const menu=document.getElementById('mobile-menu');
+  const btn=document.getElementById('hamburger-btn');
+  if(menu&&btn&&!menu.contains(e.target)&&!btn.contains(e.target)){
+    menu.classList.remove('open');
+  }
+});
 
 function togglePeopleFullscreen(){
   const isFS=document.body.classList.toggle('people-fullscreen');
