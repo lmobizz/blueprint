@@ -1252,6 +1252,8 @@ function ensureSubFormat(bucket,sub){
   }
 }
 
+function makeId(str){return str.replace(/[^a-zA-Z0-9]/g,'_');}
+
 function renderGoals(){
   const c=document.getElementById('buckets-container');c.innerHTML='';
   [{key:'personal',label:'Personal',cls:'personal',icon:'🌱'},{key:'professional',label:'Professional',cls:'professional',icon:'🚀'}].forEach(b=>{
@@ -1259,7 +1261,7 @@ function renderGoals(){
     let bucketGoals=[];
     for(const val of Object.values(subs)){
       if(Array.isArray(val)) bucketGoals=bucketGoals.concat(val);
-      else if(typeof val==='object') for(const v of Object.values(val)) if(Array.isArray(v)) bucketGoals=bucketGoals.concat(v);
+      else if(val&&typeof val==='object') for(const v of Object.values(val)) if(Array.isArray(v)) bucketGoals=bucketGoals.concat(v);
     }
     const achG=bucketGoals.filter(g=>g.status==='achieved').length;
     const pct=bucketGoals.length?Math.round(achG/bucketGoals.length*100):0;
@@ -1277,8 +1279,8 @@ function renderGoals(){
     const sw=card.querySelector('#sub-'+b.key);
     Object.keys(subs).forEach((sn)=>{
       ensureSubFormat(b.key,sn);
-      const subData=D.goals[b.key][sn]; // always re-read after ensureSubFormat
-      const sid=b.key+'-'+sn.replace(/\W+/g,'-');
+      const subData=D.goals[b.key][sn];
+      const sid=b.key+'_'+makeId(sn);
       let subGoals=[];
       for(const v of Object.values(subData)) if(Array.isArray(v)) subGoals=subGoals.concat(v);
       const ach=subGoals.filter(g=>g.status==='achieved').length;
@@ -1286,12 +1288,11 @@ function renderGoals(){
       const el=document.createElement('div');
       el.className='sub-bucket';
       const uncatGoals=subData['_goals']||[];
-      const cats=Object.entries(subData);
       let catsHTML='';
       if(uncatGoals.length) catsHTML+=uncatGoals.map((g,i)=>goalHTML(b.key,sn,'_goals',i,g)).join('');
-      cats.filter(([k])=>k!=='_goals').forEach(([catName,catGoals])=>{
+      Object.entries(subData).filter(([k])=>k!=='_goals').forEach(([catName,catGoals])=>{
         if(!Array.isArray(catGoals))return;
-        const cid=sid+'-cat-'+catName.replace(/\W+/g,'-');
+        const cid=sid+'_cat_'+makeId(catName);
         const catAch=catGoals.filter(g=>g.status==='achieved').length;
         const catPct=catGoals.length?Math.round(catAch/catGoals.length*100):0;
         catsHTML+=`<div class="sub-bucket" style="margin-bottom:2px">
@@ -1301,14 +1302,14 @@ function renderGoals(){
             <span style="font-size:10px;color:var(--gold);margin-right:4px;font-weight:600">${catPct}%</span>
             <span class="cat-count">${catGoals.length}</span>
             <div class="cat-actions">
-              <button class="cat-action-btn del" onclick="event.stopPropagation();deleteCat('${b.key}','${sn}','${catName}')" title="Delete category">✕</button>
+              <button class="cat-action-btn del" onclick="event.stopPropagation();deleteCat('${b.key}','${esc(sn)}','${esc(catName)}')" title="Delete">✕</button>
             </div>
           </div>
-          <div class="cat-goals" id="${cid}">
+          <div class="cat-goals open" id="${cid}">
             ${catGoals.length?catGoals.map((g,i)=>goalHTML(b.key,sn,catName,i,g)).join(''):'<div class="empty-note" style="padding-left:.5rem">No goals yet.</div>'}
-            <div class="add-goal-row" id="ar-${cid}" style="display:flex;padding-left:.5rem">
-              <input class="add-goal-input" id="ai-${cid}" placeholder="Add a goal…" onkeydown="if(event.key==='Enter')addGoal('${b.key}','${sn}','${catName}','${cid}')"/>
-              <button class="add-goal-btn" onclick="addGoal('${b.key}','${sn}','${catName}','${cid}')">+</button>
+            <div style="display:flex;gap:6px;padding:.3rem .6rem .3rem 0">
+              <input class="add-goal-input" id="ai-${cid}" placeholder="Add a goal…" onkeydown="if(event.key==='Enter')addGoal('${b.key}','${esc(sn)}','${esc(catName)}','${cid}')"/>
+              <button class="add-goal-btn" onclick="addGoal('${b.key}','${esc(sn)}','${esc(catName)}','${cid}')">+</button>
             </div>
           </div>
         </div>`;
@@ -1316,20 +1317,20 @@ function renderGoals(){
       el.innerHTML=`
         <div class="sub-header" onclick="toggleSub('${sid}')">
           <span class="chevron" id="chev-${sid}">▶</span>
-          <span class="sub-label">${sn}</span>
+          <span class="sub-label">${esc(sn)}</span>
           <span class="sub-prog">${p}%</span>
           <span class="sub-count">${subGoals.length}</span>
         </div>
         <div class="sub-goals" id="goals-${sid}">
           ${catsHTML||'<div class="empty-note">No goals yet.</div>'}
           <div class="add-cat-row" id="cat-row-${sid}" style="display:none;border-top:1px dashed var(--line);margin-top:6px;padding-top:6px">
-            <input class="add-cat-input" id="cat-input-${sid}" placeholder="New category name…" onkeydown="if(event.key==='Enter')addCat('${b.key}','${sn}','${sid}')"/>
-            <button class="add-cat-btn" onclick="addCat('${b.key}','${sn}','${sid}')">+ Category</button>
+            <input class="add-cat-input" id="cat-input-${sid}" placeholder="New category name…" onkeydown="if(event.key==='Enter')addCat('${b.key}','${esc(sn)}','${sid}')"/>
+            <button class="add-cat-btn" onclick="addCat('${b.key}','${esc(sn)}','${sid}')">+ Category</button>
           </div>
         </div>
         <div class="add-goal-row" id="ar-${sid}" style="border-top:1px dashed var(--line);margin-top:4px">
-          <input class="add-goal-input" id="ai-${sid}" placeholder="Add a goal (uncategorized)…" onkeydown="if(event.key==='Enter')addGoal('${b.key}','${sn}','_goals','${sid}')"/>
-          <button class="add-goal-btn" onclick="addGoal('${b.key}','${sn}','_goals','${sid}')">+</button>
+          <input class="add-goal-input" id="ai-${sid}" placeholder="Add a goal (uncategorized)…" onkeydown="if(event.key==='Enter')addGoal('${b.key}','${esc(sn)}','_goals','${sid}')"/>
+          <button class="add-goal-btn" onclick="addGoal('${b.key}','${esc(sn)}','_goals','${sid}')">+</button>
           <button class="add-cat-btn" onclick="toggleCatRow('${sid}')" title="Add a category">📁 + Category</button>
         </div>`;
       sw.appendChild(el);
@@ -1619,6 +1620,81 @@ function saveGoalEdit(){
   save();closeModals();renderGoals();
 }
 
+function goalHTML(bucket,sub,cat,idx,g){
+  const sym={'not-started':'','in-progress':'◑','on-track':'●','achieved':'✓'};
+  let dueBadgeHtml='';
+  if(g.due){
+    const d=new Date(g.due+'T12:00:00');
+    const diff=Math.round((d-NOW)/(1000*60*60*24));
+    const cls=diff<0?'overdue':diff<=7?'soon':'future';
+    dueBadgeHtml=`<span class="goal-due ${cls}">${diff<0?'Overdue':'Due'} ${fmtDate(d.getTime())}</span>`;
+  }
+  const sid=`sys_${makeId(bucket)}_${makeId(sub)}_${makeId(cat)}_${idx}`;
+  const habits=g.habits||[];
+  const milestones=g.milestones||[];
+  const today=NOW.toISOString().split('T')[0];
+  const msHTML=milestones.map((m,mi)=>`
+    <div class="milestone-item">
+      <div class="ms-check${m.done?' done':''}" onclick="toggleMilestone('${bucket}','${sub}','${cat}',${idx},${mi})">${m.done?'✓':''}</div>
+      <span class="ms-text${m.done?' done':''}">${esc(m.text)}</span>
+      <button class="ms-del" onclick="deleteMilestone('${bucket}','${sub}','${cat}',${idx},${mi})">✕</button>
+    </div>`).join('');
+  const habHTML=habits.map((h,hi)=>{
+    const checked=(h.checks||{})[today]||false;
+    return`<div class="habit-item">
+      <div class="ht-check${checked?' done':''}" onclick="toggleHabitToday('${bucket}','${sub}','${cat}',${idx},${hi},'${today}')" style="width:14px;height:14px;border-radius:3px;border:1.5px solid #D4A827;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:8px;${checked?'background:var(--gold);border-color:var(--gold);color:white':''}">${checked?'✓':''}</div>
+      <span style="flex:1;font-size:12px;color:var(--ink2)">${esc(h.text)}</span>
+      <span class="habit-freq">${h.freq}</span>
+      <button class="habit-del" onclick="deleteHabit('${bucket}','${sub}','${cat}',${idx},${hi})">✕</button>
+    </div>`;
+  }).join('');
+  return`<div class="goal-item" style="flex-direction:column;align-items:stretch;padding:0">
+    <div style="display:flex;align-items:flex-start;gap:8px;padding:7px 0">
+      <div class="goal-dot ${g.status}" onclick="cycleStatus('${bucket}','${sub}','${cat}',${idx})" title="Click to cycle status">${sym[g.status]||''}</div>
+      <div class="goal-info">
+        <div class="goal-text">${esc(g.text)}</div>
+        <div class="goal-meta">
+          ${g.note?`<span class="goal-note">${esc(g.note)}</span>`:''}
+          ${dueBadgeHtml}
+          ${g.identity?`<span style="font-size:11px;color:var(--blue);font-style:italic">→ ${esc(g.identity)}</span>`:''}
+        </div>
+      </div>
+      <div class="goal-actions">
+        <button class="g-btn sys-toggle" onclick="toggleSysPanel('${sid}')" title="System">⚡</button>
+        <button class="g-btn" onclick="openGoalEdit('${bucket}','${sub}','${cat}',${idx})">✎</button>
+        <button class="g-btn del" onclick="deleteGoal('${bucket}','${sub}','${cat}',${idx})">✕</button>
+      </div>
+    </div>
+    <div class="system-panel" id="${sid}" style="display:none">
+      <div class="sys-section">
+        <div class="sys-section-label">🧠 Identity — I am someone who…</div>
+        <input class="identity-input" placeholder="e.g. shows up consistently" value="${esc(g.identity||'')}" onchange="saveIdentity('${bucket}','${sub}','${cat}',${idx},this.value)"/>
+      </div>
+      <div class="sys-section">
+        <div class="sys-section-label">🪜 Milestones</div>
+        <div class="milestone-list">${msHTML}</div>
+        <div class="add-ms-row">
+          <input class="add-ms-input" id="ms-input-${sid}" placeholder="Add a milestone…" onkeydown="if(event.key==='Enter')addMilestone('${bucket}','${sub}','${cat}',${idx},'${sid}')"/>
+          <button class="add-ms-btn" onclick="addMilestone('${bucket}','${sub}','${cat}',${idx},'${sid}')">+</button>
+        </div>
+      </div>
+      <div class="sys-section">
+        <div class="sys-section-label">🔁 Habits</div>
+        <div class="habit-list">${habHTML}</div>
+        <div class="add-habit-row">
+          <input class="add-habit-input" id="hab-input-${sid}" placeholder="Add a habit…" onkeydown="if(event.key==='Enter')addHabit('${bucket}','${sub}','${cat}',${idx},'${sid}')"/>
+          <select class="add-habit-freq" id="hab-freq-${sid}">
+            <option value="daily">Daily</option>
+            <option value="weekdays">Weekdays</option>
+            <option value="weekly">Weekly</option>
+          </select>
+          <button class="add-habit-btn" onclick="addHabit('${bucket}','${sub}','${cat}',${idx},'${sid}')">+</button>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
 function saveIdentity(bucket,sub,cat,idx,val){
   D.goals[bucket][sub][cat][idx].identity=val;save();
 }
@@ -1635,13 +1711,13 @@ function addMilestone(bucket,sub,cat,idx,sid){
 function toggleMilestone(bucket,sub,cat,idx,mi){
   D.goals[bucket][sub][cat][idx].milestones[mi].done=!D.goals[bucket][sub][cat][idx].milestones[mi].done;
   save();renderGoals();
-  const sid=`sys-${bucket}-${sub.replace(/\W+/g,'-')}-${cat.replace(/\W+/g,'-')}-${idx}`;
+  const sid=`sys_${makeId(bucket)}_${makeId(sub)}_${makeId(cat)}_${idx}`;
   setTimeout(()=>{const el=document.getElementById(sid);if(el)el.style.display='block';},10);
 }
 
 function deleteMilestone(bucket,sub,cat,idx,mi){
   D.goals[bucket][sub][cat][idx].milestones.splice(mi,1);save();renderGoals();
-  const sid=`sys-${bucket}-${sub.replace(/\W+/g,'-')}-${cat.replace(/\W+/g,'-')}-${idx}`;
+  const sid=`sys_${makeId(bucket)}_${makeId(sub)}_${makeId(cat)}_${idx}`;
   setTimeout(()=>{const el=document.getElementById(sid);if(el)el.style.display='block';},10);
 }
 
@@ -1657,7 +1733,7 @@ function addHabit(bucket,sub,cat,idx,sid){
 
 function deleteHabit(bucket,sub,cat,idx,hi){
   D.goals[bucket][sub][cat][idx].habits.splice(hi,1);save();renderGoals();
-  const sid=`sys-${bucket}-${sub.replace(/\W+/g,'-')}-${cat.replace(/\W+/g,'-')}-${idx}`;
+  const sid=`sys_${makeId(bucket)}_${makeId(sub)}_${makeId(cat)}_${idx}`;
   setTimeout(()=>{const el=document.getElementById(sid);if(el)el.style.display='block';},10);
 }
 
