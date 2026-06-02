@@ -1987,13 +1987,13 @@ updateFilterCounts();
 // Supabase is loaded via CDN script tag above — init after DOM ready
 initSupabase();
 </script>
-<!-- UNDO TOAST -->
+</div><!-- end app-shell -->
+
+<!-- UNDO TOAST — outside app shell so position:fixed works -->
 <div class="undo-toast hidden" id="undo-toast">
   <span id="undo-message">Cleared</span>
   <button class="undo-btn" onclick="undoAction()">Undo</button>
   <div class="undo-progress" id="undo-progress" style="width:100%"></div>
 </div>
-
-</div><!-- end app-shell -->
 </body>
 </html>
