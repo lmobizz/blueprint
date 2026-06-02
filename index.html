@@ -131,7 +131,19 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
 .add-goal-input:focus{border-color:var(--gold)}
 .add-goal-btn{font-family:'Syne',sans-serif;font-size:12px;font-weight:500;padding:5px 11px;background:var(--ink);color:var(--paper);border:none;border-radius:7px;cursor:pointer}
 
-/* MORNING QUOTE */
+/* NARRATIVE */
+.narrative-card{background:var(--ink);color:var(--paper);border-radius:var(--r2);padding:1.75rem 2rem;margin-bottom:1.5rem;position:relative;overflow:hidden}
+.narrative-card::before{content:'';position:absolute;top:-40px;right:-40px;width:160px;height:160px;border-radius:50%;background:rgba(255,255,255,.03)}
+.narrative-label{font-size:10px;text-transform:uppercase;letter-spacing:.12em;color:rgba(255,255,255,.35);margin-bottom:.75rem;display:flex;align-items:center;gap:8px}
+.narrative-text{font-family:'Playfair Display',serif;font-size:1rem;font-weight:400;line-height:1.75;font-style:italic;color:rgba(255,255,255,.9)}
+.narrative-text p{margin-bottom:.75rem}
+.narrative-text p:last-child{margin-bottom:0}
+.narrative-loading{display:flex;align-items:center;gap:8px;color:rgba(255,255,255,.35);font-size:13px;padding:.5rem 0}
+.narrative-actions{display:flex;gap:8px;margin-top:1.25rem}
+.narrative-btn{font-family:'Syne',sans-serif;font-size:12px;font-weight:500;padding:6px 14px;border-radius:20px;cursor:pointer;border:1px solid rgba(255,255,255,.2);background:transparent;color:rgba(255,255,255,.6);transition:all .15s}
+.narrative-btn:hover{border-color:rgba(255,255,255,.5);color:white}
+.narrative-btn.primary{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.3);color:white}
+.narrative-empty{font-size:13px;color:rgba(255,255,255,.35);font-style:italic;padding:.5rem 0}
 .morning-quote{background:var(--ink);color:var(--paper);border-radius:var(--r2);padding:1.5rem 1.75rem;margin-bottom:1.5rem;position:relative;overflow:hidden;min-height:90px}
 .morning-quote::before{content:'';position:absolute;top:-30px;right:-30px;width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,.04)}
 .mq-label{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.4);margin-bottom:.6rem}
@@ -552,6 +564,19 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
   <div class="page-wrap">
     <div class="export-bar">
       <button class="export-btn" onclick="exportPDF()">⬇ Export PDF</button>
+    </div>
+    <div class="narrative-card" id="narrative-card">
+      <div class="narrative-label">
+        ✦ My narrative — AI generated
+        <span id="narrative-date" style="margin-left:auto;font-size:10px;opacity:.4"></span>
+      </div>
+      <div id="narrative-body">
+        <div class="narrative-empty">Your narrative will be generated based on your wins, lessons, goals and habits. Add some entries first, then generate it below.</div>
+      </div>
+      <div class="narrative-actions">
+        <button class="narrative-btn primary" onclick="generateNarrative()">✦ Generate my narrative</button>
+        <button class="narrative-btn" id="narrative-copy-btn" style="display:none" onclick="copyNarrative()">Copy</button>
+      </div>
     </div>
     <div class="story-layout">
       <div class="story-col wins">
@@ -1326,6 +1351,15 @@ document.querySelectorAll('.modal-bg').forEach(m=>m.addEventListener('click',e=>
 
 /* ── STORY ───────────────────────────────────────────── */
 function renderStory(){
+  // restore saved narrative if exists
+  if(D.narrativeText){
+    const paras=D.narrativeText.trim().split('\n\n').filter(Boolean);
+    const html=paras.map(p=>`<p>${esc(p)}</p>`).join('');
+    document.getElementById('narrative-body').innerHTML=`<div class="narrative-text">${html}</div>`;
+    document.getElementById('narrative-date').textContent=fmtDate(D.narrativeDate||Date.now());
+    document.getElementById('narrative-copy-btn').style.display='inline-block';
+    document.querySelector('.narrative-btn.primary').textContent='✦ Regenerate my narrative';
+  }
   const wins=[...D.story].filter(e=>e.type==='win').sort((a,b)=>b.date-a.date);
   const lessons=[...D.story].filter(e=>e.type==='lesson').sort((a,b)=>b.date-a.date);
   document.getElementById('wins-list').innerHTML=wins.length
@@ -1759,6 +1793,80 @@ function importData(e){
 function updateBackupStatus(msg){
   const el=document.getElementById('backup-status');
   if(el) el.textContent=msg;
+}
+
+/* ── NARRATIVE ───────────────────────────────────────── */
+async function generateNarrative(){
+  const wins=D.story.filter(e=>e.type==='win');
+  const lessons=D.story.filter(e=>e.type==='lesson');
+  const all=allGoals();
+  const achieved=all.filter(g=>g.status==='achieved');
+  const active=all.filter(g=>g.status!=='achieved');
+
+  if(!wins.length&&!lessons.length&&!achieved.length){
+    document.getElementById('narrative-body').innerHTML=
+      '<div class="narrative-empty">Add some wins, lessons, or achieved goals first — then your narrative will have something to draw from.</div>';
+    return;
+  }
+
+  const btn=document.querySelector('.narrative-btn.primary');
+  btn.textContent='Generating...';btn.disabled=true;
+  document.getElementById('narrative-body').innerHTML=
+    '<div class="narrative-loading"><div class="mq-dot"></div><div class="mq-dot"></div><div class="mq-dot"></div><span>Writing your story...</span></div>';
+
+  const winsText=wins.map(w=>`- ${w.title}: ${w.body}`).join('\n');
+  const lessonsText=lessons.map(l=>`- ${l.title}: ${l.body}`).join('\n');
+  const achievedText=achieved.map(g=>g.text).join(', ');
+  const activeText=active.slice(0,6).map(g=>g.text).join(', ');
+  const habits=[];
+  for(const bv of Object.values(D.goals))
+    for(const goals of Object.values(bv))
+      for(const g of goals)(g.habits||[]).forEach(h=>habits.push(h.text));
+
+  const prompt=`You are writing a personal narrative for someone based on their real life data. Write it in first person as if they are narrating their own story. Make it honest, reflective, and inspiring — not cheesy or generic. 3-4 paragraphs. Reference their actual wins and lessons specifically.
+
+THEIR WINS:
+${winsText||'None logged yet'}
+
+THEIR LESSONS & FAILURES:
+${lessonsText||'None logged yet'}
+
+GOALS ACHIEVED: ${achievedText||'None yet'}
+ACTIVE GOALS THEY ARE WORKING ON: ${activeText||'None yet'}
+DAILY HABITS THEY ARE BUILDING: ${habits.slice(0,5).join(', ')||'None yet'}
+
+Write their narrative now. Be specific, use their actual words and experiences. End with a forward-looking sentence about where they are heading. Do not use bullet points. Write in flowing paragraphs.`;
+
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:prompt}]})
+    });
+    const data=await res.json();
+    const text=data.content?.find(b=>b.type==='text')?.text||'';
+    if(text){
+      const paras=text.trim().split('\n\n').filter(Boolean);
+      const html=paras.map(p=>`<p>${esc(p)}</p>`).join('');
+      document.getElementById('narrative-body').innerHTML=`<div class="narrative-text">${html}</div>`;
+      document.getElementById('narrative-date').textContent=fmtDate(Date.now());
+      document.getElementById('narrative-copy-btn').style.display='inline-block';
+      D.narrativeText=text;D.narrativeDate=Date.now();save();
+    } else { throw new Error('Empty response'); }
+  }catch(e){
+    document.getElementById('narrative-body').innerHTML=
+      '<div class="narrative-empty">Could not generate narrative — check your connection and try again.</div>';
+  }
+  btn.textContent='✦ Regenerate my narrative';btn.disabled=false;
+}
+
+function copyNarrative(){
+  if(D.narrativeText){
+    navigator.clipboard.writeText(D.narrativeText);
+    const btn=document.getElementById('narrative-copy-btn');
+    btn.textContent='Copied!';
+    setTimeout(()=>btn.textContent='Copy',2000);
+  }
 }
 
 /* ── MORNING QUOTE ───────────────────────────────────── */
