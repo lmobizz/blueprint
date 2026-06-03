@@ -1792,7 +1792,9 @@ async function generateManifesto(){
       btn.textContent='✦ Regenerate manifesto';
     } else throw new Error('empty');
   }catch(e){
-    el.innerHTML='<p style="opacity:.5">Could not generate — check your connection and try again.</p>';
+    const msg=e?.message||JSON.stringify(e)||'unknown';
+    el.innerHTML='<p style="opacity:.5">Error: '+msg+'</p>';
+    console.error('Manifesto error:',e);
     btn.textContent='✦ Generate my manifesto';
   }
   btn.disabled=false;
@@ -2827,8 +2829,10 @@ async function generateNarrative(){
       D.narrativeText=text;D.narrativeDate=Date.now();save();
     } else { throw new Error('Empty response'); }
   }catch(e){
+    const msg=e?.message||JSON.stringify(e)||'unknown';
     document.getElementById('narrative-body').innerHTML=
-      '<div class="narrative-empty">Could not generate narrative — check your connection and try again.</div>';
+      '<div class="narrative-empty">Error: '+msg+'</div>';
+    console.error('Narrative error:',e);
   }
   btn.textContent='✦ Regenerate my narrative';btn.disabled=false;
 }
