@@ -1352,11 +1352,10 @@ function renderOverview(){
   const overdueContacts=(D.people||[]).filter(p=>{const d=daysSinceContact(p);return d!==null&&d>30;}).length;
   const pct=all.length?Math.round(ach/all.length*100):0;
   document.getElementById('overview-stats').innerHTML=`
-    <div class="stat-card"><div class="stat-num">${all.length}</div><div class="stat-label">Total goals</div><div class="stat-bar"><div class="stat-bar-fill" style="width:100%"></div></div></div>
+    <div class="stat-card"><div class="stat-num">${todayTodos}</div><div class="stat-label">Tasks today</div><div class="stat-bar"><div class="stat-bar-fill" style="width:100%"></div></div></div>
+    <div class="stat-card"><div class="stat-num">${all.length}</div><div class="stat-label">Total goals</div></div>
     <div class="stat-card"><div class="stat-num">${ach}</div><div class="stat-label">Achieved</div><div class="stat-bar"><div class="stat-bar-fill" style="width:${pct}%"></div></div></div>
     <div class="stat-card"><div class="stat-num">${ot}</div><div class="stat-label">On track</div></div>
-    <div class="stat-card"><div class="stat-num">${todayTodos}</div><div class="stat-label">Tasks today</div></div>
-    <div class="stat-card"><div class="stat-num" style="${overdueContacts>0?'color:var(--rose)':''}">${overdueContacts}</div><div class="stat-label">Overdue contacts</div></div>
     <div class="stat-card"><div class="stat-num">${wins}</div><div class="stat-label">Wins logged</div></div>
     <div class="stat-card"><div class="stat-num">${lessons}</div><div class="stat-label">Lessons learned</div></div>
   `;
