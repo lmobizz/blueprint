@@ -1773,12 +1773,7 @@ async function generateManifesto(){
   wrap.style.display='block';
   el.innerHTML='<p style="opacity:.5">Writing your manifesto...</p>';
 
-  const prompt=`You are writing a deeply personal manifesto for someone based on their answers to foundational life questions. Write it in first person, present tense, as if they are declaring who they are and what they stand for. Make it powerful, honest, and specific to their answers — not generic. 3-4 paragraphs. No bullet points. No headers. Just flowing, declarative prose that reads like something worth printing and putting on a wall.
-
-Their answers:
-${answers}
-
-Write their personal manifesto now. Start with "I am..." or a strong declarative statement. Reference their specific words and answers. End with a statement about their legacy or purpose. Make it feel earned, not aspirational fluff.`;
+  const prompt='You are writing a deeply personal manifesto for someone based on their answers to foundational life questions. Write it in first person, present tense, as if they are declaring who they are and what they stand for. Make it powerful, honest, and specific to their answers — not generic. 3-4 paragraphs. No bullet points. No headers. Just flowing, declarative prose that reads like something worth printing and putting on a wall.\n\nTheir answers:\n'+answers+'\n\nWrite their personal manifesto now. Start with "I am..." or a strong declarative statement. Reference their specific words and answers. End with a statement about their legacy or purpose. Make it feel earned, not aspirational fluff.';
 
   try{
     const res=await fetch('https://api.anthropic.com/v1/messages',{
@@ -2517,15 +2512,7 @@ async function generateConvoStarter(){
   box.textContent='Generating...';
   btn.textContent='Generating...';btn.disabled=true;
   const days=daysSinceContact(p);
-  const prompt=`Generate a natural, warm conversation starter for reaching out to ${p.name||'this person'}.
-
-About them: ${p.relationship||'friend'} based in ${p.location||'unknown location'}.
-Last conversation topic: ${p.convo||'not recorded'}.
-Their life updates: ${p.updates||'not recorded'}.
-Days since last contact: ${days!==null?days+'days':'unknown'}.
-Next planned reach-out: ${p.nextReachout||'not set'}.
-
-Write 2-3 sentences as if you are the user reaching out. Make it feel genuine and personal, not generic. Reference something specific about their life if available. Don't start with "Hey" or "Hi". Just the message text, nothing else.`;
+  const prompt='Generate a natural, warm conversation starter for reaching out to '+(p.name||'this person')+'.\n\nAbout them: '+(p.relationship||'friend')+' based in '+(p.location||'unknown location')+'.\nLast conversation topic: '+(p.convo||'not recorded')+'.\nTheir life updates: '+(p.updates||'not recorded')+'.\nDays since last contact: '+(days!==null?days+'days':'unknown')+'.\nNext planned reach-out: '+(p.nextReachout||'not set')+'.\n\nWrite 2-3 sentences as if you are the user reaching out. Make it feel genuine and personal, not generic. Reference something specific about their life if available. Don\'t start with "Hey" or "Hi". Just the message text, nothing else.';
   try{
     const res=await fetch('https://api.anthropic.com/v1/messages',{
       method:'POST',
@@ -2821,19 +2808,7 @@ async function generateNarrative(){
   const habits=[];
   allGoals().forEach(g=>(g.habits||[]).forEach(h=>habits.push(h.text)));
 
-  const prompt=`You are writing a personal narrative for someone based on their real life data. Write it in first person as if they are narrating their own story. Make it honest, reflective, and inspiring — not cheesy or generic. 3-4 paragraphs. Reference their actual wins and lessons specifically.
-
-THEIR WINS:
-${winsText||'None logged yet'}
-
-THEIR LESSONS & FAILURES:
-${lessonsText||'None logged yet'}
-
-GOALS ACHIEVED: ${achievedText||'None yet'}
-ACTIVE GOALS THEY ARE WORKING ON: ${activeText||'None yet'}
-DAILY HABITS THEY ARE BUILDING: ${habits.slice(0,5).join(', ')||'None yet'}
-
-Write their narrative now. Be specific, use their actual words and experiences. End with a forward-looking sentence about where they are heading. Do not use bullet points. Write in flowing paragraphs.`;
+  const prompt='You are writing a personal narrative for someone based on their real life data. Write it in first person as if they are narrating their own story. Make it honest, reflective, and inspiring — not cheesy or generic. 3-4 paragraphs. Reference their actual wins and lessons specifically.\n\nTHEIR WINS:\n'+(winsText||'None logged yet')+'\n\nTHEIR LESSONS & FAILURES:\n'+(lessonsText||'None logged yet')+'\n\nGOALS ACHIEVED: '+(achievedText||'None yet')+'\nACTIVE GOALS THEY ARE WORKING ON: '+(activeText||'None yet')+'\nDAILY HABITS THEY ARE BUILDING: '+(habits.slice(0,5).join(', ')||'None yet')+'\n\nWrite their narrative now. Be specific, use their actual words and experiences. End with a forward-looking sentence about where they are heading. Do not use bullet points. Write in flowing paragraphs.';
 
   try{
     const res=await fetch('https://api.anthropic.com/v1/messages',{
