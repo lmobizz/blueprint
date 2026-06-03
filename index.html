@@ -276,36 +276,37 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
 .why-save-btn:hover{background:var(--ink2)}
 .why-gen-btn{font-family:'Syne',sans-serif;font-size:12px;font-weight:500;padding:7px 16px;background:var(--gold-l);color:var(--gold);border:1px solid var(--gold);border-radius:8px;cursor:pointer;transition:all .15s}
 .why-gen-btn:hover{background:var(--gold);color:white}
-.why-manifesto{background:var(--ink);color:rgba(255,255,255,.9);border-radius:var(--r);padding:1.25rem 1.5rem;margin-top:1.25rem;font-family:'Playfair Display',serif;font-size:1rem;font-style:italic;line-height:1.75}
+.why-manifesto{background:var(--paper);border:1px solid var(--line);border-left:3px solid var(--gold);border-radius:var(--r);padding:1.25rem 1.5rem;margin-top:1.25rem;font-family:'Playfair Display',serif;font-size:1rem;line-height:1.8;color:var(--ink2)}
 .why-manifesto p{margin-bottom:.75rem}
 .why-manifesto p:last-child{margin-bottom:0}
 .why-progress{font-size:11px;color:var(--gold);margin-left:auto;font-weight:500}
 
 /* NARRATIVE */
-.narrative-card{background:var(--ink);color:var(--paper);border-radius:var(--r2);padding:1.75rem 2rem;margin-bottom:1.5rem;position:relative;overflow:hidden}
-.narrative-card::before{content:'';position:absolute;top:-40px;right:-40px;width:160px;height:160px;border-radius:50%;background:rgba(255,255,255,.03)}
-.narrative-label{font-size:10px;text-transform:uppercase;letter-spacing:.12em;color:rgba(255,255,255,.35);margin-bottom:.75rem;display:flex;align-items:center;gap:8px}
-.narrative-text{font-family:'Playfair Display',serif;font-size:1rem;font-weight:400;line-height:1.75;font-style:italic;color:rgba(255,255,255,.9)}
+.narrative-card{background:var(--paper);border:1px solid var(--line);border-left:3px solid var(--gold);border-radius:var(--r2);padding:1.75rem 2rem;margin-bottom:1.5rem;position:relative;overflow:hidden}
+.narrative-card::before{display:none}
+.narrative-label{font-size:10px;text-transform:uppercase;letter-spacing:.12em;color:var(--gold);margin-bottom:.75rem;display:flex;align-items:center;gap:8px;font-weight:600}
+.narrative-text{font-family:'Playfair Display',serif;font-size:1rem;font-weight:400;line-height:1.8;color:var(--ink2)}
 .narrative-text p{margin-bottom:.75rem}
 .narrative-text p:last-child{margin-bottom:0}
-.narrative-loading{display:flex;align-items:center;gap:8px;color:rgba(255,255,255,.35);font-size:13px;padding:.5rem 0}
-.narrative-actions{display:flex;gap:8px;margin-top:1.25rem}
-.narrative-btn{font-family:'Syne',sans-serif;font-size:12px;font-weight:500;padding:6px 14px;border-radius:20px;cursor:pointer;border:1px solid rgba(255,255,255,.2);background:transparent;color:rgba(255,255,255,.6);transition:all .15s}
-.narrative-btn:hover{border-color:rgba(255,255,255,.5);color:white}
-.narrative-btn.primary{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.3);color:white}
-.narrative-empty{font-size:13px;color:rgba(255,255,255,.35);font-style:italic;padding:.5rem 0}
-.morning-quote{background:var(--ink);color:var(--paper);border-radius:var(--r2);padding:1.5rem 1.75rem;margin-bottom:1.5rem;position:relative;overflow:hidden;min-height:90px}
-.morning-quote::before{content:'';position:absolute;top:-30px;right:-30px;width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,.04)}
-.mq-label{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.4);margin-bottom:.6rem}
-.mq-text{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:400;line-height:1.55;font-style:italic;color:rgba(255,255,255,.95)}
-.mq-sub{font-size:12px;color:rgba(255,255,255,.45);margin-top:.5rem}
+.narrative-loading{display:flex;align-items:center;gap:8px;color:var(--ink3);font-size:13px;padding:.5rem 0}
+.narrative-actions{display:flex;gap:8px;margin-top:1.25rem;padding-top:1rem;border-top:1px solid var(--line)}
+.narrative-btn{font-family:'Syne',sans-serif;font-size:12px;font-weight:500;padding:6px 14px;border-radius:20px;cursor:pointer;border:1px solid var(--line);background:transparent;color:var(--ink3);transition:all .15s}
+.narrative-btn:hover{border-color:var(--gold);color:var(--gold);background:var(--gold-l)}
+.narrative-btn.primary{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+.narrative-btn.primary:hover{background:var(--ink2);border-color:var(--ink2)}
+.narrative-empty{font-size:13px;color:var(--ink3);font-style:italic;padding:.5rem 0}
+.morning-quote{background:var(--gold-l);border:1px solid #D4A827;border-left:3px solid var(--gold);border-radius:var(--r2);padding:1.5rem 1.75rem;margin-bottom:1.5rem;position:relative;overflow:hidden;min-height:90px}
+.morning-quote::before{display:none}
+.mq-label{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--gold);margin-bottom:.6rem;font-weight:600}
+.mq-text{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:400;line-height:1.6;color:var(--ink)}
+.mq-sub{font-size:12px;color:var(--ink3);margin-top:.5rem}
 .mq-loading{display:flex;align-items:center;gap:8px;color:rgba(255,255,255,.4);font-size:13px}
-.mq-dot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.4);animation:pulse .8s infinite alternate}
+.mq-dot{width:6px;height:6px;border-radius:50%;background:var(--gold);animation:pulse .8s infinite alternate;opacity:.5}
 .mq-dot:nth-child(2){animation-delay:.2s}
 .mq-dot:nth-child(3){animation-delay:.4s}
 @keyframes pulse{from{opacity:.3}to{opacity:1}}
-.mq-refresh{position:absolute;top:12px;right:14px;background:none;border:none;color:rgba(255,255,255,.3);cursor:pointer;font-size:14px;padding:4px;border-radius:6px;transition:color .15s}
-.mq-refresh:hover{color:rgba(255,255,255,.7)}
+.mq-refresh{position:absolute;top:12px;right:14px;background:none;border:none;color:var(--gold);cursor:pointer;font-size:14px;padding:4px;border-radius:6px;transition:color .15s;opacity:.5}
+.mq-refresh:hover{color:var(--gold);opacity:1}
 
 /* SYSTEMS */
 .system-panel{background:var(--paper2);border-top:1px dashed var(--line);padding:.75rem .75rem .5rem;margin-top:0}
@@ -868,7 +869,7 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
     <div class="narrative-card" id="narrative-card">
       <div class="narrative-label">
         ✦ My narrative — AI generated
-        <span id="narrative-date" style="margin-left:auto;font-size:10px;opacity:.4"></span>
+        <span id="narrative-date" style="margin-left:auto;font-size:10px;color:var(--ink3)"></span>
       </div>
       <div id="narrative-body">
         <div class="narrative-empty">Your narrative will be generated based on your wins, lessons, goals and habits. Add some entries first, then generate it below.</div>
@@ -1280,7 +1281,12 @@ function applyData(cloud){
   // restore API key into memory
   if(D.anthropicKey){
     cachedApiKey=D.anthropicKey;
+    localStorage.setItem('bp_api_key', D.anthropicKey); // keep localStorage in sync
     updateApiKeyBtn();
+  } else {
+    // fallback: restore from localStorage into D so save() won't wipe it
+    const local = localStorage.getItem('bp_api_key');
+    if(local){ D.anthropicKey=local; cachedApiKey=local; updateApiKeyBtn(); }
   }
 }
 
@@ -1779,13 +1785,13 @@ async function generateManifesto(){
   wrap.style.display='block';
   el.innerHTML='<p style="opacity:.5">Writing your manifesto...</p>';
 
-  const prompt='You are writing a deeply personal manifesto for someone based on their answers to foundational life questions. Write it in first person, present tense, as if they are declaring who they are and what they stand for. Make it powerful, honest, and specific to their answers — not generic. 3-4 paragraphs. No bullet points. No headers. Just flowing, declarative prose that reads like something worth printing and putting on a wall.\n\nTheir answers:\n'+answers+'\n\nWrite their personal manifesto now. Start with "I am..." or a strong declarative statement. Reference their specific words and answers. End with a statement about their legacy or purpose. Make it feel earned, not aspirational fluff.';
+  const prompt='You are writing a deeply personal manifesto for someone based on their answers to foundational life questions. Write it in first person, present tense. Be powerful, honest, and specific to their answers — not generic. 1-2 paragraphs maximum. No bullet points. No headers. Flowing, declarative prose only.\n\nTheir answers:\n'+answers+'\n\nWrite their personal manifesto now in 1-2 paragraphs. Start with "I am..." or a strong declarative statement. Reference their specific words. End with their legacy or purpose. Be concise and earn every word.';
 
   try{
     const res=await fetch('https://api.anthropic.com/v1/messages',{
       method:'POST',
       headers:{'Content-Type':'application/json','anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true','x-api-key':getApiKey()},
-      body:JSON.stringify({model:'claude-sonnet-4-5',max_tokens:1000,messages:[{role:'user',content:prompt}]})
+      body:JSON.stringify({model:'claude-sonnet-4-5',max_tokens:350,messages:[{role:'user',content:prompt}]})
     });
     const data=await res.json();
     const text=data.content?.find(b=>b.type==='text')?.text||'';
@@ -2816,13 +2822,13 @@ async function generateNarrative(){
   const habits=[];
   allGoals().forEach(g=>(g.habits||[]).forEach(h=>habits.push(h.text)));
 
-  const prompt='You are writing a personal narrative for someone based on their real life data. Write it in first person as if they are narrating their own story. Make it honest, reflective, and inspiring — not cheesy or generic. 3-4 paragraphs. Reference their actual wins and lessons specifically.\n\nTHEIR WINS:\n'+(winsText||'None logged yet')+'\n\nTHEIR LESSONS & FAILURES:\n'+(lessonsText||'None logged yet')+'\n\nGOALS ACHIEVED: '+(achievedText||'None yet')+'\nACTIVE GOALS THEY ARE WORKING ON: '+(activeText||'None yet')+'\nDAILY HABITS THEY ARE BUILDING: '+(habits.slice(0,5).join(', ')||'None yet')+'\n\nWrite their narrative now. Be specific, use their actual words and experiences. End with a forward-looking sentence about where they are heading. Do not use bullet points. Write in flowing paragraphs.';
+  const prompt='You are writing a personal narrative for someone based on their real life data. Write it in first person as if they are narrating their own story. Make it honest, reflective, and inspiring — not cheesy or generic. 1-2 paragraphs maximum. Be concise and specific. Reference their actual wins and lessons.\n\nTHEIR WINS:\n'+(winsText||'None logged yet')+'\n\nTHEIR LESSONS & FAILURES:\n'+(lessonsText||'None logged yet')+'\n\nGOALS ACHIEVED: '+(achievedText||'None yet')+'\nACTIVE GOALS THEY ARE WORKING ON: '+(activeText||'None yet')+'\nDAILY HABITS THEY ARE BUILDING: '+(habits.slice(0,5).join(', ')||'None yet')+'\n\nWrite their narrative now. Be specific, use their actual words and experiences. End with a forward-looking sentence about where they are heading. Do not use bullet points. Write in flowing paragraphs.';
 
   try{
     const res=await fetch('https://api.anthropic.com/v1/messages',{
       method:'POST',
       headers:{'Content-Type':'application/json','anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true','x-api-key':getApiKey()},
-      body:JSON.stringify({model:'claude-sonnet-4-5',max_tokens:1000,messages:[{role:'user',content:prompt}]})
+      body:JSON.stringify({model:'claude-sonnet-4-5',max_tokens:350,messages:[{role:'user',content:prompt}]})
     });
     const data=await res.json();
     const text=data.content?.find(b=>b.type==='text')?.text||'';
@@ -2925,7 +2931,16 @@ function fmtDate(ts){return new Date(ts).toLocaleDateString('en-US',{month:'shor
 let cachedApiKey = null;
 
 function getApiKey(){
-  return cachedApiKey || '';
+  if(cachedApiKey) return cachedApiKey;
+  // fast fallback from localStorage while Supabase loads
+  const local = localStorage.getItem('bp_api_key');
+  if(local){
+    cachedApiKey = local;
+    D.anthropicKey = local; // keep D in sync so save() doesn't wipe it
+    updateApiKeyBtn();
+    return local;
+  }
+  return '';
 }
 
 async function loadApiKey(){
@@ -2954,6 +2969,7 @@ async function saveApiKey(){
   try {
     D.anthropicKey = key;
     cachedApiKey = key;
+    localStorage.setItem('bp_api_key', key);
     const {error} = await sbClient.from('blueprint_data').upsert({user_id:currentUser.id, data:D, updated_at:new Date().toISOString()},{onConflict:'user_id'});
     if(error) throw error;
     status.innerHTML = '<span style="color:var(--green)">✓ Key saved and synced to all devices</span>';
@@ -2968,6 +2984,7 @@ async function clearApiKey(){
   if(!confirm('Remove your API key? AI features will stop working until you add a new one.')) return;
   cachedApiKey = null;
   D.anthropicKey = '';
+  localStorage.removeItem('bp_api_key');
   save();
   updateApiKeyBtn();
   closeModals();
