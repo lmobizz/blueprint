@@ -611,6 +611,7 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
   <span id="backup-status">Connecting...</span>
   <span style="font-size:10px;color:var(--ink3);margin-left:auto;margin-right:8px;opacity:.6">v Jun 3 · 6:21 PM</span>
   <button class="backup-menu-btn" onclick="toggleBackupMenu()" title="Backup options">⋯ Backup</button>
+  <button class="backup-menu-btn" onclick="openApiKeyModal()" title="API Key settings" id="api-key-btn">🔑 API Key</button>
 </div>
 <div class="backup-dropdown" id="backup-dropdown">
   <button class="backup-dropdown-item" onclick="exportData();toggleBackupMenu()">⬇ Export backup</button>
@@ -1276,6 +1277,11 @@ function applyData(cloud){
     }
   }
   if(needsSave) save();
+  // restore API key into memory
+  if(D.anthropicKey){
+    cachedApiKey=D.anthropicKey;
+    updateApiKeyBtn();
+  }
 }
 
 /* ── VIEWS ───────────────────────────────────────────── */
@@ -1778,7 +1784,7 @@ async function generateManifesto(){
   try{
     const res=await fetch('https://api.anthropic.com/v1/messages',{
       method:'POST',
-      headers:{'Content-Type':'application/json','anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true','x-api-key':'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'},
+      headers:{'Content-Type':'application/json','anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true','x-api-key':getApiKey()},
       body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:prompt}]})
     });
     const data=await res.json();
@@ -2518,7 +2524,7 @@ async function generateConvoStarter(){
   try{
     const res=await fetch('https://api.anthropic.com/v1/messages',{
       method:'POST',
-      headers:{'Content-Type':'application/json','anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true','x-api-key':'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'},
+      headers:{'Content-Type':'application/json','anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true','x-api-key':getApiKey()},
       body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:prompt}]})
     });
     const data=await res.json();
@@ -2815,7 +2821,7 @@ async function generateNarrative(){
   try{
     const res=await fetch('https://api.anthropic.com/v1/messages',{
       method:'POST',
-      headers:{'Content-Type':'application/json','anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true','x-api-key':'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'},
+      headers:{'Content-Type':'application/json','anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true','x-api-key':getApiKey()},
       body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:prompt}]})
     });
     const data=await res.json();
@@ -2869,7 +2875,7 @@ Write something that feels like a trusted friend who knows their journey — gro
   try{
     const res=await fetch('https://api.anthropic.com/v1/messages',{
       method:'POST',
-      headers:{'Content-Type':'application/json','anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true','x-api-key':'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'},
+      headers:{'Content-Type':'application/json','anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true','x-api-key':getApiKey()},
       body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:prompt}]})
     });
     const data=await res.json();
@@ -2914,6 +2920,74 @@ function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').
 function fmtDate(ts){return new Date(ts).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});}
 
 /* ── INIT ────────────────────────────────────────────── */
+
+/* ── API KEY MANAGEMENT ──────────────────────────────── */
+let cachedApiKey = null;
+
+function getApiKey(){
+  return cachedApiKey || '';
+}
+
+async function loadApiKey(){
+  if(!currentUser || !sbClient) return;
+  try {
+    const {data, error} = await sbClient
+      .from('blueprint_data')
+      .select('data')
+      .eq('user_id', currentUser.id)
+      .single();
+    if(data?.data?.anthropicKey){
+      cachedApiKey = data.data.anthropicKey;
+      updateApiKeyBtn();
+    }
+  } catch(e){ console.log('No API key stored yet'); }
+}
+
+async function saveApiKey(){
+  const key = document.getElementById('api-key-input').value.trim();
+  if(!key || !key.startsWith('sk-ant-')){
+    document.getElementById('api-key-status').innerHTML = '<span style="color:var(--rose)">Invalid key — should start with sk-ant-</span>';
+    return;
+  }
+  const status = document.getElementById('api-key-status');
+  status.innerHTML = '<span style="color:var(--ink3)">Saving...</span>';
+  try {
+    D.anthropicKey = key;
+    cachedApiKey = key;
+    const {error} = await sbClient.from('blueprint_data').upsert({user_id:currentUser.id, data:D, updated_at:new Date().toISOString()},{onConflict:'user_id'});
+    if(error) throw error;
+    status.innerHTML = '<span style="color:var(--green)">✓ Key saved and synced to all devices</span>';
+    updateApiKeyBtn();
+    setTimeout(()=>closeModals(), 1500);
+  } catch(e){
+    status.innerHTML = '<span style="color:var(--rose)">Save failed — check connection</span>';
+  }
+}
+
+async function clearApiKey(){
+  if(!confirm('Remove your API key? AI features will stop working until you add a new one.')) return;
+  cachedApiKey = null;
+  D.anthropicKey = '';
+  save();
+  updateApiKeyBtn();
+  closeModals();
+}
+
+function openApiKeyModal(){
+  document.getElementById('api-key-input').value = cachedApiKey || '';
+  document.getElementById('api-key-status').innerHTML = cachedApiKey
+    ? '<span style="color:var(--green)">✓ Key is set and active</span>'
+    : '<span style="color:var(--ink3)">No key saved yet</span>';
+  document.getElementById('api-key-modal').classList.remove('hidden');
+}
+
+function updateApiKeyBtn(){
+  const btn = document.getElementById('api-key-btn');
+  if(!btn) return;
+  btn.textContent = cachedApiKey ? '🔑 API Key ✓' : '🔑 API Key';
+  btn.style.color = cachedApiKey ? 'var(--green)' : '';
+}
+
 updateFilterCounts();
 initSupabase();
 // warn if user tries to leave while a save is pending
@@ -2921,6 +2995,25 @@ window.addEventListener('beforeunload',e=>{
   if(saveTimer){e.preventDefault();e.returnValue='';}
 });
 </script>
+<!-- API KEY MODAL -->
+<div class="modal-bg hidden" id="api-key-modal">
+  <div class="modal" style="max-width:480px">
+    <h3>🔑 Anthropic API Key</h3>
+    <p style="font-size:13px;color:var(--ink3);margin-bottom:1rem;line-height:1.6">Your API key is stored securely in your Supabase account — never in the code. It syncs across all your devices automatically.</p>
+    <div class="form-row">
+      <label class="form-label">API Key</label>
+      <input class="form-input" id="api-key-input" type="password" placeholder="sk-ant-api03-..." style="font-family:monospace;font-size:12px"/>
+    </div>
+    <div id="api-key-status" style="font-size:12px;margin-top:6px"></div>
+    <div style="font-size:11px;color:var(--ink3);margin-top:8px;line-height:1.5">Get your key at <a href="https://console.anthropic.com" target="_blank" style="color:var(--gold)">console.anthropic.com</a> → API Keys → Create key</div>
+    <div class="modal-actions">
+      <button class="modal-cancel" onclick="closeModals()">Cancel</button>
+      <button class="modal-cancel" style="color:var(--rose);border-color:var(--rose-l)" onclick="clearApiKey()">Remove key</button>
+      <button class="modal-save" onclick="saveApiKey()">Save key</button>
+    </div>
+  </div>
+</div>
+
 </div><!-- end app-shell -->
 
 <!-- HOW IT WORKS BUTTON -->
