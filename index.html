@@ -1790,7 +1790,7 @@ async function generateManifesto(){
       save();
       document.getElementById('why-copy-btn').style.display='inline-block';
       btn.textContent='✦ Regenerate manifesto';
-    } else throw new Error('empty');
+    } else throw new Error('empty — API response: '+JSON.stringify(data).slice(0,200));
   }catch(e){
     const msg=e?.message||JSON.stringify(e)||'unknown';
     el.innerHTML='<p style="opacity:.5">Error: '+msg+'</p>';
