@@ -253,6 +253,35 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
 .undo-btn{font-family:'Syne',sans-serif;font-size:12px;font-weight:600;padding:4px 12px;border-radius:20px;border:1px solid rgba(255,255,255,.3);background:transparent;color:var(--paper);cursor:pointer;transition:all .15s}
 .undo-btn:hover{background:rgba(255,255,255,.15)}
 .undo-progress{position:absolute;bottom:0;left:0;height:3px;background:var(--gold);border-radius:0 0 var(--r) var(--r);transition:width linear}
+/* MY WHY */
+.why-card{background:var(--paper);border:1px solid var(--line);border-radius:var(--r2);margin-bottom:1.5rem;overflow:hidden}
+.why-header{padding:1.25rem 1.5rem;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px;cursor:pointer;user-select:none;transition:background .15s}
+.why-header:hover{background:var(--paper2)}
+.why-header-text h2{font-family:'Playfair Display',serif;font-size:1.15rem;font-weight:400;color:var(--ink)}
+.why-header-text p{font-size:12px;color:var(--ink3);margin-top:2px}
+.why-header-icon{font-size:1.4rem;flex-shrink:0}
+.why-chevron{margin-left:auto;font-size:12px;color:var(--ink3);transition:transform .2s}
+.why-chevron.open{transform:rotate(90deg)}
+.why-body{display:none;padding:1.5rem}
+.why-body.open{display:block}
+.why-section{margin-bottom:1.5rem}
+.why-section:last-child{margin-bottom:0}
+.why-section-label{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--ink3);font-weight:600;margin-bottom:.75rem}
+.why-question{margin-bottom:1rem}
+.why-question label{display:block;font-size:13px;color:var(--ink2);margin-bottom:.4rem;font-weight:500;line-height:1.4}
+.why-question textarea{width:100%;font-family:'Syne',sans-serif;font-size:13px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--paper2);color:var(--ink);outline:none;resize:vertical;min-height:64px;transition:border-color .15s;box-sizing:border-box}
+.why-question textarea:focus{border-color:var(--gold);background:var(--paper)}
+.why-actions{display:flex;gap:8px;margin-top:1.25rem;padding-top:1.25rem;border-top:1px solid var(--line);flex-wrap:wrap}
+.why-save-btn{font-family:'Syne',sans-serif;font-size:12px;font-weight:600;padding:7px 16px;background:var(--ink);color:var(--paper);border:none;border-radius:8px;cursor:pointer}
+.why-save-btn:hover{background:var(--ink2)}
+.why-gen-btn{font-family:'Syne',sans-serif;font-size:12px;font-weight:500;padding:7px 16px;background:var(--gold-l);color:var(--gold);border:1px solid var(--gold);border-radius:8px;cursor:pointer;transition:all .15s}
+.why-gen-btn:hover{background:var(--gold);color:white}
+.why-manifesto{background:var(--ink);color:rgba(255,255,255,.9);border-radius:var(--r);padding:1.25rem 1.5rem;margin-top:1.25rem;font-family:'Playfair Display',serif;font-size:1rem;font-style:italic;line-height:1.75}
+.why-manifesto p{margin-bottom:.75rem}
+.why-manifesto p:last-child{margin-bottom:0}
+.why-progress{font-size:11px;color:var(--gold);margin-left:auto;font-weight:500}
+
+/* NARRATIVE */
 .narrative-card{background:var(--ink);color:var(--paper);border-radius:var(--r2);padding:1.75rem 2rem;margin-bottom:1.5rem;position:relative;overflow:hidden}
 .narrative-card::before{content:'';position:absolute;top:-40px;right:-40px;width:160px;height:160px;border-radius:50%;background:rgba(255,255,255,.03)}
 .narrative-label{font-size:10px;text-transform:uppercase;letter-spacing:.12em;color:rgba(255,255,255,.35);margin-bottom:.75rem;display:flex;align-items:center;gap:8px}
@@ -749,6 +778,96 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
     <div class="export-bar">
       <button class="export-btn" onclick="exportPDF()">⬇ Export PDF</button>
     </div>
+    <div class="export-bar">
+      <button class="export-btn" onclick="exportPDF()">⬇ Export PDF</button>
+    </div>
+
+    <!-- MY WHY -->
+    <div class="why-card">
+      <div class="why-header" onclick="toggleWhy()">
+        <div class="why-header-icon">🧭</div>
+        <div class="why-header-text">
+          <h2>My Why</h2>
+          <p>Your values, vision, and personal manifesto — the foundation everything is built on</p>
+        </div>
+        <span class="why-progress" id="why-progress"></span>
+        <span class="why-chevron" id="why-chevron">▶</span>
+      </div>
+      <div class="why-body" id="why-body">
+
+        <div class="why-section">
+          <div class="why-section-label">🧬 Identity — who you are</div>
+          <div class="why-question">
+            <label>What did you love doing as a kid before anyone told you what to be?</label>
+            <textarea id="why-q1" placeholder="Think back to what came naturally..."></textarea>
+          </div>
+          <div class="why-question">
+            <label>What makes you completely lose track of time?</label>
+            <textarea id="why-q2" placeholder="When do hours feel like minutes..."></textarea>
+          </div>
+        </div>
+
+        <div class="why-section">
+          <div class="why-section-label">⚖️ Values — what you stand for</div>
+          <div class="why-question">
+            <label>What are your 3 non-negotiables in life — things you'd never compromise on?</label>
+            <textarea id="why-q3" placeholder="The lines you don't cross..."></textarea>
+          </div>
+          <div class="why-question">
+            <label>What do you want people to feel when they're around you?</label>
+            <textarea id="why-q4" placeholder="The energy you want to bring..."></textarea>
+          </div>
+        </div>
+
+        <div class="why-section">
+          <div class="why-section-label">🔭 Vision — where you're going</div>
+          <div class="why-question">
+            <label>What does your ideal life look like in 10 years — specifically?</label>
+            <textarea id="why-q5" placeholder="Be as specific as possible — where, who, what..."></textarea>
+          </div>
+          <div class="why-question">
+            <label>What do you want to have built, created, or changed by the time you're 80?</label>
+            <textarea id="why-q6" placeholder="Your life's work..."></textarea>
+          </div>
+        </div>
+
+        <div class="why-section">
+          <div class="why-section-label">🏛️ Legacy — why it matters</div>
+          <div class="why-question">
+            <label>If your life were a book, what would the title be?</label>
+            <textarea id="why-q7" placeholder="The story of your life in a few words..."></textarea>
+          </div>
+          <div class="why-question">
+            <label>What's the one thing you'd regret not doing if your time was cut short?</label>
+            <textarea id="why-q8" placeholder="Be honest with yourself..."></textarea>
+          </div>
+        </div>
+
+        <div class="why-section">
+          <div class="why-section-label">⚡ Motivation — what drives you</div>
+          <div class="why-question">
+            <label>What gets you out of bed on your hardest days?</label>
+            <textarea id="why-q9" placeholder="The deeper reason behind everything..."></textarea>
+          </div>
+          <div class="why-question">
+            <label>Who do you draw inspiration from and why — real or fictional, alive or not?</label>
+            <textarea id="why-q10" placeholder="The people who shaped how you think..."></textarea>
+          </div>
+        </div>
+
+        <div id="why-manifesto-wrap" style="display:none">
+          <div class="why-manifesto" id="why-manifesto"></div>
+        </div>
+
+        <div class="why-actions">
+          <button class="why-save-btn" onclick="saveWhy()">Save answers</button>
+          <button class="why-gen-btn" onclick="generateManifesto()">✦ Generate my manifesto</button>
+          <button class="narrative-btn" id="why-copy-btn" style="display:none;font-size:12px;padding:7px 14px" onclick="copyManifesto()">Copy manifesto</button>
+          <span id="why-last-updated" style="font-size:11px;color:var(--ink3);margin-left:auto;align-self:center"></span>
+        </div>
+      </div>
+    </div>
+
     <div class="narrative-card" id="narrative-card">
       <div class="narrative-label">
         ✦ My narrative — AI generated
@@ -1133,6 +1252,7 @@ function applyData(cloud){
   D.quoteSub=cloud.quoteSub||'';
   D.narrativeText=cloud.narrativeText||'';
   D.narrativeDate=cloud.narrativeDate||0;
+  D.why=cloud.why||{};
   if(cloud.goals) D.goals=cloud.goals;
   if(!D.people) D.people=[];
   let needsSave=false;
@@ -1571,8 +1691,138 @@ function closeModals(){
 }
 document.querySelectorAll('.modal-bg').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)closeModals();}));
 
+/* ── MY WHY ──────────────────────────────────────────── */
+const WHY_QUESTIONS=[
+  {id:'why-q1',key:'q1'},
+  {id:'why-q2',key:'q2'},
+  {id:'why-q3',key:'q3'},
+  {id:'why-q4',key:'q4'},
+  {id:'why-q5',key:'q5'},
+  {id:'why-q6',key:'q6'},
+  {id:'why-q7',key:'q7'},
+  {id:'why-q8',key:'q8'},
+  {id:'why-q9',key:'q9'},
+  {id:'why-q10',key:'q10'}
+];
+
+function toggleWhy(){
+  const body=document.getElementById('why-body');
+  const chev=document.getElementById('why-chevron');
+  const open=body.classList.toggle('open');
+  chev.classList.toggle('open',open);
+  if(open) loadWhyAnswers();
+}
+
+function loadWhyAnswers(){
+  const w=D.why||{};
+  WHY_QUESTIONS.forEach(q=>{
+    const el=document.getElementById(q.id);
+    if(el) el.value=w[q.key]||'';
+  });
+  updateWhyProgress();
+  updateWhyTimestamp();
+  // restore manifesto if exists
+  if(w.manifesto){
+    const wrap=document.getElementById('why-manifesto-wrap');
+    const el=document.getElementById('why-manifesto');
+    const paras=w.manifesto.split('\n\n').filter(Boolean);
+    el.innerHTML=paras.map(p=>`<p>${esc(p)}</p>`).join('');
+    wrap.style.display='block';
+    document.getElementById('why-copy-btn').style.display='inline-block';
+    document.querySelector('.why-gen-btn').textContent='✦ Regenerate manifesto';
+  }
+}
+
+function updateWhyProgress(){
+  const w=D.why||{};
+  const filled=WHY_QUESTIONS.filter(q=>w[q.key]&&w[q.key].trim()).length;
+  const prog=document.getElementById('why-progress');
+  if(prog) prog.textContent=filled>0?`${filled}/10 answered`:'';
+}
+
+function saveWhy(){
+  if(!D.why) D.why={};
+  WHY_QUESTIONS.forEach(q=>{
+    const el=document.getElementById(q.id);
+    if(el) D.why[q.key]=el.value.trim();
+  });
+  D.why.lastUpdated=Date.now();
+  save();
+  updateWhyProgress();
+  updateWhyTimestamp();
+  const btn=document.querySelector('.why-save-btn');
+  btn.textContent='Saved ✓';
+  setTimeout(()=>btn.textContent='Save answers',2000);
+}
+
+function updateWhyTimestamp(){
+  const el=document.getElementById('why-last-updated');
+  if(!el)return;
+  const ts=D.why?.lastUpdated;
+  if(!ts){el.textContent='';return;}
+  const d=new Date(ts);
+  const dateStr=d.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
+  const timeStr=d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+  el.textContent=`Last updated ${dateStr} at ${timeStr}`;
+}
+
+async function generateManifesto(){
+  saveWhy();
+  const w=D.why||{};
+  const answers=WHY_QUESTIONS.map((q,i)=>w[q.key]?`Q${i+1}: ${w[q.key]}`:'').filter(Boolean).join('\n');
+  if(!answers){alert('Fill in at least a few answers first!');return;}
+
+  const btn=document.querySelector('.why-gen-btn');
+  btn.textContent='Generating...';btn.disabled=true;
+  const wrap=document.getElementById('why-manifesto-wrap');
+  const el=document.getElementById('why-manifesto');
+  wrap.style.display='block';
+  el.innerHTML='<p style="opacity:.5">Writing your manifesto...</p>';
+
+  const prompt=`You are writing a deeply personal manifesto for someone based on their answers to foundational life questions. Write it in first person, present tense, as if they are declaring who they are and what they stand for. Make it powerful, honest, and specific to their answers — not generic. 3-4 paragraphs. No bullet points. No headers. Just flowing, declarative prose that reads like something worth printing and putting on a wall.
+
+Their answers:
+${answers}
+
+Write their personal manifesto now. Start with "I am..." or a strong declarative statement. Reference their specific words and answers. End with a statement about their legacy or purpose. Make it feel earned, not aspirational fluff.`;
+
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:prompt}]})
+    });
+    const data=await res.json();
+    const text=data.content?.find(b=>b.type==='text')?.text||'';
+    if(text){
+      const paras=text.trim().split('\n\n').filter(Boolean);
+      el.innerHTML=paras.map(p=>`<p>${esc(p)}</p>`).join('');
+      D.why.manifesto=text;
+      save();
+      document.getElementById('why-copy-btn').style.display='inline-block';
+      btn.textContent='✦ Regenerate manifesto';
+    } else throw new Error('empty');
+  }catch(e){
+    el.innerHTML='<p style="opacity:.5">Could not generate — check your connection and try again.</p>';
+    btn.textContent='✦ Generate my manifesto';
+  }
+  btn.disabled=false;
+}
+
+function copyManifesto(){
+  const w=D.why||{};
+  if(w.manifesto){
+    navigator.clipboard.writeText(w.manifesto);
+    const btn=document.getElementById('why-copy-btn');
+    btn.textContent='Copied!';
+    setTimeout(()=>btn.textContent='Copy manifesto',2000);
+  }
+}
+
 /* ── STORY ───────────────────────────────────────────── */
 function renderStory(){
+  // refresh why answers if panel is open
+  if(document.getElementById('why-body')?.classList.contains('open')) loadWhyAnswers();
   // restore saved narrative if exists
   if(D.narrativeText){
     const paras=D.narrativeText.trim().split('\n\n').filter(Boolean);
