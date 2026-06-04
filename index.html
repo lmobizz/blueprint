@@ -214,9 +214,9 @@ function dragGoalEnd(e){
 }
 
 function dragGoalOver(e){
-  if(!dragCtx)return;
-  e.preventDefault();
+  e.preventDefault(); // MUST be first
   e.stopPropagation();
+  if(!dragCtx)return;
   e.dataTransfer.dropEffect='move';
   document.querySelectorAll('.goal-item.drag-over').forEach(el=>el.classList.remove('drag-over'));
   e.currentTarget.classList.add('drag-over');
@@ -249,11 +249,10 @@ function dragGoalDrop(e, targetBucket, targetSub, targetCat, targetIdx){
 }
 
 function dragCatOver(e, bucket, sub, cat){
-  if(!dragCtx)return;
-  // Don't highlight if it's the same source category
-  if(dragCtx.bucket===bucket&&dragCtx.sub===sub&&dragCtx.cat===cat)return;
-  e.preventDefault();
+  e.preventDefault(); // MUST be first — enables drop
   e.stopPropagation();
+  if(!dragCtx)return;
+  if(dragCtx.bucket===bucket&&dragCtx.sub===sub&&dragCtx.cat===cat)return;
   e.currentTarget.classList.add('drag-over-zone');
 }
 
@@ -2581,7 +2580,14 @@ function toggleAllSubs(bucketKey){
 }
 
 function renderGoals(){
+  // Save open state to localStorage BEFORE wiping DOM
   const wasOpen=getOpenState();
+  // Also manually persist to localStorage right now
+  try{
+    const openIds=[];
+    document.querySelectorAll('.sub-goals.open,.cat-goals.open').forEach(el=>openIds.push(el.id));
+    if(openIds.length)localStorage.setItem('bp_goals_open',JSON.stringify(openIds));
+  }catch(e){}
   const c=document.getElementById('buckets-container');c.innerHTML='';
   [{key:'personal',label:'Personal',cls:'personal',icon:'🌱'},{key:'professional',label:'Professional',cls:'professional',icon:'🚀'}].forEach(b=>{
     const subs=D.goals[b.key];
