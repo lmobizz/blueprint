@@ -1060,7 +1060,7 @@ body.dark-mode .profile-dropdown{background:var(--paper2);border-color:var(--lin
       <div class="macro-tl-card personal" id="macro-tl-personal">
         <div class="macro-tl-header" onclick="toggleMacroTimeline('personal')">
           <span class="macro-tl-icon">🌱</span>
-          <span class="macro-tl-title">Personal — Goal Timeline</span>
+          <span class="macro-tl-title">Timeline</span>
           <span class="macro-tl-chev" id="macro-chev-personal">▶</span>
         </div>
         <div class="macro-tl-body" id="macro-body-personal"></div>
@@ -1068,7 +1068,7 @@ body.dark-mode .profile-dropdown{background:var(--paper2);border-color:var(--lin
       <div class="macro-tl-card professional" id="macro-tl-professional">
         <div class="macro-tl-header" onclick="toggleMacroTimeline('professional')">
           <span class="macro-tl-icon">🚀</span>
-          <span class="macro-tl-title">Professional — Goal Timeline</span>
+          <span class="macro-tl-title">Timeline</span>
           <span class="macro-tl-chev" id="macro-chev-professional">▶</span>
         </div>
         <div class="macro-tl-body" id="macro-body-professional"></div>
@@ -2251,114 +2251,128 @@ function renderMacroTimeline(bucket){
   const body=document.getElementById('macro-body-'+bucket);
   if(!body)return;
 
-  // Collect all goals with due dates
   const subs=D.goals[bucket]||{};
-  const goalsWithDates=[];
+  const todayTs=NOW.getTime();
+  const statusColors={'not-started':'var(--line)','in-progress':'#C9900A','on-track':'#C9900A','achieved':'#4D9E7A'};
+
+  // Build grouped structure: [{subName, goals:[{g,catName,idx,dueTs,createdTs}]}]
+  const sections=[];
   Object.entries(subs).forEach(([subName,subData])=>{
-    Object.entries(subData).forEach(([catName,goals])=>{
-      if(!Array.isArray(goals))return;
-      goals.forEach((g,idx)=>{
-        if(!g.due)return; // skip goals without due dates
-        goalsWithDates.push({
-          g,subName,catName,idx,
+    const goals=[];
+    Object.entries(subData).forEach(([catName,catGoals])=>{
+      if(!Array.isArray(catGoals))return;
+      catGoals.forEach((g,idx)=>{
+        if(!g.due)return;
+        goals.push({
+          g,catName,idx,
           dueTs:new Date(g.due+'T12:00:00').getTime(),
-          createdTs:g.createdAt||(typeof g.id==='number'&&g.id>new Date('2020-01-01').getTime()?g.id:NOW.getTime()-180*24*60*60*1000)
+          createdTs:g.createdAt||(typeof g.id==='number'&&g.id>new Date('2020-01-01').getTime()?g.id:todayTs-180*24*60*60*1000)
         });
       });
     });
+    if(goals.length){
+      goals.sort((a,b)=>a.dueTs-b.dueTs);
+      sections.push({subName,goals});
+    }
   });
 
-  if(!goalsWithDates.length){
+  const allGoals=sections.flatMap(s=>s.goals);
+  if(!allGoals.length){
     body.innerHTML='<div class="macro-tl-empty">No goals with due dates yet — add due dates to your goals to see them here.</div>';
     return;
   }
 
-  // Sort by due date
-  goalsWithDates.sort((a,b)=>a.dueTs-b.dueTs);
-
-  const todayTs=NOW.getTime();
-  const startTs=Math.min(...goalsWithDates.map(g=>g.createdTs), todayTs-30*24*60*60*1000);
-  const endTs=Math.max(...goalsWithDates.map(g=>g.dueTs), todayTs+30*24*60*60*1000);
+  const startTs=Math.min(...allGoals.map(g=>g.createdTs),todayTs-30*24*60*60*1000);
+  const endTs=Math.max(...allGoals.map(g=>g.dueTs),todayTs+30*24*60*60*1000);
   const span=endTs-startTs||1;
   const pos=ts=>Math.max(0,Math.min(1,(ts-startTs)/span));
 
-  const W=480,H=goalsWithDates.length*44+60;
-  const leftPad=160,rightPad=30,trackW=W-leftPad-rightPad;
-
-  const statusColors={
-    'not-started':'var(--line)',
-    'in-progress':'#C9900A',
-    'on-track':'#C9900A',
-    'achieved':'#4D9E7A'
-  };
+  // Calculate total height: section header (22px) + goals (36px each) + gap (10px) between sections + bottom axis (30px)
+  const totalGoals=allGoals.length;
+  const H=sections.length*22 + totalGoals*36 + (sections.length-1)*14 + 50;
+  const W=500,leftPad=155,rightPad=35,trackW=W-leftPad-rightPad;
 
   let svg=`<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" style="width:100%;overflow:visible">`;
 
-  // Vertical axis line
-  svg+=`<line x1="${leftPad}" y1="20" x2="${leftPad}" y2="${H-20}" stroke="var(--line)" stroke-width="1"/>`;
-
-  // Today marker — vertical line
+  // Today vertical line
   const todayX=leftPad+pos(todayTs)*trackW;
-  svg+=`<line x1="${todayX}" y1="10" x2="${todayX}" y2="${H-10}" stroke="var(--rose)" stroke-width="1" stroke-dasharray="3,3" opacity="0.6"/>`;
-  svg+=`<text x="${todayX}" y="8" text-anchor="middle" font-size="8" fill="var(--rose)" font-family="Syne,sans-serif">Today</text>`;
+  svg+=`<line x1="${todayX}" y1="0" x2="${todayX}" y2="${H-25}" stroke="var(--rose)" stroke-width="1" stroke-dasharray="3,3" opacity="0.5"/>`;
+  svg+=`<text x="${todayX}" y="9" text-anchor="middle" font-size="8" fill="var(--rose)" font-family="Syne,sans-serif" font-weight="600">Today</text>`;
 
-  goalsWithDates.forEach((item,i)=>{
-    const y=30+i*44;
-    const {g,subName,catName,idx}=item;
-    const dotX=leftPad+pos(item.dueTs)*trackW;
-    const dotColor=statusColors[g.status||'not-started'];
-    const label=(g.text||'').length>22?(g.text||'').slice(0,22)+'…':(g.text||'');
-    const subLabel=catName==='_goals'?subName:`${subName} › ${catName}`;
-    const subLabelShort=subLabel.length>24?subLabel.slice(0,24)+'…':subLabel;
-    const isPast=item.dueTs<todayTs;
+  let currentY=18;
 
-    // Horizontal track line
-    svg+=`<line x1="${leftPad}" y1="${y}" x2="${dotX}" y2="${y}" stroke="${dotColor}" stroke-width="1.5" opacity="0.3"/>`;
+  sections.forEach((section,si)=>{
+    // Section header — sub-bucket name
+    svg+=`<text x="${leftPad-8}" y="${currentY+2}" text-anchor="end" font-size="9" fill="var(--ink3)" font-family="Syne,sans-serif" font-weight="700" letter-spacing="0.05em" text-transform="uppercase">${esc(section.subName.toUpperCase())}</text>`;
+    // Dashed separator line across full width
+    svg+=`<line x1="${leftPad}" y1="${currentY}" x2="${W-rightPad}" y2="${currentY}" stroke="var(--line)" stroke-width="1" stroke-dasharray="4,4" opacity="0.6"/>`;
+    currentY+=18;
 
-    // Goal name label (left side)
-    svg+=`<text x="${leftPad-8}" y="${y-4}" text-anchor="end" font-size="10" fill="var(--ink2)" font-family="Syne,sans-serif" font-weight="600">${esc(label)}</text>`;
-    svg+=`<text x="${leftPad-8}" y="${y+8}" text-anchor="end" font-size="8" fill="var(--ink3)" font-family="Syne,sans-serif">${esc(subLabelShort)}</text>`;
+    section.goals.forEach((item,gi)=>{
+      const y=currentY;
+      const {g,catName,idx}=item;
+      const dotX=leftPad+pos(item.dueTs)*trackW;
+      const dotColor=statusColors[g.status||'not-started'];
+      const label=(g.text||'').length>24?(g.text||'').slice(0,24)+'…':(g.text||'');
+      const catLabel=catName==='_goals'?'':`${catName}`;
+      const isPast=item.dueTs<todayTs;
 
-    // Due date label (right of dot)
-    const dueLabel=new Date(item.dueTs).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'2-digit'});
-    svg+=`<text x="${dotX+10}" y="${y+4}" text-anchor="start" font-size="8" fill="${isPast?'var(--rose)':'var(--ink3)'}" font-family="Syne,sans-serif">${dueLabel}</text>`;
+      // Track line
+      svg+=`<line x1="${leftPad}" y1="${y}" x2="${dotX}" y2="${y}" stroke="${dotColor}" stroke-width="1.5" opacity="0.25"/>`;
 
-    // Milestone ticks
-    (g.milestones||[]).filter(m=>m.due).forEach(m=>{
-      const mTs=new Date(m.due+'T12:00:00').getTime();
-      const mX=leftPad+pos(mTs)*trackW;
-      svg+=`<line x1="${mX}" y1="${y-6}" x2="${mX}" y2="${y+6}" stroke="${m.done?'#4D9E7A':'#C9900A'}" stroke-width="1.5"/>`;
+      // Goal name
+      svg+=`<text x="${leftPad-8}" y="${y-3}" text-anchor="end" font-size="9" fill="var(--ink2)" font-family="Syne,sans-serif" font-weight="600">${esc(label)}</text>`;
+      if(catLabel){
+        svg+=`<text x="${leftPad-8}" y="${y+7}" text-anchor="end" font-size="7" fill="var(--ink3)" font-family="Syne,sans-serif">📁 ${esc(catLabel)}</text>`;
+      }
+
+      // Due date
+      const dueLabel=new Date(item.dueTs).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'2-digit'});
+      svg+=`<text x="${dotX+9}" y="${y+3}" text-anchor="start" font-size="7.5" fill="${isPast?'var(--rose)':'var(--ink3)'}" font-family="Syne,sans-serif">${dueLabel}</text>`;
+
+      // Milestone ticks
+      (g.milestones||[]).filter(m=>m.due).forEach(m=>{
+        const mTs=new Date(m.due+'T12:00:00').getTime();
+        const mX=leftPad+pos(mTs)*trackW;
+        svg+=`<line x1="${mX}" y1="${y-5}" x2="${mX}" y2="${y+5}" stroke="${m.done?'#4D9E7A':'#C9900A'}" stroke-width="1.5"/>`;
+      });
+
+      // Goal dot
+      svg+=`<circle cx="${dotX}" cy="${y}" r="6" fill="${dotColor}" stroke="var(--paper)" stroke-width="2" onclick="openGoalModal('${bucket}','${esc(section.subName)}','${esc(catName)}',${idx})" style="cursor:pointer"/>`;
+      if(g.status==='achieved'){
+        svg+=`<text x="${dotX}" y="${y+3}" text-anchor="middle" font-size="7" fill="white" font-family="Syne,sans-serif" style="pointer-events:none">✓</text>`;
+      }
+
+      currentY+=36;
     });
 
-    // Goal dot — clickable
-    svg+=`<circle class="macro-goal-dot" cx="${dotX}" cy="${y}" r="7" fill="${dotColor}" stroke="var(--paper)" stroke-width="2" onclick="openGoalModal('${bucket}','${esc(subName)}','${esc(catName)}',${idx})" style="cursor:pointer"/>`;
-    if(g.status==='achieved'){
-      svg+=`<text x="${dotX}" y="${y+4}" text-anchor="middle" font-size="7" fill="white" font-family="Syne,sans-serif" style="pointer-events:none">✓</text>`;
-    }
+    // Gap between sections
+    if(si<sections.length-1) currentY+=14;
   });
 
-  // Bottom axis dates
-  const numTicks=4;
+  // Bottom axis
+  const numTicks=5;
   for(let i=0;i<=numTicks;i++){
     const ts=startTs+(endTs-startTs)*(i/numTicks);
     const x=leftPad+pos(ts)*trackW;
     const label=new Date(ts).toLocaleDateString('en-US',{month:'short',year:'2-digit'});
     svg+=`<text x="${x}" y="${H-4}" text-anchor="middle" font-size="8" fill="var(--ink3)" font-family="Syne,sans-serif">${label}</text>`;
-    svg+=`<line x1="${x}" y1="${H-14}" x2="${x}" y2="${H-10}" stroke="var(--line)" stroke-width="1"/>`;
+    svg+=`<line x1="${x}" y1="${H-16}" x2="${x}" y2="${H-12}" stroke="var(--line)" stroke-width="1"/>`;
   }
 
   svg+=`</svg>`;
 
-  // Legend
-  const legendHtml=`<div style="display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:.75rem">
-    <div style="display:flex;align-items:center;gap:4px;font-size:10px;color:var(--ink3)"><div style="width:8px;height:8px;border-radius:50%;background:var(--line)"></div>Not started</div>
-    <div style="display:flex;align-items:center;gap:4px;font-size:10px;color:var(--ink3)"><div style="width:8px;height:8px;border-radius:50%;background:#C9900A"></div>In progress</div>
-    <div style="display:flex;align-items:center;gap:4px;font-size:10px;color:var(--ink3)"><div style="width:8px;height:8px;border-radius:50%;background:#4D9E7A"></div>Achieved</div>
-    <div style="display:flex;align-items:center;gap:4px;font-size:10px;color:var(--ink3)"><div style="width:3px;height:12px;background:#C9900A"></div>Milestone</div>
+  // Legend — slightly bigger
+  const legendHtml=`<div style="display:flex;gap:1.25rem;flex-wrap:wrap;margin-bottom:.9rem">
+    <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--ink3)"><div style="width:9px;height:9px;border-radius:50%;background:var(--line)"></div>Not started</div>
+    <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--ink3)"><div style="width:9px;height:9px;border-radius:50%;background:#C9900A"></div>In progress</div>
+    <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--ink3)"><div style="width:9px;height:9px;border-radius:50%;background:#4D9E7A"></div>Achieved</div>
+    <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--ink3)"><div style="width:3px;height:14px;background:#C9900A;border-radius:1px"></div>Milestone</div>
   </div>`;
 
   body.innerHTML=legendHtml+`<div style="overflow-x:auto">${svg}</div>`;
 }
+
 
 /* ── GOAL BUCKET EXPAND / COLLAPSE ALL ──────────────────── */
 function expandAllSubs(bucketKey){
