@@ -871,8 +871,8 @@ body.dark-mode .profile-dropdown{background:var(--paper2);border-color:var(--lin
 .pe-date-input:focus{border-bottom-color:var(--gold);border-bottom-style:solid}
 .pe-preview{font-size:11px;color:var(--ink3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0}
 .pe-current-badge{font-size:9px;background:rgba(184,134,11,.15);color:var(--gold);padding:1px 6px;border-radius:10px;flex-shrink:0}
-.pe-body{padding:0 10px;max-height:0;overflow:hidden;transition:max-height .25s ease,padding .25s ease}
-.pe-body.open{max-height:1000px;padding:0 10px 10px}
+.pe-body{padding:0 10px;max-height:0;overflow:hidden;transition:max-height .3s ease,padding .3s ease}
+.pe-body.open{max-height:none;overflow:visible;padding:0 10px 10px}
 .pe-textarea{width:100%;box-sizing:border-box;background:transparent;border:none;resize:vertical;font-size:13px;color:var(--ink1);line-height:1.6;font-family:inherit;outline:none;min-height:80px;padding:6px 0}
 .pe-textarea:focus{outline:none}
 .pe-delete{font-size:10px;color:var(--ink3);cursor:pointer;padding:2px 6px;border-radius:4px;transition:all .15s;margin-left:auto;flex-shrink:0}
@@ -5140,6 +5140,6 @@ window.addEventListener('beforeunload',e=>{
     <button class="hype-close" onclick="closeHype()">Let's get it →</button>
   </div>
 </div>
-<div class="version-toast" id="version-toast">✦ Build Jun 04 · 6:18 PM CT ✓</div>
+<div class="version-toast" id="version-toast">✦ Build Jun 04 · 6:28 PM CT ✓</div>
 </body>
 </html>
