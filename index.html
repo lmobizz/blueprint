@@ -988,8 +988,12 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
           <h3>Log a win</h3>
           <div class="form-row"><label class="form-label">Title</label><input class="form-input" id="win-title" placeholder="What did you achieve?"/></div>
           <div class="form-row"><label class="form-label">Details</label><textarea class="form-textarea" id="win-body" placeholder="Tell the story..."></textarea></div>
-          <div class="form-row"><label class="form-label">Bucket</label>
-            <select class="form-select" id="win-bucket"><option>Personal</option><option>Professional</option></select></div>
+          <div style="display:flex;gap:8px">
+            <div class="form-row" style="flex:1"><label class="form-label">Bucket</label>
+              <select class="form-select" id="win-bucket"><option>Personal</option><option>Professional</option></select></div>
+            <div class="form-row" style="flex:1"><label class="form-label">Date</label>
+              <input class="form-input" type="date" id="win-date"/></div>
+          </div>
           <button class="form-submit" onclick="addEntry('win')">Add win →</button>
         </div>
       </div>
@@ -1000,8 +1004,12 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
           <h3>Log a lesson</h3>
           <div class="form-row"><label class="form-label">Title</label><input class="form-input" id="lesson-title" placeholder="What happened?"/></div>
           <div class="form-row"><label class="form-label">What I learned</label><textarea class="form-textarea" id="lesson-body" placeholder="What will you do differently?"></textarea></div>
-          <div class="form-row"><label class="form-label">Bucket</label>
-            <select class="form-select" id="lesson-bucket"><option>Personal</option><option>Professional</option></select></div>
+          <div style="display:flex;gap:8px">
+            <div class="form-row" style="flex:1"><label class="form-label">Bucket</label>
+              <select class="form-select" id="lesson-bucket"><option>Personal</option><option>Professional</option></select></div>
+            <div class="form-row" style="flex:1"><label class="form-label">Date</label>
+              <input class="form-input" type="date" id="lesson-date"/></div>
+          </div>
           <button class="form-submit" onclick="addEntry('lesson')">Add lesson →</button>
         </div>
       </div>
@@ -1731,10 +1739,14 @@ function renderTodos(){
   // Sort: due date asc first, then no-due sorted by priority high→low
   const priOrder={'p-high':0,'p-med':1,'p-low':2};
   const withDueAll=filtered.filter(t=>t.due).sort((a,b)=>new Date(a.due)-new Date(b.due));
-  const noDueAll=filtered.filter(t=>!t.due).sort((a,b)=>(priOrder[a.priority]||1)-(priOrder[b.priority]||1));
-  const sorted=[...withDueAll,...noDueAll];
-  if(!sorted.length){list.innerHTML='<div class="empty-note" style="padding:1rem 0">No tasks here yet.</div>';return;}
-  list.innerHTML=sorted.map(t=>todoCardHTML(t)).join('');
+  const noDueAll=filtered.filter(t=>!t.due).sort((a,b)=>(priOrder[a.priority]??1)-(priOrder[b.priority]??1));
+  if(!withDueAll.length&&!noDueAll.length){list.innerHTML='<div class="empty-note" style="padding:1rem 0">No tasks here yet.</div>';return;}
+  let html=withDueAll.map(t=>todoCardHTML(t)).join('');
+  if(noDueAll.length){
+    html+=`<div class="week-no-due">No assigned due date</div>`;
+    html+=noDueAll.map(t=>todoCardHTML(t)).join('');
+  }
+  list.innerHTML=html;
 }
 
 function renderHabitsToday(){
@@ -1959,7 +1971,7 @@ function saveTodoEdit(){
 
 function closeModals(){
   document.querySelectorAll('.modal-bg').forEach(m=>m.classList.add('hidden'));
-  editGoalCtx=null;editTodoCtx=null;editPersonIdx=null;
+  editGoalCtx=null;editTodoCtx=null;editPersonIdx=null;editEntryIdx=null;
 }
 document.querySelectorAll('.modal-bg').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)closeModals();}));
 
@@ -2112,22 +2124,50 @@ function renderStory(){
 }
 function entryHTML(e,idx){
   return`<div class="entry-card">
-    <div class="entry-actions"><button class="e-btn del" onclick="deleteEntry(${idx})">✕</button></div>
+    <div class="entry-actions">
+      <button class="e-btn" onclick="openEntryEdit(${idx})" title="Edit">✎</button>
+      <button class="e-btn del" onclick="deleteEntry(${idx})" title="Delete">✕</button>
+    </div>
     <div class="entry-date">${fmtDate(e.date)} · ${esc(e.bucket)}</div>
     <div class="entry-title">${esc(e.title)}</div>
     <div class="entry-body">${esc(e.body)}</div>
     <span class="entry-tag ${e.type}">${e.type==='win'?'🏆 Win':'📖 Lesson'}</span>
   </div>`;
 }
+
+let editEntryIdx=null;
+function openEntryEdit(idx){
+  editEntryIdx=idx;
+  const e=D.story[idx];
+  document.getElementById('ee-title').value=e.title||'';
+  document.getElementById('ee-body').value=e.body||'';
+  document.getElementById('ee-bucket').value=e.bucket||'Personal';
+  // convert timestamp to date string for input
+  document.getElementById('ee-date').value=new Date(e.date).toISOString().split('T')[0];
+  document.getElementById('edit-entry-modal').classList.remove('hidden');
+}
+function saveEntryEdit(){
+  if(editEntryIdx===null)return;
+  const e=D.story[editEntryIdx];
+  e.title=document.getElementById('ee-title').value.trim();
+  e.body=document.getElementById('ee-body').value.trim();
+  e.bucket=document.getElementById('ee-bucket').value;
+  const dateVal=document.getElementById('ee-date').value;
+  if(dateVal)e.date=new Date(dateVal+'T12:00:00').getTime();
+  save();closeModals();renderStory();renderOverview();
+}
 function addEntry(type){
   const title=document.getElementById(type+'-title').value.trim();
   const body=document.getElementById(type+'-body').value.trim();
   const bucket=document.getElementById(type+'-bucket').value;
+  const dateInput=document.getElementById(type+'-date').value;
+  const date=dateInput?new Date(dateInput+'T12:00:00').getTime():Date.now();
   if(!title)return;
-  D.story.push({id:Date.now(),type,title,body,bucket,date:Date.now()});
+  D.story.push({id:Date.now(),type,title,body,bucket,date});
   D.lastReflect=Date.now();
   document.getElementById(type+'-title').value='';
   document.getElementById(type+'-body').value='';
+  document.getElementById(type+'-date').value='';
   save();renderStory();renderOverview();
 }
 function deleteEntry(idx){
@@ -3297,6 +3337,23 @@ window.addEventListener('beforeunload',e=>{
   </div>
 </div>
 
+<div class="modal-bg hidden" id="edit-entry-modal">
+  <div class="modal">
+    <h3>Edit entry</h3>
+    <div class="form-row"><label class="form-label">Title</label><input class="form-input" id="ee-title"/></div>
+    <div class="form-row"><label class="form-label">Details</label><textarea class="form-textarea" id="ee-body"></textarea></div>
+    <div style="display:flex;gap:8px">
+      <div class="form-row" style="flex:1"><label class="form-label">Bucket</label>
+        <select class="form-select" id="ee-bucket"><option>Personal</option><option>Professional</option></select></div>
+      <div class="form-row" style="flex:1"><label class="form-label">Date</label>
+        <input class="form-input" type="date" id="ee-date"/></div>
+    </div>
+    <div class="modal-actions">
+      <button class="modal-cancel" onclick="closeModals()">Cancel</button>
+      <button class="modal-save" onclick="saveEntryEdit()">Save</button>
+    </div>
+  </div>
+</div>
 </div><!-- end app-shell -->
 
 <!-- HOW IT WORKS BUTTON -->
