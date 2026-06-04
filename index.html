@@ -3037,7 +3037,7 @@ async function generateManifesto(){
     const res=await fetch('https://api.anthropic.com/v1/messages',{
       method:'POST',
       headers:{'Content-Type':'application/json','anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true','x-api-key':getApiKey()},
-      body:JSON.stringify({model:'claude-sonnet-4-5',max_tokens:600,messages:[{role:'user',content:prompt}]})
+      body:JSON.stringify({model:'claude-sonnet-4-5',max_tokens:900,messages:[{role:'user',content:prompt}]})
     });
     const data=await res.json();
     const text=data.content?.find(b=>b.type==='text')?.text||'';
@@ -5140,6 +5140,6 @@ window.addEventListener('beforeunload',e=>{
     <button class="hype-close" onclick="closeHype()">Let's get it →</button>
   </div>
 </div>
-<div class="version-toast" id="version-toast">✦ Build Jun 04 · 5:52 PM CT ✓</div>
+<div class="version-toast" id="version-toast">✦ Build Jun 04 · 6:05 PM CT ✓</div>
 </body>
 </html>
