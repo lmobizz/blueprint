@@ -2449,7 +2449,20 @@ function renderMacroTimeline(bucket){
 
   sections.forEach((section,si)=>{
     // Section header — sub-bucket name
-    svg+=`<text x="${leftPad-8}" y="${currentY+1}" text-anchor="end" font-size="7" fill="var(--ink3)" font-family="Syne,sans-serif" font-weight="700" letter-spacing="0.08em">${esc(section.subName.toUpperCase())}</text>`;
+    // Sub-bucket name — wrap at ~18 chars onto two lines
+    const subRaw=section.subName.toUpperCase();
+    const subWords=subRaw.split(' ');
+    let subL1='',subL2='';
+    for(const w of subWords){
+      if((subL1+' '+w).trim().length<=18) subL1=(subL1+' '+w).trim();
+      else subL2=(subL2+' '+w).trim();
+    }
+    if(subL2){
+      svg+=`<text x="${leftPad-8}" y="${currentY-4}" text-anchor="end" font-size="7" fill="var(--ink3)" font-family="Syne,sans-serif" font-weight="700" letter-spacing="0.08em">${esc(subL1)}</text>`;
+      svg+=`<text x="${leftPad-8}" y="${currentY+5}" text-anchor="end" font-size="7" fill="var(--ink3)" font-family="Syne,sans-serif" font-weight="700" letter-spacing="0.08em">${esc(subL2)}</text>`;
+    } else {
+      svg+=`<text x="${leftPad-8}" y="${currentY+1}" text-anchor="end" font-size="7" fill="var(--ink3)" font-family="Syne,sans-serif" font-weight="700" letter-spacing="0.08em">${esc(subL1)}</text>`;
+    }
     // Dashed separator line across full width
     svg+=`<line x1="${leftPad}" y1="${currentY}" x2="${W-rightPad}" y2="${currentY}" stroke="var(--line)" stroke-width="1" stroke-dasharray="4,4" opacity="0.5"/>`;
     currentY+=14;
@@ -2475,8 +2488,18 @@ function renderMacroTimeline(bucket){
       // Due date
       const dueLabel=new Date(item.dueTs).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'2-digit'});
       const labelW=58;
-      const nearEdge=dotX+9+labelW>(W-5);
-      svg+=`<text x="${nearEdge?dotX-9:dotX+9}" y="${y+3}" text-anchor="${nearEdge?'end':'start'}" font-size="7.5" fill="${isPast?'var(--rose)':'var(--ink3)'}" font-family="Syne,sans-serif">${dueLabel}</text>`;
+      const rightOverflow=dotX+9+labelW>(W-5);
+      const leftOverflow=dotX-9-labelW<leftPad;
+      // If would overflow right: place left of dot. If ALSO would overlap track: place above dot.
+      let dlx,dly,dlAnchor;
+      if(rightOverflow && leftOverflow){
+        dlx=dotX; dly=y-10; dlAnchor='middle';
+      } else if(rightOverflow){
+        dlx=dotX-9; dly=y+3; dlAnchor='end';
+      } else {
+        dlx=dotX+9; dly=y+3; dlAnchor='start';
+      }
+      svg+=`<text x="${dlx}" y="${dly}" text-anchor="${dlAnchor}" font-size="7.5" fill="${isPast?'var(--rose)':'var(--ink3)'}" font-family="Syne,sans-serif">${dueLabel}</text>`;
 
       // Milestone ticks
       (g.milestones||[]).filter(m=>m.due).forEach(m=>{
@@ -2511,11 +2534,15 @@ function renderMacroTimeline(bucket){
   svg+=`</svg>`;
 
   // Legend — slightly bigger
-  const legendHtml=`<div style="display:flex;gap:1.25rem;flex-wrap:wrap;margin-bottom:.9rem">
+  const legendHtml=`<div style="display:flex;align-items:center;gap:1.25rem;flex-wrap:wrap;margin-bottom:.9rem">
     <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--ink3)"><div style="width:9px;height:9px;border-radius:50%;background:var(--line)"></div>Not started</div>
     <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--ink3)"><div style="width:9px;height:9px;border-radius:50%;background:#C9900A"></div>In progress</div>
     <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--ink3)"><div style="width:9px;height:9px;border-radius:50%;background:#4D9E7A"></div>Achieved</div>
     <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--ink3)"><div style="width:3px;height:14px;background:#C9900A;border-radius:1px"></div>Milestone</div>
+    <div style="margin-left:auto;display:flex;align-items:center;gap:4px;font-size:10px;color:var(--ink3);opacity:.6">
+      <svg width="11" height="11" viewBox="0 0 11 11"><circle cx="5.5" cy="5.5" r="4.5" fill="none" stroke="currentColor" stroke-width="1.2"/><line x1="5.5" y1="3" x2="5.5" y2="5.5" stroke="currentColor" stroke-width="1.2"/><circle cx="5.5" cy="7.5" r=".8" fill="currentColor"/></svg>
+      click a circle to open goal
+    </div>
   </div>`;
 
   body.innerHTML=legendHtml+`<div style="overflow-x:auto">${svg}</div>`;
@@ -5140,6 +5167,6 @@ window.addEventListener('beforeunload',e=>{
     <button class="hype-close" onclick="closeHype()">Let's get it →</button>
   </div>
 </div>
-<div class="version-toast" id="version-toast">✦ Build Jun 04 · 6:28 PM CT ✓</div>
+<div class="version-toast" id="version-toast">✦ Build Jun 04 · 6:55 PM CT ✓</div>
 </body>
 </html>
