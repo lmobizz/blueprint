@@ -46,6 +46,10 @@ body.dark-mode .why-body{background:var(--paper2)}
 body.dark-mode .why-header:hover{background:var(--paper3)}
 body.dark-mode .pstat{background:var(--paper2);border-color:var(--line)}
 body.dark-mode .people-table-wrap{background:var(--paper2);border-color:var(--line)}
+body.dark-mode .goal-modal{background:var(--paper2);border-color:var(--line)}
+body.dark-mode .goal-modal-header{border-color:var(--line)}
+body.dark-mode .goal-modal-footer{border-color:var(--line)}
+body.dark-mode .goal-modal-identity{background:var(--blue-l)}
 body.dark-mode .people-table th{background:var(--paper3);border-color:var(--line)}
 body.dark-mode .people-table td{border-color:var(--line)}
 body.dark-mode .people-table tr:hover td{background:var(--paper3)}
@@ -99,6 +103,31 @@ body.dark-mode .system-panel{background:var(--paper3);border-color:var(--line)}
 body.dark-mode .undo-toast{background:var(--paper3)}
 .dark-toggle{font-family:'Syne',sans-serif;font-size:13px;background:none;border:none;cursor:pointer;color:var(--ink3);padding:3px 8px;border-radius:6px;transition:color .15s;line-height:1}
 .dark-toggle:hover{color:var(--ink)}
+/* Goal system modal */
+.goal-modal-bg{position:fixed;inset:0;background:rgba(14,13,12,.5);z-index:300;display:flex;align-items:center;justify-content:center;padding:1rem;animation:fadeIn .2s ease}
+.goal-modal-bg.hidden{display:none}
+.goal-modal{background:var(--paper);border-radius:var(--r2);width:100%;max-width:520px;max-height:85vh;overflow-y:auto;border:1px solid var(--line);box-shadow:0 8px 40px rgba(0,0,0,.12)}
+.goal-modal-header{padding:1.25rem 1.5rem 1rem;border-bottom:1px solid var(--line);display:flex;align-items:flex-start;gap:12px}
+.goal-modal-status{width:14px;height:14px;border-radius:50%;flex-shrink:0;margin-top:3px}
+.goal-modal-title{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:400;color:var(--ink);line-height:1.35;flex:1}
+.goal-modal-close{background:none;border:none;cursor:pointer;font-size:18px;color:var(--ink3);padding:2px 6px;border-radius:6px;flex-shrink:0}
+.goal-modal-close:hover{background:var(--paper2);color:var(--ink)}
+.goal-modal-body{padding:1.25rem 1.5rem}
+.goal-modal-section{margin-bottom:1.25rem}
+.goal-modal-section:last-child{margin-bottom:0}
+.goal-modal-section-label{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--ink3);font-weight:600;margin-bottom:.6rem;display:flex;align-items:center;gap:6px}
+.goal-modal-identity{font-size:14px;color:var(--blue);font-style:italic;padding:.6rem .9rem;background:var(--blue-l);border-radius:8px;border-left:3px solid var(--blue)}
+.goal-modal-milestone{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px dashed var(--line);font-size:13px;color:var(--ink2)}
+.goal-modal-milestone:last-child{border-bottom:none}
+.goal-modal-ms-check{width:14px;height:14px;border-radius:3px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:8px}
+.goal-modal-ms-check.done{background:var(--gold);color:white}
+.goal-modal-ms-check.pending{border:1.5px solid var(--line)}
+.goal-modal-habit{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px dashed var(--line);font-size:13px;color:var(--ink2)}
+.goal-modal-habit:last-child{border-bottom:none}
+.goal-modal-empty{font-size:12px;color:var(--ink3);font-style:italic}
+.goal-modal-footer{padding:.9rem 1.5rem;border-top:1px solid var(--line);display:flex;gap:8px;justify-content:flex-end}
+.goal-text{font-size:13px;color:var(--ink2);line-height:1.35;cursor:pointer}
+.goal-text:hover{color:var(--ink);text-decoration:underline;text-decoration-style:dotted;text-underline-offset:3px}
 .week-subtoggle{display:none;gap:4px;margin-bottom:10px}
 .week-subtoggle.visible{display:flex}
 .week-sub-btn{font-family:'Syne',sans-serif;font-size:12px;font-weight:500;padding:5px 14px;border-radius:20px;border:1px solid var(--line);background:transparent;color:var(--ink3);cursor:pointer;transition:all .15s}
@@ -515,6 +544,7 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
 .todo-tag.p-high{background:var(--rose-l);color:var(--rose)}
 .todo-tag.horizon-today{background:var(--blue-l);color:var(--blue)}
 .todo-tag.horizon-week{background:var(--teal-l);color:var(--teal)}
+.todo-tag.horizon-week-next{background:var(--teal-l);color:var(--teal)}
 .todo-tag.horizon-longterm{background:var(--paper3);color:var(--ink3)}
 .todo-tag.time-quick{background:#E6F0E9;color:#1E4D30}
 .todo-tag.time-mid{background:#E8EFF7;color:#1A3A5C}
@@ -1689,17 +1719,19 @@ function filterTodos(){
 }
 
 function todoCardHTML(t){
-  return`<div class="todo-card${t.done?' done':''}">
+  try{
+    const horizonClass=t.horizon?t.horizon.replace('-','_'):'today';
+    return`<div class="todo-card${t.done?' done':''}">
       <div class="todo-top">
         <div class="todo-check${t.done?' checked':''}" onclick="toggleTodo(${t.id})">${t.done?'✓':''}</div>
         <div class="todo-info">
-          <div class="todo-text">${esc(t.text)}</div>
+          <div class="todo-text">${esc(t.text||'')}</div>
           <div class="todo-tags">
-            <span class="todo-tag horizon-${t.horizon}">${horizonLabel(t.horizon)}</span>
-            <span class="todo-tag ${t.priority}">${{'p-low':'Low','p-med':'Medium','p-high':'High'}[t.priority]}</span>
-            ${t.time?`<span class="todo-tag time-${t.time}">${{quick:'⚡ Quick',mid:'⏳ Mid',long:'🕐 Long'}[t.time]}</span>`:''}
+            <span class="todo-tag horizon-${t.horizon||'today'}">${horizonLabel(t.horizon)}</span>
+            <span class="todo-tag ${t.priority||'p-low'}">${{'p-low':'Low','p-med':'Medium','p-high':'High'}[t.priority]||'Low'}</span>
+            ${t.time?`<span class="todo-tag time-${t.time}">${{quick:'⚡ Quick',mid:'⏳ Mid',long:'🕐 Long'}[t.time]||''}</span>`:''}
             ${t.recur?`<span class="todo-tag" style="background:var(--teal-l);color:var(--teal)">🔁 ${{daily:'Daily',weekdays:'Weekdays',weekly:'Weekly'}[t.recur]||t.recur}</span>`:''}
-            ${dueBadge(t.due)}
+            ${dueBadge(t.due||'')}
           </div>
           ${t.note?`<div class="todo-note">${esc(t.note)}</div>`:''}
         </div>
@@ -1709,6 +1741,7 @@ function todoCardHTML(t){
         </div>
       </div>
     </div>`;
+  }catch(e){console.error('todoCardHTML error:',e,t);return'';}
 }
 
 function renderTodos(){
@@ -2533,7 +2566,7 @@ function goalHTML(bucket,sub,cat,idx,g){
     <div style="display:flex;align-items:flex-start;gap:8px;padding:7px 0">
       <div class="goal-dot ${g.status}" onclick="cycleStatus('${bucket}','${sub}','${cat}',${idx})" title="Click to cycle status">${sym[g.status]||''}</div>
       <div class="goal-info">
-        <div class="goal-text">${esc(g.text)}</div>
+        <div class="goal-text" onclick="openGoalModal('${bucket}','${sub}','${cat}',${idx})" title="View system">${esc(g.text)}</div>
         <div class="goal-meta">
           ${g.note?`<span class="goal-note">${esc(g.note)}</span>`:''}
           ${dueBadgeHtml}
@@ -2624,6 +2657,79 @@ function toggleHabitToday(bucket,sub,cat,idx,hi,today){
   h.checks[today]=!h.checks[today];
   save();renderHabitsToday();
   if(document.getElementById('view-overview').classList.contains('active'))renderOverview();
+}
+
+
+/* ── GOAL SYSTEM MODAL ───────────────────────────────────── */
+function openGoalModal(bucket,sub,cat,idx){
+  const g=D.goals[bucket][sub][cat][idx];
+  if(!g)return;
+  const statusColors={'not-started':'var(--line)','in-progress':'#C9900A','on-track':'#4D9E7A','achieved':'var(--blue)'};
+  const statusLabels={'not-started':'Not started','in-progress':'In progress','on-track':'On track','achieved':'Achieved'};
+  // Header
+  document.getElementById('gsm-title').textContent=g.text;
+  const dot=document.getElementById('gsm-status-dot');
+  dot.style.background=statusColors[g.status||'not-started'];
+  dot.title=statusLabels[g.status||'not-started'];
+  // Edit button
+  document.getElementById('gsm-edit-btn').onclick=()=>{closeGoalModal();openGoalEdit(bucket,sub,cat,idx);};
+  // Body
+  const milestones=g.milestones||[];
+  const habits=g.habits||[];
+  const today=NOW.toISOString().split('T')[0];
+  let html='';
+  // Status + due
+  let metaHtml=`<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:1rem">
+    <span style="font-size:11px;padding:2px 10px;border-radius:20px;font-weight:500;background:${statusColors[g.status||'not-started']}22;color:${statusColors[g.status||'not-started']}">${statusLabels[g.status||'not-started']}</span>
+    ${g.due?`<span style="font-size:11px;padding:2px 10px;border-radius:20px;background:var(--paper2);color:var(--ink3)">Due ${g.due}</span>`:''}
+    ${g.note?`<span style="font-size:11px;padding:2px 10px;border-radius:20px;background:var(--paper2);color:var(--ink3)">${g.note}</span>`:''}
+  </div>`;
+  html+=metaHtml;
+  // Identity
+  if(g.identity){
+    html+=`<div class="goal-modal-section">
+      <div class="goal-modal-section-label">🧠 Identity</div>
+      <div class="goal-modal-identity">I am someone who ${g.identity}</div>
+    </div>`;
+  }
+  // Milestones
+  html+=`<div class="goal-modal-section">
+    <div class="goal-modal-section-label">🪜 Milestones <span style="font-weight:400;opacity:.6">${milestones.filter(m=>m.done).length}/${milestones.length} done</span></div>`;
+  if(milestones.length){
+    html+=milestones.map(m=>`
+      <div class="goal-modal-milestone">
+        <div class="goal-modal-ms-check ${m.done?'done':'pending'}">${m.done?'✓':''}</div>
+        <span style="${m.done?'text-decoration:line-through;color:var(--ink3)':''}">${esc(m.text)}</span>
+      </div>`).join('');
+  } else {
+    html+=`<div class="goal-modal-empty">No milestones added yet.</div>`;
+  }
+  html+=`</div>`;
+  // Habits
+  html+=`<div class="goal-modal-section">
+    <div class="goal-modal-section-label">🔁 Habits</div>`;
+  if(habits.length){
+    html+=habits.map(h=>{
+      const checked=(h.checks||{})[today]||false;
+      return`<div class="goal-modal-habit">
+        <div style="width:14px;height:14px;border-radius:3px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:8px;${checked?'background:var(--green);color:white':'border:1.5px solid var(--line)'}">${checked?'✓':''}</div>
+        <span style="flex:1">${esc(h.text)}</span>
+        <span class="habit-freq">${h.freq}</span>
+        ${checked?'<span style="font-size:10px;color:var(--green);font-weight:500">✓ Done today</span>':''}
+      </div>`;
+    }).join('');
+  } else {
+    html+=`<div class="goal-modal-empty">No habits added yet.</div>`;
+  }
+  html+=`</div>`;
+  document.getElementById('gsm-body').innerHTML=html;
+  document.getElementById('goal-system-modal').classList.remove('hidden');
+  document.body.style.overflow='hidden';
+}
+
+function closeGoalModal(){
+  document.getElementById('goal-system-modal').classList.add('hidden');
+  document.body.style.overflow='';
 }
 
 function toggleSysPanel(sid){
@@ -3351,6 +3457,21 @@ window.addEventListener('beforeunload',e=>{
     <div class="modal-actions">
       <button class="modal-cancel" onclick="closeModals()">Cancel</button>
       <button class="modal-save" onclick="saveEntryEdit()">Save</button>
+    </div>
+  </div>
+</div>
+<!-- GOAL SYSTEM MODAL -->
+<div class="goal-modal-bg hidden" id="goal-system-modal" onclick="if(event.target===this)closeGoalModal()">
+  <div class="goal-modal">
+    <div class="goal-modal-header">
+      <div class="goal-modal-status" id="gsm-status-dot"></div>
+      <div class="goal-modal-title" id="gsm-title"></div>
+      <button class="goal-modal-close" onclick="closeGoalModal()">✕</button>
+    </div>
+    <div class="goal-modal-body" id="gsm-body"></div>
+    <div class="goal-modal-footer">
+      <button class="modal-cancel" onclick="closeGoalModal()">Close</button>
+      <button class="modal-save" id="gsm-edit-btn">✎ Edit goal</button>
     </div>
   </div>
 </div>
