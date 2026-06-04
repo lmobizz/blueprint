@@ -224,30 +224,21 @@ function dragGoalLeave(e){
 }
 
 function dragGoalDrop(e, targetBucket, targetSub, targetCat, targetIdx){
-  e.preventDefault();e.stopPropagation();
+  e.preventDefault();
   if(!dragCtx)return;
   const{bucket,sub,cat,idx}=dragCtx;
 
-  // Same array reorder
+  // Same array reorder — only handle if same category
   if(bucket===targetBucket&&sub===targetSub&&cat===targetCat&&idx!==targetIdx){
+    e.stopPropagation(); // only stop propagation for same-cat reorder
     const arr=D.goals[bucket][sub][cat];
     const [moved]=arr.splice(idx,1);
     const newIdx=idx<targetIdx?targetIdx-1:targetIdx;
     arr.splice(newIdx,0,moved);
     save();renderGoals();
-    dragCtx=null;return;
+    dragCtx=null;
   }
-
-  // Move to different category or sub-bucket
-  if(bucket!==targetBucket||sub!==targetSub||cat!==targetCat){
-    const srcArr=D.goals[bucket][sub][cat];
-    const [moved]=srcArr.splice(idx,1);
-    if(!D.goals[targetBucket][targetSub][targetCat])D.goals[targetBucket][targetSub][targetCat]=[];
-    const tgtArr=D.goals[targetBucket][targetSub][targetCat];
-    tgtArr.splice(targetIdx,0,moved);
-    save();renderGoals();
-  }
-  dragCtx=null;
+  // If different category, let it bubble up to dropIntoCategory
 }
 
 function dropIntoCategory(e, bucket, sub, cat){
@@ -255,17 +246,22 @@ function dropIntoCategory(e, bucket, sub, cat){
   if(!dragCtx)return;
   const{bucket:srcB,sub:srcS,cat:srcC,idx:srcIdx}=dragCtx;
 
-  // Don't drop into same category at end (already handled by dragGoalDrop)
+  // Same category — already handled or no-op
   if(srcB===bucket&&srcS===sub&&srcC===cat){dragCtx=null;return;}
 
-  // Move goal to new category
+  // Move goal to new category/sub-bucket
   ensureSubFormat(bucket,sub);
   if(!D.goals[bucket][sub][cat])D.goals[bucket][sub][cat]=[];
-  const srcArr=D.goals[srcB][srcS][srcC];
+  const srcArr=D.goals[srcB]?.[srcS]?.[srcC];
+  if(!srcArr){dragCtx=null;return;}
   const[moved]=srcArr.splice(srcIdx,1);
   D.goals[bucket][sub][cat].push(moved);
   save();renderGoals();
   dragCtx=null;
+  // Clean up visual states
+  document.querySelectorAll('.drag-over-zone,.drag-over').forEach(el=>{
+    el.classList.remove('drag-over-zone','drag-over');
+  });
 }
 
 /* ── HYPE MODAL ──────────────────────────────────────────── */
