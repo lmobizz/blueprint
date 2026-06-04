@@ -792,6 +792,7 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
             <option value="all">All tasks</option>
             <option value="today">Today</option>
             <option value="week">This week</option>
+            <option value="week-next">Next week</option>
             <option value="longterm">Long-term</option>
             <option value="active">Active</option>
             <option value="done">Completed</option>
@@ -818,6 +819,7 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
             <select class="form-select" id="todo-horizon">
               <option value="today">Today</option>
               <option value="week">This week</option>
+              <option value="week-next">Next week</option>
               <option value="longterm">Long-term</option>
             </select>
             <select class="form-select" id="todo-priority">
@@ -1171,7 +1173,7 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
     <div class="form-row"><label class="form-label">Task</label><input class="form-input" id="et-text"/></div>
     <div class="form-row"><label class="form-label">Horizon</label>
       <select class="form-select" id="et-horizon">
-        <option value="today">Today</option><option value="week">This week</option><option value="longterm">Long-term</option>
+        <option value="today">Today</option><option value="week">This week</option><option value="week-next">Next week</option><option value="longterm">Long-term</option>
       </select></div>
     <div class="form-row"><label class="form-label">Priority</label>
       <select class="form-select" id="et-priority">
@@ -1510,7 +1512,8 @@ function addTodo(){
   if(dueVal){
     const dueDate=new Date(dueVal+'T12:00:00');
     if(dueDate<=new Date(NOW.toDateString())) horizon='today';
-    else if(dueDate<=END_OF_NEXT_WEEK) horizon='week';
+    else if(dueDate<=END_OF_WEEK) horizon='week';
+    else if(dueDate<=END_OF_NEXT_WEEK) horizon='week-next';
     else horizon='longterm';
   }
   D.todos.unshift({
@@ -1565,7 +1568,7 @@ function checkRecurringTodos(){
     // Fix horizon for all active recurring tasks based on due date or recur type
     if(!t.done){
       const correctHorizon=t.due
-        ?(new Date(t.due+'T12:00:00')<=new Date(NOW.toDateString())?'today':new Date(t.due+'T12:00:00')<=END_OF_WEEK?'week':'longterm')
+        ?(new Date(t.due+'T12:00:00')<=new Date(NOW.toDateString())?'today':new Date(t.due+'T12:00:00')<=END_OF_WEEK?'week':new Date(t.due+'T12:00:00')<=END_OF_NEXT_WEEK?'week-next':'longterm')
         :(t.recur==='daily'||t.recur==='weekdays'?'today':t.recur==='weekly'?'week':'today');
       if(t.horizon!==correctHorizon){t.horizon=correctHorizon;changed=true;}
     }
@@ -1595,7 +1598,8 @@ function autoSetHorizon(dueVal){
   const d=new Date(dueVal+'T12:00:00');
   const sel=document.getElementById('todo-horizon');
   if(d<=new Date(NOW.toDateString())) sel.value='today';
-  else if(d<=END_OF_NEXT_WEEK) sel.value='week';
+  else if(d<=END_OF_WEEK) sel.value='week';
+  else if(d<=END_OF_NEXT_WEEK) sel.value='week-next';
   else sel.value='longterm';
 }
 
@@ -1650,7 +1654,7 @@ function dueBadge(due){
 }
 
 function horizonLabel(h){
-  return{today:'Today',week:'This week',longterm:'Long-term'}[h]||h;
+  return{today:'Today',week:'This week','week-next':'Next week',longterm:'Long-term'}[h]||h;
 }
 
 function filterTodos(){
@@ -1658,11 +1662,9 @@ function filterTodos(){
     if(todoFilter==='all')return true;
     if(todoFilter==='today')return t.horizon==='today';
     if(todoFilter==='week'){
-      if(t.horizon!=='week')return false;
-      if(!t.due)return true; // no due date — show in both
-      const d=new Date(t.due+'T12:00:00');
-      if(weekSub==='thisweek')return d<=END_OF_WEEK||d<START_OF_NEXT_WEEK;
-      if(weekSub==='nextweek')return d>=START_OF_NEXT_WEEK&&d<=END_OF_NEXT_WEEK;
+      if(t.horizon!=='week'&&t.horizon!=='week-next')return false;
+      if(weekSub==='thisweek')return t.horizon==='week';
+      if(weekSub==='nextweek')return t.horizon==='week-next';
       return true;
     }
     if(todoFilter==='longterm')return t.horizon==='longterm';
@@ -1726,8 +1728,13 @@ function renderTodos(){
     return;
   }
 
-  if(!filtered.length){list.innerHTML='<div class="empty-note" style="padding:1rem 0">No tasks here yet.</div>';return;}
-  list.innerHTML=filtered.map(t=>todoCardHTML(t)).join('');
+  // Sort: due date asc first, then no-due sorted by priority high→low
+  const priOrder={'p-high':0,'p-med':1,'p-low':2};
+  const withDueAll=filtered.filter(t=>t.due).sort((a,b)=>new Date(a.due)-new Date(b.due));
+  const noDueAll=filtered.filter(t=>!t.due).sort((a,b)=>(priOrder[a.priority]||1)-(priOrder[b.priority]||1));
+  const sorted=[...withDueAll,...noDueAll];
+  if(!sorted.length){list.innerHTML='<div class="empty-note" style="padding:1rem 0">No tasks here yet.</div>';return;}
+  list.innerHTML=sorted.map(t=>todoCardHTML(t)).join('');
 }
 
 function renderHabitsToday(){
@@ -1774,7 +1781,8 @@ function renderHabitsToday(){
 function updateFilterCounts(){
   const counts={all:D.todos.length,today:0,week:0,longterm:0,active:0,done:0,'p-high':0,'p-med':0,'p-low':0,quick:0,mid:0,long:0};
   D.todos.forEach(t=>{
-    counts[t.horizon]=(counts[t.horizon]||0)+1;
+    if(t.horizon==='week'||t.horizon==='week-next') counts.week=(counts.week||0)+1;
+    else counts[t.horizon]=(counts[t.horizon]||0)+1;
     if(t.done)counts.done++;else counts.active++;
     counts[t.priority]=(counts[t.priority]||0)+1;
     if(t.time)counts[t.time]=(counts[t.time]||0)+1;
@@ -1936,7 +1944,8 @@ function saveTodoEdit(){
   if(t.due){
     const dueDate=new Date(t.due+'T12:00:00');
     if(dueDate<=new Date(NOW.toDateString())) t.horizon='today';
-    else if(dueDate<=END_OF_NEXT_WEEK) t.horizon='week';
+    else if(dueDate<=END_OF_WEEK) t.horizon='week';
+    else if(dueDate<=END_OF_NEXT_WEEK) t.horizon='week-next';
     else t.horizon='longterm';
   } else {
     t.horizon=document.getElementById('et-horizon').value;
