@@ -3274,16 +3274,34 @@ function switchGoalModalTab(tab, skipRender){
 /* ── GOAL TIMELINE RENDERER ──────────────────────────────── */
 function renderGoalTimeline(bucket,sub,cat,idx){
   try{
-  const g=D.goals[bucket][sub][cat][idx];
+  // Safe lookup — sub might be nested object
+  let g=null;
+  try{
+    const subData=D.goals[bucket][sub];
+    if(subData&&subData[cat]){
+      g=Array.isArray(subData[cat])?subData[cat][idx]:null;
+    }
+    // fallback: search allGoals for matching text via goalModalCtx
+    if(!g&&goalModalCtx){
+      const all=D.goals[goalModalCtx.bucket]?.[goalModalCtx.sub]?.[goalModalCtx.cat];
+      if(Array.isArray(all))g=all[goalModalCtx.idx];
+    }
+  }catch(e2){console.error('goal lookup error',e2);}
   const body=document.getElementById('gsm-timeline-body');
-  if(!g||!body){console.error('renderGoalTimeline: missing g or body',bucket,sub,cat,idx);return;}
+  if(!g||!body){
+    if(body)body.innerHTML='<div class="tl-no-dates"><div>Could not load goal data.</div></div>';
+    return;
+  }
 
   const milestones=g.milestones||[];
   const todayStr=NOW.toISOString().split('T')[0];
   const todayTs=NOW.getTime();
 
   // Use goal id as creation timestamp, fall back to 90 days ago
-  const createdTs=g.createdAt||(typeof g.id==='number'?g.id:todayTs-90*24*60*60*1000);
+  // Safe creation time — g.id is Date.now() but only if it's a reasonable timestamp (after 2020)
+  const minTs=new Date('2020-01-01').getTime();
+  const idTs=(typeof g.id==='number'&&g.id>minTs)?g.id:null;
+  const createdTs=g.createdAt||(idTs&&idTs<todayTs?idTs:todayTs-90*24*60*60*1000);
   const dueTs=g.due?new Date(g.due+'T12:00:00').getTime():null;
 
   // Build events list: start, milestones with dates, today, due
@@ -3334,13 +3352,13 @@ function renderGoalTimeline(bucket,sub,cat,idx){
   const markers=[];
 
   // Start marker
-  markers.push({ts:startTs,x:leftPad,label:new Date(startTs).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}),dot:'start',above:false,sublabel:'Started'});
+  try{markers.push({ts:startTs,x:leftPad,label:new Date(startTs).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}),dot:'start',above:false,sublabel:'Started'});}catch(e){markers.push({ts:startTs,x:leftPad,label:'Start',dot:'start',above:false,sublabel:'Started'});}
 
   // Milestone markers (dated)
   msDated.forEach((m,i)=>{
     const x=leftPad+pos(m.ts)*trackW;
     const above=i%2===0;
-    markers.push({ts:m.ts,x,label:m.text.length>18?m.text.slice(0,18)+'…':m.text,dot:m.done?'milestone-done':'milestone-pending',above,sublabel:new Date(m.ts).toLocaleDateString('en-US',{month:'short',day:'numeric'})});
+    const msText=(m.text||'').toString();markers.push({ts:m.ts,x,label:msText.length>18?msText.slice(0,18)+'…':msText,dot:m.done?'milestone-done':'milestone-pending',above,sublabel:new Date(m.ts).toLocaleDateString('en-US',{month:'short',day:'numeric'})});
   });
 
   // Undated milestones — show as evenly spaced labels below if any
