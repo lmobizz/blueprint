@@ -2315,6 +2315,7 @@ function renderGoals(){
     });
   });
   restoreOpenState(wasOpen);
+  syncBucketToggleLabels();
 }
 function openTodoEdit(id){
   editTodoCtx=id;
@@ -2963,6 +2964,19 @@ function saveGoalEdit(){
   g.due=document.getElementById('eg-due').value;
   g.note=document.getElementById('eg-note').value.trim();
   save();closeModals();renderGoals();
+}
+
+function syncBucketToggleLabels(){
+  ['personal','professional'].forEach(key=>{
+    const btn=document.getElementById('bucket-toggle-'+key);
+    if(!btn)return;
+    const subs=D.goals[key];
+    const anyOpen=Object.keys(subs).some(sn=>{
+      const g=document.getElementById('goals-'+key+'_'+makeId(sn));
+      return g&&g.classList.contains('open');
+    });
+    btn.textContent=anyOpen?'collapse all':'expand all';
+  });
 }
 
 function goalHTML(bucket,sub,cat,idx,g){
