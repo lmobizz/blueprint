@@ -309,6 +309,10 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
 .people-fullscreen #view-people .hero{display:none}
 .people-fullscreen #people-page-wrap{max-width:100%;padding:1.5rem 2rem 4rem}
 .people-fullscreen .people-table{min-width:1400px}
+.cal-fullscreen #view-calendar{position:fixed;inset:0;z-index:150;background:var(--paper);overflow-y:auto}
+.cal-fullscreen #view-calendar .hero{display:none}
+.cal-fullscreen #view-calendar .page-wrap{max-width:100%;padding:1.5rem 2rem 4rem}
+.cal-fullscreen .cal-day{min-height:110px}
 .expand-btn{font-family:'Syne',sans-serif;font-size:12px;font-weight:500;padding:6px 14px;border-radius:20px;border:1px solid var(--line);background:var(--paper);color:var(--ink2);cursor:pointer;display:flex;align-items:center;gap:5px;transition:all .15s}
 .expand-btn:hover{border-color:var(--gold);color:var(--gold);background:var(--gold-l)}
 .expand-btn.active{background:var(--ink);color:var(--paper);border-color:var(--ink)}
@@ -1101,11 +1105,14 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
       <div class="hero-sub">Todos, goals, and habits with due dates — your life OS on a grid.</div>
     </div>
   </div>
-  <div class="page-wrap">
-    <div class="cal-legend">
-      <div class="cal-legend-item"><div class="cal-legend-dot" style="background:var(--blue-l);border:1px solid var(--blue)"></div>To-do due</div>
-      <div class="cal-legend-item"><div class="cal-legend-dot" style="background:var(--green-l);border:1px solid var(--green)"></div>Goal due</div>
-      <div class="cal-legend-item"><div class="cal-legend-dot" style="background:var(--gold-l);border:1px solid var(--gold)"></div>Habit (daily)</div>
+  <div class="page-wrap" id="cal-page-wrap">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:8px">
+      <div class="cal-legend" style="margin-bottom:0">
+        <div class="cal-legend-item"><div class="cal-legend-dot" style="background:var(--blue-l);border:1px solid var(--blue)"></div>To-do due</div>
+        <div class="cal-legend-item"><div class="cal-legend-dot" style="background:var(--green-l);border:1px solid var(--green)"></div>Goal due</div>
+        <div class="cal-legend-item"><div class="cal-legend-dot" style="background:var(--gold-l);border:1px solid var(--gold)"></div>Habit</div>
+      </div>
+      <button class="expand-btn" id="cal-expand-btn" onclick="toggleCalFullscreen()">⛶ Expand</button>
     </div>
     <div class="cal-header">
       <button class="cal-nav-btn" onclick="calPrev()">← Prev</button>
@@ -2119,6 +2126,23 @@ function saveTodoEdit(){
   save();closeModals();renderTodos();updateFilterCounts();
 }
 
+
+function switchHiwTab(tab){
+  const why=document.getElementById('hiw-panel-why');
+  const tech=document.getElementById('hiw-panel-tech');
+  const btnWhy=document.getElementById('hiw-tab-why');
+  const btnTech=document.getElementById('hiw-tab-tech');
+  if(tab==='why'){
+    why.style.display='block';tech.style.display='none';
+    btnWhy.style.background='var(--ink)';btnWhy.style.color='var(--paper)';
+    btnTech.style.background='transparent';btnTech.style.color='var(--ink3)';
+  } else {
+    why.style.display='none';tech.style.display='block';
+    btnTech.style.background='var(--ink)';btnTech.style.color='var(--paper)';
+    btnWhy.style.background='transparent';btnWhy.style.color='var(--ink3)';
+  }
+}
+
 function closeModals(){
   document.querySelectorAll('.modal-bg').forEach(m=>m.classList.add('hidden'));
   editGoalCtx=null;editTodoCtx=null;editPersonIdx=null;editEntryIdx=null;
@@ -2532,10 +2556,22 @@ function togglePeopleFullscreen(){
   document.body.style.overflow=isFS?'hidden':'';
 }
 
+function toggleCalFullscreen(){
+  const isFS=document.body.classList.toggle('cal-fullscreen');
+  const btn=document.getElementById('cal-expand-btn');
+  btn.textContent=isFS?'✕ Exit fullscreen':'⛶ Expand';
+  btn.classList.toggle('active',isFS);
+  document.body.style.overflow=isFS?'hidden':'';
+  renderCalendar(); // re-render so day cells resize
+}
+
 // Esc key exits fullscreen
 document.addEventListener('keydown',e=>{
   if(e.key==='Escape'&&document.body.classList.contains('people-fullscreen')){
     togglePeopleFullscreen();
+  }
+  if(e.key==='Escape'&&document.body.classList.contains('cal-fullscreen')){
+    toggleCalFullscreen();
   }
 });
 
@@ -2702,7 +2738,7 @@ function goalHTML(bucket,sub,cat,idx,g){
     <div class="system-panel" id="${sid}" style="display:none">
       <div class="sys-section">
         <div class="sys-section-label">🧠 Identity — I am someone who…</div>
-        <input class="identity-input" placeholder="e.g. shows up consistently" value="${esc(g.identity||'')}" onchange="saveIdentity('${bucket}','${sub}','${cat}',${idx},this.value)"/>
+        <input class="identity-input" placeholder="e.g. shows up consistently" value="${esc(g.identity||'')}" onchange="saveIdentity('${bucket}','${sub}','${cat}',${idx},this.value)" autocomplete="off" autocorrect="off" data-lpignore="true" data-form-type="other"/>
       </div>
       <div class="sys-section">
         <div class="sys-section-label">🪜 Milestones</div>
@@ -3859,11 +3895,29 @@ window.addEventListener('beforeunload',e=>{
   <div class="hiw-modal" style="position:relative">
     <button class="hiw-close" onclick="document.getElementById('hiw-modal-bg').classList.add('hidden')">✕</button>
     <div class="hiw-title">Behind your <em>Blueprint</em></div>
-    <div class="hiw-intro">Here's exactly what's powering this — explained the way you'd tell a friend.</div>
 
-    <div class="hiw-quote">"Five tools working together to give you a personal life OS that lives in the cloud, belongs entirely to you, and works from any device on earth."</div>
+    <!-- TAB SWITCHER -->
+    <div style="display:flex;gap:4px;margin-bottom:1.5rem;background:var(--paper2);border-radius:20px;padding:3px;border:1px solid var(--line)">
+      <button id="hiw-tab-why" onclick="switchHiwTab('why')" style="flex:1;font-family:'Syne',sans-serif;font-size:12px;font-weight:500;padding:6px 12px;border-radius:18px;border:none;cursor:pointer;transition:all .2s;background:var(--ink);color:var(--paper)">Why I built this</button>
+      <button id="hiw-tab-tech" onclick="switchHiwTab('tech')" style="flex:1;font-family:'Syne',sans-serif;font-size:12px;font-weight:500;padding:6px 12px;border-radius:18px;border:none;cursor:pointer;transition:all .2s;background:transparent;color:var(--ink3)">What's powering this</button>
+    </div>
 
-    <div class="hiw-stack">
+    <!-- WHY I BUILT THIS -->
+    <div id="hiw-panel-why">
+      <div class="hiw-quote" style="font-style:normal;font-size:.9rem">"Most productivity tools are built for output. This one is built for clarity."</div>
+      <div style="font-size:13px;color:var(--ink2);line-height:1.8;display:flex;flex-direction:column;gap:.9rem">
+        <p>I wasn't looking for another app to manage tasks. I already had those. What I didn't have was a single place where I could see — clearly and honestly — who I was trying to become, what I was working toward, and whether my daily actions were actually connected to any of it.</p>
+        <p>I built Blueprint because I wanted to slow down before speeding up. To get grounded before getting busy. To lay the foundation — goals, habits, relationships, my story — before jumping into the next hundred things.</p>
+        <p>It started as a simple idea: what if everything that actually matters lived in one place? Not meetings, not emails, not noise. Just the things I'm building toward. The person I'm becoming. The people I want to show up for.</p>
+        <p style="font-family:'Playfair Display',serif;font-size:1rem;font-style:italic;color:var(--ink)">This is that place.</p>
+      </div>
+    </div>
+
+    <!-- WHAT'S POWERING THIS -->
+    <div id="hiw-panel-tech" style="display:none">
+      <div class="hiw-intro">Here's exactly what's powering this — explained the way you'd tell a friend.</div>
+      <div class="hiw-quote">"Five tools working together to give you a personal life OS that lives in the cloud, belongs entirely to you, and works from any device on earth."</div>
+      <div class="hiw-stack">
       <div class="hiw-item">
         <div class="hiw-icon">🐙</div>
         <div>
@@ -3905,6 +3959,7 @@ window.addEventListener('beforeunload',e=>{
         </div>
       </div>
     </div>
+    </div><!-- end hiw-panel-tech -->
 
     <div class="hiw-footer">
       Built with Claude · Hosted free on GitHub · Data stored free on Supabase<br>
