@@ -231,24 +231,24 @@ function dragGoalLeave(e){
 
 function dragGoalDrop(e, targetBucket, targetSub, targetCat, targetIdx){
   e.preventDefault();
-  e.stopPropagation();
-  e.currentTarget.classList.remove('drag-over');
   if(!dragCtx)return;
   const{bucket,sub,cat,idx}=dragCtx;
 
-  // Reorder within same category
-  if(bucket===targetBucket&&sub===targetSub&&cat===targetCat&&idx!==targetIdx){
-    const arr=D.goals[bucket][sub][cat];
-    const[moved]=arr.splice(idx,1);
-    arr.splice(idx<targetIdx?targetIdx-1:targetIdx,0,moved);
-    save();renderGoals();dragCtx=null;return;
+  // Only handle same-category reorder here; let cross-category drops bubble to zone handler
+  if(bucket===targetBucket&&sub===targetSub&&cat===targetCat){
+    e.stopPropagation(); // only stop for same-cat reorder
+    e.currentTarget.classList.remove('drag-over');
+    if(idx!==targetIdx){
+      const arr=D.goals[bucket][sub][cat];
+      const[moved]=arr.splice(idx,1);
+      arr.splice(idx<targetIdx?targetIdx-1:targetIdx,0,moved);
+      save();renderGoals();
+    }
+    dragCtx=null;
+    return;
   }
-
-  // Move to different category — same as dropIntoCategory but at specific position
-  if(bucket!==targetBucket||sub!==targetSub||cat!==targetCat){
-    moveGoalToCategory(bucket,sub,cat,idx,targetBucket,targetSub,targetCat,targetIdx);
-  }
-  dragCtx=null;
+  // Cross-category: don't stopPropagation — let event bubble to cat-goals/sub-goals ondrop
+  e.currentTarget.classList.remove('drag-over');
 }
 
 function handleCatDrop(e, el){
@@ -332,6 +332,7 @@ body.dark-mode .hype-gold-bar{opacity:.5}
 .drag-handle:hover{opacity:1!important;color:var(--gold)}
 body.goal-dragging .goal-item-inner{pointer-events:none}
 body.goal-dragging .goal-info{pointer-events:none}
+
 body.goal-dragging .system-panel{pointer-events:none}
 .version-toast{position:fixed;bottom:1.5rem;left:1.5rem;background:#0E0D0C;color:rgba(255,255,255,.85);font-family:'Syne',sans-serif;font-size:11px;padding:6px 14px;border-radius:20px;z-index:500;opacity:0;transform:translateY(8px);transition:opacity .4s ease,transform .4s ease;pointer-events:none;border:1px solid rgba(184,134,11,.3);letter-spacing:.02em}
 body.dark-mode .version-toast{background:#1C1917;border-color:rgba(184,134,11,.5);color:rgba(255,255,255,.9)}
@@ -2618,14 +2619,13 @@ function toggleAllSubs(bucketKey){
 }
 
 function renderGoals(){
-  // Save open state to localStorage BEFORE wiping DOM
-  const wasOpen=getOpenState();
-  // Also manually persist to localStorage right now
-  try{
-    const openIds=[];
-    document.querySelectorAll('.sub-goals.open,.cat-goals.open').forEach(el=>openIds.push(el.id));
-    if(openIds.length)localStorage.setItem('bp_goals_open',JSON.stringify(openIds));
-  }catch(e){}
+  // Save open state BEFORE wiping DOM (only if there are open elements to save)
+  const currentOpen=[];
+  document.querySelectorAll('.sub-goals.open,.cat-goals.open').forEach(el=>{if(el.id)currentOpen.push(el.id);});
+  if(currentOpen.length>0){
+    try{localStorage.setItem('bp_goals_open',JSON.stringify(currentOpen));}catch(e){}
+  }
+  const wasOpen={};
   const c=document.getElementById('buckets-container');c.innerHTML='';
   [{key:'personal',label:'Personal',cls:'personal',icon:'🌱'},{key:'professional',label:'Professional',cls:'professional',icon:'🚀'}].forEach(b=>{
     const subs=D.goals[b.key];
@@ -2717,14 +2717,11 @@ function renderGoals(){
       sw.appendChild(el);
     });
   });
-  // Restore from localStorage first (cold refresh), then from wasOpen (same-session)
-  const savedIds=[];
+  // Restore from localStorage (persists across refresh) merged with any same-session state
   try{
     const raw=localStorage.getItem('bp_goals_open');
-    if(raw)JSON.parse(raw).forEach(id=>savedIds.push(id));
+    if(raw)JSON.parse(raw).forEach(id=>wasOpen[id]=true);
   }catch(e){}
-  // Merge saved IDs into wasOpen
-  savedIds.forEach(id=>wasOpen[id]=true);
   restoreOpenState(wasOpen);
   syncBucketToggleLabels();
   initMacroTimelines();
@@ -4971,6 +4968,6 @@ window.addEventListener('beforeunload',e=>{
     <button class="hype-close" onclick="closeHype()">Let's get it →</button>
   </div>
 </div>
-<div class="version-toast" id="version-toast">✦ Build Jun 04 · 11:23 AM CT ✓</div>
+<div class="version-toast" id="version-toast">✦ Build Jun 04 · 12:48 PM CT ✓</div>
 </body>
 </html>
