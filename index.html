@@ -1405,7 +1405,10 @@ body.dark-mode .profile-dropdown{background:var(--paper2);border-color:var(--lin
         <option value="in-progress">In progress</option>
         <option value="achieved">Achieved</option>
       </select></div>
-    <div class="form-row"><label class="form-label">Due date</label><input class="form-input" type="date" id="eg-due"/></div>
+    <div style="display:flex;gap:8px">
+      <div class="form-row" style="flex:1"><label class="form-label">Start date</label><input class="form-input" type="date" id="eg-start"/></div>
+      <div class="form-row" style="flex:1"><label class="form-label">Due date</label><input class="form-input" type="date" id="eg-due"/></div>
+    </div>
     <div class="form-row"><label class="form-label">Note / metric</label><textarea class="form-textarea" id="eg-note" placeholder="Target, context, milestone..."></textarea></div>
     <div class="modal-actions">
       <button class="modal-cancel" onclick="closeModals()">Cancel</button>
@@ -1519,6 +1522,7 @@ function showApp(){
   if(pdEmail)pdEmail.textContent=email;
   const greet=document.getElementById('hero-greeting');
   if(greet) greet.textContent=firstName;
+  scheduleMidnightReset();
 }
 
 /* ── CLOUD DATA ──────────────────────────────────────── */
@@ -2276,7 +2280,7 @@ function renderMacroTimeline(bucket){
         goals.push({
           g,catName,idx,
           dueTs:new Date(g.due+'T12:00:00').getTime(),
-          createdTs:g.createdAt||(typeof g.id==='number'&&g.id>new Date('2020-01-01').getTime()?g.id:todayTs-180*24*60*60*1000)
+          createdTs:g.startDate?new Date(g.startDate+'T12:00:00').getTime():g.createdAt||(typeof g.id==='number'&&g.id>new Date('2020-01-01').getTime()&&g.id<todayTs-86400000?g.id:new Date(g.due+'T12:00:00').getTime()-180*24*60*60*1000)
         });
       });
     });
@@ -3158,6 +3162,9 @@ function openGoalEdit(bucket,sub,cat,idx){
   const g=D.goals[bucket][sub][cat][idx];
   document.getElementById('eg-text').value=g.text;
   document.getElementById('eg-status').value=g.status;
+  // Convert createdAt timestamp to date string for start date field
+  const startDateVal=g.startDate||(g.createdAt?new Date(g.createdAt).toISOString().split('T')[0]:'');
+  document.getElementById('eg-start').value=startDateVal;
   document.getElementById('eg-due').value=g.due||'';
   document.getElementById('eg-note').value=g.note||'';
   document.getElementById('edit-goal-modal').classList.remove('hidden');
@@ -3169,6 +3176,11 @@ function saveGoalEdit(){
   const g=D.goals[bucket][sub][cat][idx];
   g.text=document.getElementById('eg-text').value.trim();
   g.status=document.getElementById('eg-status').value;
+  const startVal=document.getElementById('eg-start').value;
+  if(startVal){
+    g.startDate=startVal;
+    g.createdAt=new Date(startVal+'T12:00:00').getTime();
+  }
   g.due=document.getElementById('eg-due').value;
   g.note=document.getElementById('eg-note').value.trim();
   save();closeModals();renderGoals();
@@ -3485,8 +3497,12 @@ function openGoalModal(bucket,sub,cat,idx){
   // ── Timeline SVG ─────────────────────────────────────
   const createdTs=(()=>{
     const minTs=new Date('2020-01-01').getTime();
-    const idTs=(typeof g.id==='number'&&g.id>minTs)?g.id:null;
-    return g.createdAt||(idTs&&idTs<todayTs?idTs:todayTs-90*24*60*60*1000);
+    // Only use g.id if it's before today (not created today)
+    const idTs=(typeof g.id==='number'&&g.id>minTs&&g.id<todayTs-86400000)?g.id:null;
+    const fallback=g.due?new Date(g.due+'T12:00:00').getTime()-180*24*60*60*1000:todayTs-180*24*60*60*1000;
+    // startDate takes highest priority
+    if(g.startDate)return new Date(g.startDate+'T12:00:00').getTime();
+    return g.createdAt||(idTs||fallback);
   })();
   const dueTs=g.due?new Date(g.due+'T12:00:00').getTime():null;
   const msDated=milestones.filter(m=>m.due).map(m=>({
@@ -4470,6 +4486,26 @@ function renderCalDetail(dateStr,items){
 
   html+=`</div>`;
   panel.innerHTML=html;
+}
+
+
+/* ── MIDNIGHT AUTO-RESET ─────────────────────────────────── */
+function scheduleMidnightReset(){
+  const now=new Date();
+  const tomorrow=new Date(now);
+  tomorrow.setDate(tomorrow.getDate()+1);
+  tomorrow.setHours(0,0,1,0); // 12:00:01am
+  const msUntilMidnight=tomorrow.getTime()-now.getTime();
+  setTimeout(()=>{
+    console.log('Midnight reset triggered');
+    checkRecurringTodos();
+    renderTodos();
+    updateFilterCounts();
+    // If on overview, refresh it too
+    if(document.getElementById('view-overview').classList.contains('active'))renderOverview();
+    // Schedule next midnight reset
+    scheduleMidnightReset();
+  },msUntilMidnight);
 }
 
 window.addEventListener('beforeunload',e=>{
