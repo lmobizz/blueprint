@@ -1693,6 +1693,7 @@ async function loadFromCloud(){
       updateFilterCounts();
       fetchMorningQuote();
       restoreActiveTab();
+      restoreWhyOpenState();
     }catch(e){}
   }
 
@@ -1712,6 +1713,7 @@ async function loadFromCloud(){
       renderOverview();
       updateFilterCounts();
       restoreActiveTab();
+      restoreWhyOpenState();
     } else {
       updateBackupStatus('Ready');
     }
@@ -2927,7 +2929,17 @@ function toggleWhy(){
   const chev=document.getElementById('why-chevron');
   const open=body.classList.toggle('open');
   chev.classList.toggle('open',open);
+  try{localStorage.setItem('bp_why_open',open?'1':'0');}catch(e){}
   if(open) loadWhyAnswers();
+}
+
+function restoreWhyOpenState(){
+  const was=localStorage.getItem('bp_why_open');
+  if(was==='1'){
+    const body=document.getElementById('why-body');
+    const chev=document.getElementById('why-chevron');
+    if(body){body.classList.add('open');chev&&chev.classList.add('open');loadWhyAnswers();}
+  }
 }
 
 function loadWhyAnswers(){
@@ -5128,6 +5140,6 @@ window.addEventListener('beforeunload',e=>{
     <button class="hype-close" onclick="closeHype()">Let's get it →</button>
   </div>
 </div>
-<div class="version-toast" id="version-toast">✦ Build Jun 04 · 5:18 PM CT ✓</div>
+<div class="version-toast" id="version-toast">✦ Build Jun 04 · 5:35 PM CT ✓</div>
 </body>
 </html>
