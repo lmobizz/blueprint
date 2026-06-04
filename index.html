@@ -86,6 +86,15 @@ body.dark-mode .profile-header{background:var(--paper2);border-color:var(--line)
 body.dark-mode .profile-footer{background:var(--paper2);border-color:var(--line)}
 body.dark-mode .hiw-modal{background:var(--paper2)}
 body.dark-mode .hiw-item{background:var(--paper3);border-color:var(--line)}
+body.dark-mode .hiw-item-title{color:var(--ink)}
+body.dark-mode .hiw-item-desc{color:var(--ink3)}
+body.dark-mode .hiw-item-tag{background:var(--paper2);color:var(--ink3);border:1px solid var(--line)}
+body.dark-mode .hiw-quote{background:var(--paper3);color:var(--ink2);border:1px solid var(--line)}
+body.dark-mode .hiw-title{color:var(--ink)}
+body.dark-mode .hiw-footer{color:var(--ink3)}
+body.dark-mode .hiw-footer a{color:var(--gold)}
+body.dark-mode .hiw-close{color:var(--ink3)}
+body.dark-mode .hiw-close:hover{background:var(--paper3);color:var(--ink)}
 body.dark-mode .login-card{background:var(--paper2);border-color:var(--line)}
 body.dark-mode .google-btn{background:var(--paper3);color:var(--ink);border-color:var(--line)}
 body.dark-mode .google-btn:hover{background:var(--paper2);border-color:var(--gold)}
@@ -101,6 +110,38 @@ body.dark-mode .cat-header:hover{background:var(--paper3)}
 body.dark-mode .system-panel{background:var(--paper3);border-color:var(--line)}
 /* Undo toast */
 body.dark-mode .undo-toast{background:var(--paper3)}
+/* ── CALENDAR ────────────────────────────────────────── */
+.cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem}
+.cal-nav-btn{font-family:'Syne',sans-serif;font-size:13px;padding:6px 14px;border:1px solid var(--line);border-radius:20px;background:transparent;color:var(--ink2);cursor:pointer;transition:all .15s}
+.cal-nav-btn:hover{border-color:var(--gold);color:var(--gold)}
+.cal-month-label{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:400;color:var(--ink)}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:1.5rem}
+.cal-day-header{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink3);text-align:center;padding:4px 0;font-weight:600}
+.cal-day{min-height:80px;border:1px solid var(--line);border-radius:var(--r);padding:5px 6px;background:var(--paper);cursor:pointer;transition:border-color .15s;position:relative}
+.cal-day:hover{border-color:var(--gold)}
+.cal-day.today{border-color:var(--gold);border-width:2px;background:var(--gold-l)}
+.cal-day.other-month{background:var(--paper2);opacity:.5}
+.cal-day.has-items{background:var(--paper)}
+.cal-day-num{font-size:11px;font-weight:600;color:var(--ink3);margin-bottom:3px}
+.cal-day.today .cal-day-num{color:var(--gold);font-weight:700}
+.cal-dot{font-size:10px;padding:1px 5px;border-radius:4px;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;line-height:1.4}
+.cal-dot.todo{background:var(--blue-l);color:var(--blue)}
+.cal-dot.goal{background:var(--green-l);color:var(--green)}
+.cal-dot.habit{background:var(--gold-l);color:var(--gold)}
+.cal-dot.more{background:var(--paper3);color:var(--ink3)}
+.cal-legend{display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:1rem}
+.cal-legend-item{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--ink3)}
+.cal-legend-dot{width:10px;height:10px;border-radius:3px;flex-shrink:0}
+.cal-detail-panel{background:var(--paper);border:1px solid var(--line);border-radius:var(--r2);padding:1.25rem 1.5rem;margin-top:1rem}
+.cal-detail-title{font-family:'Playfair Display',serif;font-size:1rem;font-weight:400;color:var(--ink);margin-bottom:.9rem;display:flex;align-items:center;justify-content:space-between}
+.cal-detail-item{display:flex;align-items:flex-start;gap:9px;padding:7px 0;border-bottom:1px dashed var(--line);font-size:13px;color:var(--ink2)}
+.cal-detail-item:last-child{border-bottom:none}
+.cal-detail-badge{font-size:10px;padding:1px 7px;border-radius:20px;font-weight:500;flex-shrink:0;margin-top:1px}
+@media(max-width:640px){.cal-day{min-height:50px}.cal-dot{display:none}.cal-day.has-items::after{content:'•';position:absolute;bottom:3px;right:4px;color:var(--gold);font-size:14px}}
+body.dark-mode .cal-day{background:var(--paper2);border-color:var(--line)}
+body.dark-mode .cal-day.today{background:#201C0A;border-color:var(--gold)}
+body.dark-mode .cal-day.other-month{background:var(--paper3)}
+body.dark-mode .cal-detail-panel{background:var(--paper2);border-color:var(--line)}
 .dark-toggle{font-family:'Syne',sans-serif;font-size:13px;background:none;border:none;cursor:pointer;color:var(--ink3);padding:3px 8px;border-radius:6px;transition:color .15s;line-height:1}
 .dark-toggle:hover{color:var(--ink)}
 /* Goal system modal */
@@ -708,6 +749,7 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
     <button class="nav-tab" onclick="showView('goals',this)">Goals</button>
     <button class="nav-tab" onclick="showView('story',this)">My Story</button>
     <button class="nav-tab" onclick="showView('people',this)">People</button>
+    <button class="nav-tab" onclick="showView('calendar',this)">Calendar</button>
   </div>
   <button class="dark-toggle" id="dark-toggle-btn" onclick="toggleDarkMode()" title="Toggle dark mode">🌙</button>
   <div class="user-badge">
@@ -725,6 +767,7 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
   <button class="mobile-nav-tab" onclick="mobileNav('goals',this)">Goals</button>
   <button class="mobile-nav-tab" onclick="mobileNav('story',this)">My Story</button>
   <button class="mobile-nav-tab" onclick="mobileNav('people',this)">People</button>
+  <button class="mobile-nav-tab" onclick="mobileNav('calendar',this)">Calendar</button>
 </div>
 <div class="backup-bar">
   <div class="backup-dot" id="backup-dot"></div>
@@ -998,16 +1041,19 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
     </div>
 
     <div class="narrative-card" id="narrative-card">
-      <div class="narrative-label">
+      <div class="narrative-label" onclick="toggleNarrative()" style="cursor:pointer;user-select:none">
         ✦ My narrative — AI generated
-        <span id="narrative-date" style="margin-left:auto;font-size:10px;color:var(--ink3)"></span>
+        <span id="narrative-date" style="font-size:10px;color:var(--ink3)"></span>
+        <span id="narrative-chevron" style="margin-left:auto;font-size:11px;color:var(--ink3);transition:transform .2s;display:inline-block">▼</span>
       </div>
-      <div id="narrative-body">
-        <div class="narrative-empty">Your narrative will be generated based on your wins, lessons, goals and habits. Add some entries first, then generate it below.</div>
-      </div>
-      <div class="narrative-actions">
-        <button class="narrative-btn primary" onclick="generateNarrative()">✦ Generate my narrative</button>
-        <button class="narrative-btn" id="narrative-copy-btn" style="display:none" onclick="copyNarrative()">Copy</button>
+      <div id="narrative-collapsible">
+        <div id="narrative-body" style="margin-top:.75rem">
+          <div class="narrative-empty">Your narrative will be generated based on your wins, lessons, goals and habits. Add some entries first, then generate it below.</div>
+        </div>
+        <div class="narrative-actions">
+          <button class="narrative-btn primary" onclick="generateNarrative()">✦ Generate my narrative</button>
+          <button class="narrative-btn" id="narrative-copy-btn" style="display:none" onclick="copyNarrative()">Copy</button>
+        </div>
       </div>
     </div>
     <div class="story-layout">
@@ -1048,6 +1094,28 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
 </div>
 
 <!-- ═══ PEOPLE ════════════════════════════════════════════ -->
+<div class="view" id="view-calendar">
+  <div class="hero">
+    <div>
+      <div class="hero-title">My <em>Calendar</em></div>
+      <div class="hero-sub">Todos, goals, and habits with due dates — your life OS on a grid.</div>
+    </div>
+  </div>
+  <div class="page-wrap">
+    <div class="cal-legend">
+      <div class="cal-legend-item"><div class="cal-legend-dot" style="background:var(--blue-l);border:1px solid var(--blue)"></div>To-do due</div>
+      <div class="cal-legend-item"><div class="cal-legend-dot" style="background:var(--green-l);border:1px solid var(--green)"></div>Goal due</div>
+      <div class="cal-legend-item"><div class="cal-legend-dot" style="background:var(--gold-l);border:1px solid var(--gold)"></div>Habit (daily)</div>
+    </div>
+    <div class="cal-header">
+      <button class="cal-nav-btn" onclick="calPrev()">← Prev</button>
+      <div class="cal-month-label" id="cal-month-label"></div>
+      <button class="cal-nav-btn" onclick="calNext()">Next →</button>
+    </div>
+    <div class="cal-grid" id="cal-grid"></div>
+    <div id="cal-detail" style="display:none"></div>
+  </div>
+</div>
 <div class="view" id="view-people">
   <div class="hero">
     <div>
@@ -1450,6 +1518,7 @@ function showView(v,btn){
   if(v==='overview')renderOverview();
   if(v==='todo'){renderTodos();updateFilterCounts();}
   if(v==='people')renderPeople();
+  if(v==='calendar')renderCalendar();
 }
 
 /* ── DATE / HERO ─────────────────────────────────────── */
@@ -1885,6 +1954,50 @@ function restoreOpenState(open){
 
 function makeId(str){return str.replace(/[^a-zA-Z0-9]/g,'_');}
 
+
+/* ── GOAL BUCKET EXPAND / COLLAPSE ALL ──────────────────── */
+function expandAllSubs(bucketKey){
+  const subs=D.goals[bucketKey];
+  Object.keys(subs).forEach(sn=>{
+    const sid=bucketKey+'_'+makeId(sn);
+    const g=document.getElementById('goals-'+sid);
+    const ch=document.getElementById('chev-'+sid);
+    const ar=document.getElementById('ar-'+sid);
+    if(g){g.classList.add('open');if(ch)ch.classList.add('open');if(ar)ar.style.display='flex';}
+    // also expand categories inside
+    const subData=D.goals[bucketKey][sn];
+    if(subData&&typeof subData==='object'){
+      Object.keys(subData).filter(k=>k!=='_goals').forEach(catName=>{
+        const cid=sid+'_cat_'+makeId(catName);
+        const cat=document.getElementById(cid);
+        const cch=document.getElementById('chev-'+cid);
+        if(cat){cat.classList.add('open');if(cch)cch.classList.add('open');}
+      });
+    }
+  });
+}
+
+function collapseAllSubs(bucketKey){
+  const subs=D.goals[bucketKey];
+  Object.keys(subs).forEach(sn=>{
+    const sid=bucketKey+'_'+makeId(sn);
+    const g=document.getElementById('goals-'+sid);
+    const ch=document.getElementById('chev-'+sid);
+    const ar=document.getElementById('ar-'+sid);
+    if(g){g.classList.remove('open');if(ch)ch.classList.remove('open');if(ar)ar.style.display='none';}
+    // also collapse categories inside
+    const subData=D.goals[bucketKey][sn];
+    if(subData&&typeof subData==='object'){
+      Object.keys(subData).filter(k=>k!=='_goals').forEach(catName=>{
+        const cid=sid+'_cat_'+makeId(catName);
+        const cat=document.getElementById(cid);
+        const cch=document.getElementById('chev-'+cid);
+        if(cat){cat.classList.remove('open');if(cch)cch.classList.remove('open');}
+      });
+    }
+  });
+}
+
 function renderGoals(){
   const wasOpen=getOpenState();
   const c=document.getElementById('buckets-container');c.innerHTML='';
@@ -1904,6 +2017,10 @@ function renderGoals(){
         <span class="bucket-icon">${b.icon}</span>
         <span class="bucket-name">${b.label}</span>
         <span class="bucket-meta">${achG}/${bucketGoals.length} · ${pct}%</span>
+        <div style="display:flex;gap:4px;margin-left:8px">
+          <button onclick="expandAllSubs('${b.key}')" title="Expand all" style="font-family:'Syne',sans-serif;font-size:10px;padding:2px 8px;border-radius:20px;border:1px solid var(--line);background:transparent;color:var(--ink3);cursor:pointer;transition:all .15s" onmouseover="this.style.borderColor='var(--gold)';this.style.color='var(--gold)'" onmouseout="this.style.borderColor='var(--line)';this.style.color='var(--ink3)'">Expand all</button>
+          <button onclick="collapseAllSubs('${b.key}')" title="Collapse all" style="font-family:'Syne',sans-serif;font-size:10px;padding:2px 8px;border-radius:20px;border:1px solid var(--line);background:transparent;color:var(--ink3);cursor:pointer;transition:all .15s" onmouseover="this.style.borderColor='var(--gold)';this.style.color='var(--gold)'" onmouseout="this.style.borderColor='var(--line)';this.style.color='var(--ink3)'">Collapse all</button>
+        </div>
       </div>
       <div class="bucket-prog"><div class="bucket-prog-fill" style="width:${pct}%"></div></div>
       <div class="sub-buckets" id="sub-${b.key}"></div>`;
@@ -2137,6 +2254,7 @@ function copyManifesto(){
 function renderStory(){
   // refresh why answers if panel is open
   if(document.getElementById('why-body')?.classList.contains('open')) loadWhyAnswers();
+  initNarrativeState();
   // restore saved narrative if exists
   if(D.narrativeText){
     const paras=D.narrativeText.trim().split('\n\n').filter(Boolean);
@@ -3335,6 +3453,28 @@ async function generateNarrative(){
   btn.textContent='✦ Regenerate my narrative';btn.disabled=false;
 }
 
+
+function toggleNarrative(){
+  const col=document.getElementById('narrative-collapsible');
+  const chev=document.getElementById('narrative-chevron');
+  if(!col)return;
+  const isOpen=col.style.display!=='none';
+  col.style.display=isOpen?'none':'block';
+  if(chev)chev.style.transform=isOpen?'rotate(-90deg)':'rotate(0deg)';
+  localStorage.setItem('bp_narrative_open',isOpen?'0':'1');
+}
+
+function initNarrativeState(){
+  const saved=localStorage.getItem('bp_narrative_open');
+  // default open
+  if(saved==='0'){
+    const col=document.getElementById('narrative-collapsible');
+    const chev=document.getElementById('narrative-chevron');
+    if(col)col.style.display='none';
+    if(chev)chev.style.transform='rotate(-90deg)';
+  }
+}
+
 function copyNarrative(){
   if(D.narrativeText){
     navigator.clipboard.writeText(D.narrativeText);
@@ -3494,6 +3634,166 @@ function updateApiKeyBtn(){
 updateFilterCounts();
 initSupabase();
 // warn if user tries to leave while a save is pending
+
+/* ── CALENDAR ────────────────────────────────────────────── */
+let calYear=NOW.getFullYear();
+let calMonth=NOW.getMonth();
+let calSelectedDay=null;
+
+function calPrev(){calMonth--;if(calMonth<0){calMonth=11;calYear--;}renderCalendar();}
+function calNext(){calMonth++;if(calMonth>11){calMonth=0;calYear++;}renderCalendar();}
+
+function getCalItems(){
+  const items={}; // key: 'YYYY-MM-DD', value: [{type,label,color}]
+  const add=(date,item)=>{if(!items[date])items[date]=[];items[date].push(item);};
+
+  // Todos with due dates
+  D.todos.filter(t=>t.due&&!t.done).forEach(t=>{
+    add(t.due,{type:'todo',label:t.text,color:'todo',id:t.id});
+  });
+
+  // Goals with due dates
+  allGoals().filter(g=>g.due&&g.status!=='achieved').forEach(g=>{
+    add(g.due,{type:'goal',label:g.text,color:'goal'});
+  });
+
+  // Habits — show on every day they're due this month
+  const daysInMonth=new Date(calYear,calMonth+1,0).getDate();
+  for(let d=1;d<=daysInMonth;d++){
+    const date=new Date(calYear,calMonth,d);
+    const dayName=['sun','mon','tue','wed','thu','fri','sat'][date.getDay()];
+    const dateStr=date.toISOString().split('T')[0];
+    const isWeekday=['mon','tue','wed','thu','fri'].includes(dayName);
+    allGoals().forEach(g=>{
+      (g.habits||[]).forEach(h=>{
+        const shouldShow=h.freq==='daily'||(h.freq==='weekdays'&&isWeekday)||(h.freq==='weekly'&&dayName==='mon');
+        if(shouldShow) add(dateStr,{type:'habit',label:h.text,color:'habit'});
+      });
+    });
+  }
+  return items;
+}
+
+function renderCalendar(){
+  const monthNames=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  document.getElementById('cal-month-label').textContent=monthNames[calMonth]+' '+calYear;
+
+  const items=getCalItems();
+  const firstDay=new Date(calYear,calMonth,1).getDay();
+  const daysInMonth=new Date(calYear,calMonth+1,0).getDate();
+  const daysInPrevMonth=new Date(calYear,calMonth,0).getDate();
+  const todayStr=NOW.toISOString().split('T')[0];
+
+  let html='';
+  // Day headers
+  ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].forEach(d=>{
+    html+=`<div class="cal-day-header">${d}</div>`;
+  });
+
+  // Prev month padding
+  for(let i=firstDay-1;i>=0;i--){
+    const d=daysInPrevMonth-i;
+    html+=`<div class="cal-day other-month"><div class="cal-day-num">${d}</div></div>`;
+  }
+
+  // Current month days
+  for(let d=1;d<=daysInMonth;d++){
+    const dateStr=`${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const dayItems=items[dateStr]||[];
+    const isToday=dateStr===todayStr;
+    const isSelected=dateStr===calSelectedDay;
+    const hasItems=dayItems.length>0;
+
+    // Group by type for display — show max 3, then "+N more"
+    const visible=dayItems.slice(0,3);
+    const extra=dayItems.length-3;
+
+    let dotsHtml=visible.map(item=>`<div class="cal-dot ${item.color}" title="${item.label}">${item.label}</div>`).join('');
+    if(extra>0)dotsHtml+=`<div class="cal-dot more">+${extra} more</div>`;
+
+    html+=`<div class="cal-day${isToday?' today':''}${hasItems?' has-items':''}${isSelected?' has-items':''}" 
+      style="${isSelected?'border-color:var(--gold);border-width:2px;box-shadow:0 0 0 2px var(--gold-l)':''}"
+      onclick="selectCalDay('${dateStr}')">
+      <div class="cal-day-num">${d}</div>
+      ${dotsHtml}
+    </div>`;
+  }
+
+  // Next month padding
+  const totalCells=Math.ceil((firstDay+daysInMonth)/7)*7;
+  const remaining=totalCells-(firstDay+daysInMonth);
+  for(let d=1;d<=remaining;d++){
+    html+=`<div class="cal-day other-month"><div class="cal-day-num">${d}</div></div>`;
+  }
+
+  document.getElementById('cal-grid').innerHTML=html;
+
+  // Re-render detail if a day was selected
+  if(calSelectedDay)renderCalDetail(calSelectedDay,items[calSelectedDay]||[]);
+}
+
+function selectCalDay(dateStr){
+  calSelectedDay=calSelectedDay===dateStr?null:dateStr;
+  const items=getCalItems();
+  renderCalendar();
+  if(calSelectedDay){
+    renderCalDetail(dateStr,items[dateStr]||[]);
+    document.getElementById('cal-detail').style.display='block';
+  } else {
+    document.getElementById('cal-detail').style.display='none';
+  }
+}
+
+function renderCalDetail(dateStr,items){
+  const d=new Date(dateStr+'T12:00:00');
+  const label=d.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
+  const panel=document.getElementById('cal-detail');
+
+  if(!items.length){
+    panel.innerHTML=`<div class="cal-detail-panel"><div class="cal-detail-title">${label}<button onclick="calSelectedDay=null;document.getElementById('cal-detail').style.display='none'" style="background:none;border:none;cursor:pointer;color:var(--ink3);font-size:16px">✕</button></div><div style="font-size:13px;color:var(--ink3);font-style:italic">Nothing scheduled for this day.</div></div>`;
+    return;
+  }
+
+  const typeLabel={todo:'To-do',goal:'Goal',habit:'Habit'};
+  const typeBg={todo:'var(--blue-l)',goal:'var(--green-l)',habit:'var(--gold-l)'};
+  const typeColor={todo:'var(--blue)',goal:'var(--green)',habit:'var(--gold)'};
+
+  // Group by type
+  const todos=items.filter(i=>i.type==='todo');
+  const goals=items.filter(i=>i.type==='goal');
+  const habits=items.filter(i=>i.type==='habit');
+
+  let html=`<div class="cal-detail-panel">
+    <div class="cal-detail-title">${label}
+      <button onclick="calSelectedDay=null;document.getElementById('cal-detail').style.display='none';renderCalendar()" style="background:none;border:none;cursor:pointer;color:var(--ink3);font-size:16px;padding:2px 6px;border-radius:6px" onmouseover="this.style.background='var(--paper2)'" onmouseout="this.style.background='none'">✕</button>
+    </div>`;
+
+  if(todos.length){
+    html+=`<div style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--blue);font-weight:600;margin-bottom:6px">To-dos</div>`;
+    html+=todos.map(t=>`<div class="cal-detail-item">
+      <div class="cal-detail-badge" style="background:var(--blue-l);color:var(--blue)">To-do</div>
+      <span>${esc(t.label)}</span>
+    </div>`).join('');
+  }
+  if(goals.length){
+    html+=`<div style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--green);font-weight:600;margin-bottom:6px;margin-top:${todos.length?'12px':'0'}">Goals</div>`;
+    html+=goals.map(g=>`<div class="cal-detail-item">
+      <div class="cal-detail-badge" style="background:var(--green-l);color:var(--green)">Goal</div>
+      <span>${esc(g.label)}</span>
+    </div>`).join('');
+  }
+  if(habits.length){
+    html+=`<div style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--gold);font-weight:600;margin-bottom:6px;margin-top:${todos.length||goals.length?'12px':'0'}">Habits</div>`;
+    html+=habits.map(h=>`<div class="cal-detail-item">
+      <div class="cal-detail-badge" style="background:var(--gold-l);color:var(--gold)">Habit</div>
+      <span>${esc(h.label)}</span>
+    </div>`).join('');
+  }
+
+  html+=`</div>`;
+  panel.innerHTML=html;
+}
+
 window.addEventListener('beforeunload',e=>{
   if(saveTimer){e.preventDefault();e.returnValue='';}
 });
