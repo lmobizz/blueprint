@@ -821,6 +821,11 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
         </div>
       </div>
     </div>
+    <div style="display:flex;justify-content:flex-end;margin-bottom:.35rem">
+      <button onclick="overviewExpandAll()" style="font-family:'Syne',sans-serif;font-size:10px;color:var(--ink3);background:none;border:none;cursor:pointer;padding:2px 6px;letter-spacing:.04em;opacity:.6" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=.6">expand all</button>
+      <span style="color:var(--line);font-size:10px;padding:0 2px">·</span>
+      <button onclick="overviewCollapseAll()" style="font-family:'Syne',sans-serif;font-size:10px;color:var(--ink3);background:none;border:none;cursor:pointer;padding:2px 6px;letter-spacing:.04em;opacity:.6" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=.6">collapse all</button>
+    </div>
     <div id="overview-stats"></div>
     <div class="sec-div" style="cursor:pointer;user-select:none" onclick="toggleOverviewSection('tasks')">
       <h2>Today's tasks</h2>
@@ -1624,7 +1629,8 @@ function renderOverview(){
 
   document.getElementById('overview-stats').innerHTML=`
     <div class="stat-group">
-      <div class="stat-group-label">📋 Daily execution</div>
+      <div class="stat-group-label" onclick="toggleStatGroup('exec')" style="cursor:pointer;user-select:none">📋 Daily execution<span id="sg-exec-chev" style="margin-left:auto;font-size:10px;transition:transform .2s;display:inline-block">▼</span></div>
+      <div id="sg-exec-wrap">
       <div class="stat-group-grid cols-1">
         <div class="stat-card" onclick="navToSection('todo')" title="Go to To-Do">
           <div style="display:flex;align-items:center;justify-content:space-between">
@@ -1636,8 +1642,10 @@ function renderOverview(){
       </div>
     </div>
 
+      </div></div>
     <div class="stat-group">
-      <div class="stat-group-label">🎯 Goals & intentions</div>
+      <div class="stat-group-label" onclick="toggleStatGroup('goals')" style="cursor:pointer;user-select:none">🎯 Goals & intentions<span id="sg-goals-chev" style="margin-left:auto;font-size:10px;transition:transform .2s;display:inline-block">▼</span></div>
+      <div id="sg-goals-wrap">
       <div class="stat-group-grid cols-4">
         <div class="stat-card" onclick="navToSection('goals')" title="Go to Goals"><div class="stat-num">${all.length}</div><div class="stat-label">Total</div></div>
         <div class="stat-card" onclick="navToSection('goals')" title="Go to Goals"><div class="stat-num">${ach}</div><div class="stat-label">Achieved</div><div class="stat-bar"><div class="stat-bar-fill" style="width:${pct}%"></div></div></div>
@@ -1646,21 +1654,26 @@ function renderOverview(){
       </div>
     </div>
 
+      </div></div>
     <div class="stat-group">
-      <div class="stat-group-label">📖 Character building</div>
+      <div class="stat-group-label" onclick="toggleStatGroup('char')" style="cursor:pointer;user-select:none">📖 Character building<span id="sg-char-chev" style="margin-left:auto;font-size:10px;transition:transform .2s;display:inline-block">▼</span></div>
+      <div id="sg-char-wrap">
       <div class="stat-group-grid cols-2">
         <div class="stat-card" onclick="navToSection('story')" title="Go to My Story"><div class="stat-num">${wins}</div><div class="stat-label">Wins logged</div></div>
         <div class="stat-card" onclick="navToSection('story')" title="Go to My Story"><div class="stat-num">${lessons}</div><div class="stat-label">Lessons learned</div></div>
       </div>
     </div>
 
+      </div></div>
     <div class="stat-group">
-      <div class="stat-group-label">👥 Relationships</div>
+      <div class="stat-group-label" onclick="toggleStatGroup('rel')" style="cursor:pointer;user-select:none">👥 Relationships<span id="sg-rel-chev" style="margin-left:auto;font-size:10px;transition:transform .2s;display:inline-block">▼</span></div>
+      <div id="sg-rel-wrap">
       <div class="stat-group-grid cols-2">
         <div class="stat-card" onclick="navToSection('people')" title="Go to People"><div class="stat-num">${people}</div><div class="stat-label">People tracked</div></div>
         <div class="stat-card" onclick="navToSection('people')" title="Go to People"><div class="stat-num" style="${D.people.filter(p=>{const d=(p.lastText||p.lastCall)?Math.floor((Date.now()-Math.max(...[p.lastText,p.lastCall].filter(Boolean).map(d=>new Date(d).getTime())))/(1000*60*60*24)):null;return d!==null&&d>30;}).length>0?'color:var(--rose)':''}">${D.people.filter(p=>{const dates=[p.lastText,p.lastCall].filter(Boolean);if(!dates.length)return false;const d=Math.floor((Date.now()-Math.max(...dates.map(d=>new Date(d).getTime())))/(1000*60*60*24));return d>30;}).length}</div><div class="stat-label">Need reach-out</div></div>
       </div>
     </div>
+      </div></div>
   `;
   const recent=[...D.story].sort((a,b)=>b.date-a.date).slice(0,4);
   document.getElementById('recent-timeline').innerHTML=recent.length
@@ -1711,25 +1724,58 @@ function navToSection(view){
 
 /* ── DARK MODE ───────────────────────────────────────────── */
 
+// Map section keys to their wrap IDs and chev IDs
+const OV_SECTIONS={
+  tasks:{wrap:'overview-todos-wrap',chev:'ov-tasks-chev',key:'bp_ov_tasks_open'},
+  story:{wrap:'recent-timeline-wrap',chev:'ov-story-chev',key:'bp_ov_story_open'},
+  exec:{wrap:'sg-exec-wrap',chev:'sg-exec-chev',key:'bp_sg_exec_open'},
+  goals:{wrap:'sg-goals-wrap',chev:'sg-goals-chev',key:'bp_sg_goals_open'},
+  char:{wrap:'sg-char-wrap',chev:'sg-char-chev',key:'bp_sg_char_open'},
+  rel:{wrap:'sg-rel-wrap',chev:'sg-rel-chev',key:'bp_sg_rel_open'},
+};
+
 function toggleOverviewSection(section){
-  const wrap=document.getElementById('overview-'+( section==='tasks'?'todos':'timeline')+'-wrap');
-  const chev=document.getElementById('ov-'+section+'-chev');
+  const cfg=OV_SECTIONS[section];if(!cfg)return;
+  const wrap=document.getElementById(cfg.wrap);
+  const chev=document.getElementById(cfg.chev);
   if(!wrap)return;
   const isOpen=wrap.style.display!=='none';
   wrap.style.display=isOpen?'none':'block';
   if(chev)chev.style.transform=isOpen?'rotate(-90deg)':'rotate(0deg)';
-  localStorage.setItem('bp_ov_'+section+'_open',isOpen?'0':'1');
+  localStorage.setItem(cfg.key,isOpen?'0':'1');
 }
 
+function toggleStatGroup(section){toggleOverviewSection(section);}
+
 function initOverviewSections(){
-  ['tasks','story'].forEach(s=>{
-    const saved=localStorage.getItem('bp_ov_'+s+'_open');
+  Object.entries(OV_SECTIONS).forEach(([s,cfg])=>{
+    const saved=localStorage.getItem(cfg.key);
     if(saved==='0'){
-      const wrap=document.getElementById('overview-'+(s==='tasks'?'todos':'timeline')+'-wrap');
-      const chev=document.getElementById('ov-'+s+'-chev');
+      const wrap=document.getElementById(cfg.wrap);
+      const chev=document.getElementById(cfg.chev);
       if(wrap)wrap.style.display='none';
       if(chev)chev.style.transform='rotate(-90deg)';
     }
+  });
+}
+
+function overviewExpandAll(){
+  Object.entries(OV_SECTIONS).forEach(([s,cfg])=>{
+    const wrap=document.getElementById(cfg.wrap);
+    const chev=document.getElementById(cfg.chev);
+    if(wrap)wrap.style.display='block';
+    if(chev)chev.style.transform='rotate(0deg)';
+    localStorage.setItem(cfg.key,'1');
+  });
+}
+
+function overviewCollapseAll(){
+  Object.entries(OV_SECTIONS).forEach(([s,cfg])=>{
+    const wrap=document.getElementById(cfg.wrap);
+    const chev=document.getElementById(cfg.chev);
+    if(wrap)wrap.style.display='none';
+    if(chev)chev.style.transform='rotate(-90deg)';
+    localStorage.setItem(cfg.key,'0');
   });
 }
 
