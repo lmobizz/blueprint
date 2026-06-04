@@ -248,6 +248,20 @@ function dragGoalDrop(e, targetBucket, targetSub, targetCat, targetIdx){
   dragCtx=null;
 }
 
+function handleCatDrop(e, el){
+  e.preventDefault();e.stopPropagation();
+  el.classList.remove('drag-over-zone');
+  if(!dragCtx)return;
+  const bucket=el.dataset.dndBucket;
+  const sub=el.dataset.dndSub;
+  const cat=el.dataset.dndCat;
+  if(!bucket||!sub||!cat)return;
+  const{bucket:srcB,sub:srcS,cat:srcC,idx:srcIdx}=dragCtx;
+  if(srcB===bucket&&srcS===sub&&srcC===cat){dragCtx=null;return;}
+  moveGoalToCategory(srcB,srcS,srcC,srcIdx,bucket,sub,cat,null);
+  dragCtx=null;
+}
+
 function dragCatOver(e, bucket, sub, cat){
   e.preventDefault(); // MUST be first — enables drop
   e.stopPropagation();
@@ -316,6 +330,8 @@ body.dark-mode .hype-gold-bar{opacity:.5}
 body.goal-dragging .goal-item-inner{pointer-events:none}
 body.goal-dragging .goal-info{pointer-events:none}
 body.goal-dragging .system-panel{pointer-events:none}
+.version-toast{position:fixed;bottom:1.5rem;left:1.5rem;background:var(--ink);color:rgba(255,255,255,.7);font-family:'Syne',sans-serif;font-size:11px;padding:6px 12px;border-radius:20px;z-index:500;opacity:0;transform:translateY(8px);transition:opacity .4s ease,transform .4s ease;pointer-events:none;border:1px solid rgba(255,255,255,.08)}
+.version-toast.show{opacity:1;transform:translateY(0)}
 .dark-toggle{font-family:'Syne',sans-serif;font-size:13px;background:none;border:none;cursor:pointer;color:var(--ink3);padding:3px 8px;border-radius:6px;transition:color .15s;line-height:1}
 .dark-toggle:hover{color:var(--ink)}
 /* Goal system modal */
@@ -1650,6 +1666,11 @@ function showApp(){
   const greet=document.getElementById('hero-greeting');
   if(greet) greet.textContent=firstName;
   scheduleMidnightReset();
+  // Show version toast briefly on load
+  setTimeout(()=>{
+    const t=document.getElementById('version-toast');
+    if(t){t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
+  },800);
 }
 
 /* ── CLOUD DATA ──────────────────────────────────────── */
@@ -2641,9 +2662,10 @@ function renderGoals(){
             </div>
           </div>
           <div class="cat-goals open" id="${cid}"
-            ondragover="dragCatOver(event,'${b.key}','${esc(sn)}','${esc(catName)}')"
-            ondragleave="dragCatLeave(event)"
-            ondrop="dragCatDrop(event,'${b.key}','${esc(sn)}','${esc(catName)}')">
+            data-dnd-bucket="${b.key}" data-dnd-sub="${esc(sn)}" data-dnd-cat="${esc(catName)}"
+            ondragover="event.preventDefault();event.stopPropagation();if(dragCtx)this.classList.add('drag-over-zone')"
+            ondragleave="this.classList.remove('drag-over-zone')"
+            ondrop="handleCatDrop(event,this)">
             ${catGoals.length?catGoals.map((g,i)=>goalHTML(b.key,sn,catName,i,g)).join(''):'<div class="empty-note" style="padding-left:.5rem">No goals yet.</div>'}
             <div style="display:flex;gap:6px;padding:.3rem .6rem .3rem 0">
               <input class="add-goal-input" id="ai-${cid}" placeholder="Add a goal…" onkeydown="if(event.key==='Enter')addGoal('${b.key}','${esc(sn)}','${esc(catName)}','${cid}')"/>
@@ -2660,9 +2682,10 @@ function renderGoals(){
           <span class="sub-count">${subGoals.length}</span>
         </div>
         <div class="sub-goals" id="goals-${sid}"
-          ondragover="dragCatOver(event,'${b.key}','${esc(sn)}','_goals')"
-          ondragleave="dragCatLeave(event)"
-          ondrop="dragCatDrop(event,'${b.key}','${esc(sn)}','_goals')">
+          data-dnd-bucket="${b.key}" data-dnd-sub="${esc(sn)}" data-dnd-cat="_goals"
+          ondragover="event.preventDefault();event.stopPropagation();if(dragCtx)this.classList.add('drag-over-zone')"
+          ondragleave="this.classList.remove('drag-over-zone')"
+          ondrop="handleCatDrop(event,this)">
           ${catsHTML||'<div class="empty-note">No goals yet.</div>'}
           <div class="add-cat-row" id="cat-row-${sid}" style="display:none;border-top:1px dashed var(--line);margin-top:6px;padding-top:6px">
             <input class="add-cat-input" id="cat-input-${sid}" placeholder="New category name…" onkeydown="if(event.key==='Enter')addCat('${b.key}','${esc(sn)}','${sid}')"/>
@@ -3178,6 +3201,13 @@ function toggleSub(sid){
   const open=g.classList.toggle('open');
   if(ch)ch.classList.toggle('open',open);
   if(ar)ar.style.display=open?'flex':'none';
+  saveGoalOpenState();
+}
+
+function saveGoalOpenState(){
+  const ids=[];
+  document.querySelectorAll('.sub-goals.open,.cat-goals.open').forEach(el=>ids.push(el.id));
+  try{localStorage.setItem('bp_goals_open',JSON.stringify(ids));}catch(e){}
 }
 
 function toggleCat(cid){
@@ -3186,6 +3216,7 @@ function toggleCat(cid){
   if(!el)return;
   const open=el.classList.toggle('open');
   if(ch)ch.classList.toggle('open',open);
+  saveGoalOpenState();
 }
 
 function toggleCatRow(sid){
@@ -4915,5 +4946,6 @@ window.addEventListener('beforeunload',e=>{
     <button class="hype-close" onclick="closeHype()">Let's get it →</button>
   </div>
 </div>
+<div class="version-toast" id="version-toast">✦ Build Jun 04 · 04:10 PM</div>
 </body>
 </html>
