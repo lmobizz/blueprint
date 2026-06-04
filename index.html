@@ -357,6 +357,10 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
 .cal-fullscreen #view-calendar .hero{display:none}
 .cal-fullscreen #view-calendar .page-wrap{max-width:100%;padding:1.5rem 2rem 4rem}
 .cal-fullscreen .cal-day{min-height:110px}
+.goals-fullscreen #view-goals{position:fixed;inset:0;z-index:150;background:var(--paper);overflow-y:auto}
+.goals-fullscreen #view-goals .hero{display:none}
+.goals-fullscreen #view-goals .page-wrap{max-width:100%;padding:1.5rem 2rem 4rem}
+.goals-fullscreen .buckets{grid-template-columns:1fr 1fr;gap:20px}
 .expand-btn{font-family:'Syne',sans-serif;font-size:12px;font-weight:500;padding:6px 14px;border-radius:20px;border:1px solid var(--line);background:var(--paper);color:var(--ink2);cursor:pointer;display:flex;align-items:center;gap:5px;transition:all .15s}
 .expand-btn:hover{border-color:var(--gold);color:var(--gold);background:var(--gold-l)}
 .expand-btn.active{background:var(--ink);color:var(--paper);border-color:var(--ink)}
@@ -1016,10 +1020,13 @@ body.dark-mode .profile-dropdown{background:var(--paper2);border-color:var(--lin
     </div>
   </div>
   <div class="page-wrap">
-    <div class="legend">
-      <div class="leg-item"><div class="leg-dot" style="background:var(--paper3);border:1px solid var(--ink3)"></div>Not started</div>
-      <div class="leg-item"><div class="leg-dot" style="background:#C9900A;border:1px solid #C9900A"></div>In progress</div>
-      <div class="leg-item"><div class="leg-dot" style="background:var(--blue);border:1px solid var(--blue)"></div>Achieved</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:8px">
+      <div class="legend" style="margin-bottom:0;flex:1;border:none;padding:0;background:transparent">
+        <div class="leg-item"><div class="leg-dot" style="background:var(--paper3);border:1px solid var(--ink3)"></div>Not started</div>
+        <div class="leg-item"><div class="leg-dot" style="background:#C9900A;border:1px solid #C9900A"></div>In progress</div>
+        <div class="leg-item"><div class="leg-dot" style="background:var(--blue);border:1px solid var(--blue)"></div>Achieved</div>
+      </div>
+      <button class="expand-btn" id="goals-expand-btn" onclick="toggleGoalsFullscreen()">⛶ Expand</button>
     </div>
     <div class="buckets" id="buckets-container"></div>
   </div>
@@ -2781,7 +2788,15 @@ function toggleCalFullscreen(){
   btn.textContent=isFS?'✕ Exit fullscreen':'⛶ Expand';
   btn.classList.toggle('active',isFS);
   document.body.style.overflow=isFS?'hidden':'';
-  renderCalendar(); // re-render so day cells resize
+  renderCalendar();
+}
+
+function toggleGoalsFullscreen(){
+  const isFS=document.body.classList.toggle('goals-fullscreen');
+  const btn=document.getElementById('goals-expand-btn');
+  btn.textContent=isFS?'✕ Exit fullscreen':'⛶ Expand';
+  btn.classList.toggle('active',isFS);
+  document.body.style.overflow=isFS?'hidden':'';
 }
 
 // Esc key exits fullscreen
@@ -2791,6 +2806,9 @@ document.addEventListener('keydown',e=>{
   }
   if(e.key==='Escape'&&document.body.classList.contains('cal-fullscreen')){
     toggleCalFullscreen();
+  }
+  if(e.key==='Escape'&&document.body.classList.contains('goals-fullscreen')){
+    toggleGoalsFullscreen();
   }
 });
 
