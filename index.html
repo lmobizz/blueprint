@@ -168,6 +168,27 @@ body.dark-mode .cal-detail-panel{background:var(--paper2);border-color:var(--lin
 body.dark-mode .goal-modal-tab.active{background:var(--ink);color:var(--paper)}
 body.dark-mode .tl-stat{background:var(--paper3)}
 body.dark-mode .tl-marker-dot.milestone-pending{background:var(--paper2)}
+
+/* ── MACRO GOAL TIMELINES ────────────────────────────────── */
+.macro-timelines{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:1.5rem}
+@media(max-width:640px){.macro-timelines{grid-template-columns:1fr}}
+.macro-tl-card{background:var(--paper);border:1px solid var(--line);border-radius:var(--r2);overflow:hidden}
+.macro-tl-header{display:flex;align-items:center;gap:10px;padding:.9rem 1.2rem;cursor:pointer;user-select:none;border-bottom:1px solid transparent;transition:background .15s}
+.macro-tl-header:hover{background:var(--paper2)}
+.macro-tl-header.open{border-bottom-color:var(--line)}
+.macro-tl-icon{font-size:1rem}
+.macro-tl-title{font-family:'Playfair Display',serif;font-size:1rem;font-weight:600;flex:1}
+.macro-tl-card.personal .macro-tl-title{color:var(--blue)}
+.macro-tl-card.professional .macro-tl-title{color:var(--green)}
+.macro-tl-chev{font-size:11px;color:var(--ink3);transition:transform .2s}
+.macro-tl-chev.open{transform:rotate(90deg)}
+.macro-tl-body{display:none;padding:1rem 1.2rem 1.2rem}
+.macro-tl-body.open{display:block}
+.macro-tl-empty{font-size:12px;color:var(--ink3);font-style:italic;padding:.5rem 0}
+.macro-goal-dot{cursor:pointer;transition:transform .15s}
+.macro-goal-dot:hover{transform:scale(1.4)}
+body.dark-mode .macro-tl-card{background:var(--paper2);border-color:var(--line)}
+body.dark-mode .macro-tl-header:hover{background:var(--paper3)}
 .dark-toggle{font-family:'Syne',sans-serif;font-size:13px;background:none;border:none;cursor:pointer;color:var(--ink3);padding:3px 8px;border-radius:6px;transition:color .15s;line-height:1}
 .dark-toggle:hover{color:var(--ink)}
 /* Goal system modal */
@@ -631,6 +652,8 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
 .todo-list{display:flex;flex-direction:column;gap:7px}
 .todo-card{background:var(--paper);border:1px solid var(--line);border-radius:var(--r);padding:10px 12px;transition:opacity .2s;animation:fadeUp .2s ease}
 .todo-card.done{opacity:.5}
+.todo-card.overdue-task{border-color:var(--rose-l);background:var(--rose-l)}
+.todo-card.overdue-task .todo-text{color:var(--rose)}
 .todo-top{display:flex;align-items:flex-start;gap:9px}
 .todo-check{width:18px;height:18px;border-radius:50%;border:1.5px solid var(--line);cursor:pointer;flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;transition:all .15s;font-size:8px}
 .todo-check:hover{border-color:var(--green)}
@@ -930,6 +953,7 @@ body.dark-mode .profile-dropdown{background:var(--paper2);border-color:var(--lin
         <div class="filter-group">
           <div class="filter-group-label">Horizon</div>
           <button class="filter-btn active" onclick="setTodoFilter('all',this)"><div class="filter-dot" style="background:var(--ink3)"></div>All <span class="filter-count" id="fc-all">0</span></button>
+          <button class="filter-btn" onclick="setTodoFilter('overdue',this)"><div class="filter-dot" style="background:var(--rose)"></div>Overdue <span class="filter-count" id="fc-overdue">0</span></button>
           <button class="filter-btn" onclick="setTodoFilter('today',this)"><div class="filter-dot" style="background:var(--blue)"></div>Today <span class="filter-count" id="fc-today">0</span></button>
           <button class="filter-btn" onclick="setTodoFilter('week',this)"><div class="filter-dot" style="background:var(--teal)"></div>This & next week <span class="filter-count" id="fc-week">0</span></button>
           <button class="filter-btn" onclick="setTodoFilter('longterm',this)"><div class="filter-dot" style="background:var(--ink3)"></div>Long-term <span class="filter-count" id="fc-longterm">0</span></button>
@@ -957,6 +981,7 @@ body.dark-mode .profile-dropdown{background:var(--paper2);border-color:var(--lin
         <div class="mobile-filter-row">
           <select onchange="setTodoFilter(this.value,this);updateFilterCounts()">
             <option value="all">All tasks</option>
+            <option value="overdue">Overdue</option>
             <option value="today">Today</option>
             <option value="week">This week</option>
             <option value="week-next">Next week</option>
@@ -983,12 +1008,6 @@ body.dark-mode .profile-dropdown{background:var(--paper2);border-color:var(--lin
             <button class="add-todo-btn" onclick="addTodo()">+ Add</button>
           </div>
           <div class="todo-meta-row">
-            <select class="form-select" id="todo-horizon">
-              <option value="today">Today</option>
-              <option value="week">This week</option>
-              <option value="week-next">Next week</option>
-              <option value="longterm">Long-term</option>
-            </select>
             <select class="form-select" id="todo-priority">
               <option value="p-low">Low priority</option>
               <option value="p-med">Medium priority</option>
@@ -1037,6 +1056,24 @@ body.dark-mode .profile-dropdown{background:var(--paper2);border-color:var(--lin
       <button class="expand-btn" id="goals-expand-btn" onclick="toggleGoalsFullscreen()">⛶ Expand</button>
     </div>
     <div class="buckets" id="buckets-container"></div>
+    <div class="macro-timelines">
+      <div class="macro-tl-card personal" id="macro-tl-personal">
+        <div class="macro-tl-header" onclick="toggleMacroTimeline('personal')">
+          <span class="macro-tl-icon">🌱</span>
+          <span class="macro-tl-title">Personal — Goal Timeline</span>
+          <span class="macro-tl-chev" id="macro-chev-personal">▶</span>
+        </div>
+        <div class="macro-tl-body" id="macro-body-personal"></div>
+      </div>
+      <div class="macro-tl-card professional" id="macro-tl-professional">
+        <div class="macro-tl-header" onclick="toggleMacroTimeline('professional')">
+          <span class="macro-tl-icon">🚀</span>
+          <span class="macro-tl-title">Professional — Goal Timeline</span>
+          <span class="macro-tl-chev" id="macro-chev-professional">▶</span>
+        </div>
+        <div class="macro-tl-body" id="macro-body-professional"></div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -1768,7 +1805,7 @@ function addTodo(){
   const text=input.value.trim();
   if(!text)return;
   const dueVal=document.getElementById('todo-due').value||'';
-  let horizon=document.getElementById('todo-horizon').value;
+  let horizon='today'; // default to today if no due date
   if(dueVal){
     const dueDate=new Date(dueVal+'T12:00:00');
     if(dueDate<=new Date(NOW.toDateString())) horizon='today';
@@ -1929,13 +1966,7 @@ function checkRecurringTodos(){
 
 
 function autoSetHorizon(dueVal){
-  if(!dueVal)return;
-  const d=new Date(dueVal+'T12:00:00');
-  const sel=document.getElementById('todo-horizon');
-  if(d<=new Date(NOW.toDateString())) sel.value='today';
-  else if(d<=END_OF_WEEK) sel.value='week';
-  else if(d<=END_OF_NEXT_WEEK) sel.value='week-next';
-  else sel.value='longterm';
+  // no-op — horizon is now fully auto-calculated in addTodo
 }
 
 function quickToggleTodo(id){
@@ -1995,6 +2026,7 @@ function horizonLabel(h){
 function filterTodos(){
   return D.todos.filter(t=>{
     if(todoFilter==='all')return true;
+    if(todoFilter==='overdue')return!t.done&&t.due&&new Date(t.due+'T12:00:00')<new Date(NOW.toDateString());
     if(todoFilter==='today')return t.horizon==='today';
     if(todoFilter==='week'){
       if(t.horizon!=='week'&&t.horizon!=='week-next')return false;
@@ -2018,7 +2050,8 @@ function filterTodos(){
 function todoCardHTML(t){
   try{
     const horizonClass=t.horizon?t.horizon.replace('-','_'):'today';
-    return`<div class="todo-card${t.done?' done':''}">
+    const isOverdue=!t.done&&t.due&&new Date(t.due+'T12:00:00')<new Date(NOW.toDateString());
+    return`<div class="todo-card${t.done?' done':''}${isOverdue?' overdue-task':''}">
       <div class="todo-top">
         <div class="todo-check${t.done?' checked':''}" onclick="toggleTodo(${t.id})">${t.done?'✓':''}</div>
         <div class="todo-info">
@@ -2049,6 +2082,7 @@ function renderTodos(){
 
   const list=document.getElementById('todo-list');
   const filtered=filterTodos();
+  const todayDate=new Date(NOW.toDateString());
 
   if(todoFilter==='week'){
     // Sort: tasks with due date first (ascending), no due date last
@@ -2121,10 +2155,11 @@ function renderHabitsToday(){
 
 
 function updateFilterCounts(){
-  const counts={all:D.todos.length,today:0,week:0,longterm:0,active:0,done:0,'p-high':0,'p-med':0,'p-low':0,quick:0,mid:0,long:0};
+  const counts={all:D.todos.length,today:0,week:0,longterm:0,overdue:0,active:0,done:0,'p-high':0,'p-med':0,'p-low':0,quick:0,mid:0,long:0};
   D.todos.forEach(t=>{
     if(t.horizon==='week'||t.horizon==='week-next') counts.week=(counts.week||0)+1;
     else counts[t.horizon]=(counts[t.horizon]||0)+1;
+    if(!t.done&&t.due&&new Date(t.due+'T12:00:00')<new Date(NOW.toDateString())) counts.overdue=(counts.overdue||0)+1;
     if(t.done)counts.done++;else counts.active++;
     counts[t.priority]=(counts[t.priority]||0)+1;
     if(t.time)counts[t.time]=(counts[t.time]||0)+1;
@@ -2182,6 +2217,148 @@ function restoreOpenState(open){
 
 function makeId(str){return str.replace(/[^a-zA-Z0-9]/g,'_');}
 
+
+
+/* ── MACRO GOAL TIMELINES ────────────────────────────────── */
+function toggleMacroTimeline(bucket){
+  const body=document.getElementById('macro-body-'+bucket);
+  const chev=document.getElementById('macro-chev-'+bucket);
+  const header=document.querySelector(`#macro-tl-${bucket} .macro-tl-header`);
+  const isOpen=body.classList.contains('open');
+  body.classList.toggle('open',!isOpen);
+  if(chev){chev.classList.toggle('open',!isOpen);}
+  if(header){header.classList.toggle('open',!isOpen);}
+  if(!isOpen) renderMacroTimeline(bucket);
+  localStorage.setItem('bp_macro_tl_'+bucket, isOpen?'0':'1');
+}
+
+function initMacroTimelines(){
+  ['personal','professional'].forEach(bucket=>{
+    const saved=localStorage.getItem('bp_macro_tl_'+bucket);
+    if(saved==='1'){
+      const body=document.getElementById('macro-body-'+bucket);
+      const chev=document.getElementById('macro-chev-'+bucket);
+      const header=document.querySelector(`#macro-tl-${bucket} .macro-tl-header`);
+      if(body)body.classList.add('open');
+      if(chev)chev.classList.add('open');
+      if(header)header.classList.add('open');
+      renderMacroTimeline(bucket);
+    }
+  });
+}
+
+function renderMacroTimeline(bucket){
+  const body=document.getElementById('macro-body-'+bucket);
+  if(!body)return;
+
+  // Collect all goals with due dates
+  const subs=D.goals[bucket]||{};
+  const goalsWithDates=[];
+  Object.entries(subs).forEach(([subName,subData])=>{
+    Object.entries(subData).forEach(([catName,goals])=>{
+      if(!Array.isArray(goals))return;
+      goals.forEach((g,idx)=>{
+        if(!g.due)return; // skip goals without due dates
+        goalsWithDates.push({
+          g,subName,catName,idx,
+          dueTs:new Date(g.due+'T12:00:00').getTime(),
+          createdTs:g.createdAt||(typeof g.id==='number'&&g.id>new Date('2020-01-01').getTime()?g.id:NOW.getTime()-180*24*60*60*1000)
+        });
+      });
+    });
+  });
+
+  if(!goalsWithDates.length){
+    body.innerHTML='<div class="macro-tl-empty">No goals with due dates yet — add due dates to your goals to see them here.</div>';
+    return;
+  }
+
+  // Sort by due date
+  goalsWithDates.sort((a,b)=>a.dueTs-b.dueTs);
+
+  const todayTs=NOW.getTime();
+  const startTs=Math.min(...goalsWithDates.map(g=>g.createdTs), todayTs-30*24*60*60*1000);
+  const endTs=Math.max(...goalsWithDates.map(g=>g.dueTs), todayTs+30*24*60*60*1000);
+  const span=endTs-startTs||1;
+  const pos=ts=>Math.max(0,Math.min(1,(ts-startTs)/span));
+
+  const W=480,H=goalsWithDates.length*44+60;
+  const leftPad=160,rightPad=30,trackW=W-leftPad-rightPad;
+
+  const statusColors={
+    'not-started':'var(--line)',
+    'in-progress':'#C9900A',
+    'on-track':'#C9900A',
+    'achieved':'#4D9E7A'
+  };
+
+  let svg=`<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" style="width:100%;overflow:visible">`;
+
+  // Vertical axis line
+  svg+=`<line x1="${leftPad}" y1="20" x2="${leftPad}" y2="${H-20}" stroke="var(--line)" stroke-width="1"/>`;
+
+  // Today marker — vertical line
+  const todayX=leftPad+pos(todayTs)*trackW;
+  svg+=`<line x1="${todayX}" y1="10" x2="${todayX}" y2="${H-10}" stroke="var(--rose)" stroke-width="1" stroke-dasharray="3,3" opacity="0.6"/>`;
+  svg+=`<text x="${todayX}" y="8" text-anchor="middle" font-size="8" fill="var(--rose)" font-family="Syne,sans-serif">Today</text>`;
+
+  goalsWithDates.forEach((item,i)=>{
+    const y=30+i*44;
+    const {g,subName,catName,idx}=item;
+    const dotX=leftPad+pos(item.dueTs)*trackW;
+    const dotColor=statusColors[g.status||'not-started'];
+    const label=(g.text||'').length>22?(g.text||'').slice(0,22)+'…':(g.text||'');
+    const subLabel=catName==='_goals'?subName:`${subName} › ${catName}`;
+    const subLabelShort=subLabel.length>24?subLabel.slice(0,24)+'…':subLabel;
+    const isPast=item.dueTs<todayTs;
+
+    // Horizontal track line
+    svg+=`<line x1="${leftPad}" y1="${y}" x2="${dotX}" y2="${y}" stroke="${dotColor}" stroke-width="1.5" opacity="0.3"/>`;
+
+    // Goal name label (left side)
+    svg+=`<text x="${leftPad-8}" y="${y-4}" text-anchor="end" font-size="10" fill="var(--ink2)" font-family="Syne,sans-serif" font-weight="600">${esc(label)}</text>`;
+    svg+=`<text x="${leftPad-8}" y="${y+8}" text-anchor="end" font-size="8" fill="var(--ink3)" font-family="Syne,sans-serif">${esc(subLabelShort)}</text>`;
+
+    // Due date label (right of dot)
+    const dueLabel=new Date(item.dueTs).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'2-digit'});
+    svg+=`<text x="${dotX+10}" y="${y+4}" text-anchor="start" font-size="8" fill="${isPast?'var(--rose)':'var(--ink3)'}" font-family="Syne,sans-serif">${dueLabel}</text>`;
+
+    // Milestone ticks
+    (g.milestones||[]).filter(m=>m.due).forEach(m=>{
+      const mTs=new Date(m.due+'T12:00:00').getTime();
+      const mX=leftPad+pos(mTs)*trackW;
+      svg+=`<line x1="${mX}" y1="${y-6}" x2="${mX}" y2="${y+6}" stroke="${m.done?'#4D9E7A':'#C9900A'}" stroke-width="1.5"/>`;
+    });
+
+    // Goal dot — clickable
+    svg+=`<circle class="macro-goal-dot" cx="${dotX}" cy="${y}" r="7" fill="${dotColor}" stroke="var(--paper)" stroke-width="2" onclick="openGoalModal('${bucket}','${esc(subName)}','${esc(catName)}',${idx})" style="cursor:pointer"/>`;
+    if(g.status==='achieved'){
+      svg+=`<text x="${dotX}" y="${y+4}" text-anchor="middle" font-size="7" fill="white" font-family="Syne,sans-serif" style="pointer-events:none">✓</text>`;
+    }
+  });
+
+  // Bottom axis dates
+  const numTicks=4;
+  for(let i=0;i<=numTicks;i++){
+    const ts=startTs+(endTs-startTs)*(i/numTicks);
+    const x=leftPad+pos(ts)*trackW;
+    const label=new Date(ts).toLocaleDateString('en-US',{month:'short',year:'2-digit'});
+    svg+=`<text x="${x}" y="${H-4}" text-anchor="middle" font-size="8" fill="var(--ink3)" font-family="Syne,sans-serif">${label}</text>`;
+    svg+=`<line x1="${x}" y1="${H-14}" x2="${x}" y2="${H-10}" stroke="var(--line)" stroke-width="1"/>`;
+  }
+
+  svg+=`</svg>`;
+
+  // Legend
+  const legendHtml=`<div style="display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:.75rem">
+    <div style="display:flex;align-items:center;gap:4px;font-size:10px;color:var(--ink3)"><div style="width:8px;height:8px;border-radius:50%;background:var(--line)"></div>Not started</div>
+    <div style="display:flex;align-items:center;gap:4px;font-size:10px;color:var(--ink3)"><div style="width:8px;height:8px;border-radius:50%;background:#C9900A"></div>In progress</div>
+    <div style="display:flex;align-items:center;gap:4px;font-size:10px;color:var(--ink3)"><div style="width:8px;height:8px;border-radius:50%;background:#4D9E7A"></div>Achieved</div>
+    <div style="display:flex;align-items:center;gap:4px;font-size:10px;color:var(--ink3)"><div style="width:3px;height:12px;background:#C9900A"></div>Milestone</div>
+  </div>`;
+
+  body.innerHTML=legendHtml+`<div style="overflow-x:auto">${svg}</div>`;
+}
 
 /* ── GOAL BUCKET EXPAND / COLLAPSE ALL ──────────────────── */
 function expandAllSubs(bucketKey){
@@ -2326,6 +2503,7 @@ function renderGoals(){
   });
   restoreOpenState(wasOpen);
   syncBucketToggleLabels();
+  initMacroTimelines();
 }
 function openTodoEdit(id){
   editTodoCtx=id;
@@ -2343,15 +2521,8 @@ function saveTodoEdit(){
   const t=D.todos.find(t=>t.id===editTodoCtx);if(!t)return;
   t.text=document.getElementById('et-text').value.trim();
   t.due=document.getElementById('et-due').value;
-  if(t.due){
-    const dueDate=new Date(t.due+'T12:00:00');
-    if(dueDate<=new Date(NOW.toDateString())) t.horizon='today';
-    else if(dueDate<=END_OF_WEEK) t.horizon='week';
-    else if(dueDate<=END_OF_NEXT_WEEK) t.horizon='week-next';
-    else t.horizon='longterm';
-  } else {
-    t.horizon=document.getElementById('et-horizon').value;
-  }
+  // Always respect manual horizon selection — user knows what they want
+  t.horizon=document.getElementById('et-horizon').value;
   t.priority=document.getElementById('et-priority').value;
   t.time=document.getElementById('et-time').value;
   t.recur=document.getElementById('et-recur').value||'';
