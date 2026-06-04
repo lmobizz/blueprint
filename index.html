@@ -631,7 +631,7 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
 .ht-check.done{background:var(--gold);border-color:var(--gold);color:white}
 .ht-label{flex:1;font-size:13px;color:var(--ink2)}
 .ht-label.done{text-decoration:line-through;color:var(--ink3)}
-.ht-source{font-size:10px;color:var(--gold);background:rgba(184,134,11,.12);padding:1px 7px;border-radius:20px}
+.ht-source{font-size:10px;color:var(--gold);background:rgba(184,134,11,.12);padding:1px 7px;border-radius:20px;cursor:default;position:relative;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.ht-source[title]:hover::after{content:attr(title);position:absolute;bottom:calc(100% + 6px);right:0;background:#1a1812;color:#F0EBE1;font-size:11px;padding:5px 10px;border-radius:6px;white-space:nowrap;z-index:200;border:1px solid rgba(184,134,11,.3);box-shadow:0 4px 12px rgba(0,0,0,.3);pointer-events:none;max-width:280px;white-space:normal;line-height:1.4}
 
 /* STORY */
 .story-layout{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
@@ -2308,7 +2308,7 @@ function renderHabitsToday(){
       <div class="habit-today-item">
         <div class="ht-check${checked?' done':''}" onclick="toggleHabitToday('${bk}','${sub}','${cat}',${gi},${hi},'${today}')">${checked?'✓':''}</div>
         <span class="ht-label${checked?' done':''}">${esc(h.text)}</span>
-        <span class="ht-source">${esc(goalText.length>22?goalText.slice(0,22)+'…':goalText)}</span>
+        <span class="ht-source" title="${esc(goalText)}">${esc(goalText.length>22?goalText.slice(0,22)+'…':goalText)}</span>
       </div>`).join('')}
   </div>`;
 }
@@ -2503,7 +2503,8 @@ function renderMacroTimeline(bucket){
 
       // Due date
       const dueLabel=new Date(item.dueTs).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'2-digit'});
-      const nearEdge=dotX>(W-rightPad-48);
+      const labelW=58;
+      const nearEdge=dotX+9+labelW>(W-5);
       svg+=`<text x="${nearEdge?dotX-9:dotX+9}" y="${y+3}" text-anchor="${nearEdge?'end':'start'}" font-size="7.5" fill="${isPast?'var(--rose)':'var(--ink3)'}" font-family="Syne,sans-serif">${dueLabel}</text>`;
 
       // Milestone ticks
@@ -4952,6 +4953,6 @@ window.addEventListener('beforeunload',e=>{
     <button class="hype-close" onclick="closeHype()">Let's get it →</button>
   </div>
 </div>
-<div class="version-toast" id="version-toast">✦ Build Jun 04 · 2:05 PM CT ✓</div>
+<div class="version-toast" id="version-toast">✦ Build Jun 04 · 2:45 PM CT ✓</div>
 </body>
 </html>
