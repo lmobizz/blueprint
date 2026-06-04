@@ -191,130 +191,7 @@ body.dark-mode .macro-tl-card{background:var(--paper2);border-color:var(--line)}
 body.dark-mode .macro-tl-header:hover{background:var(--paper3)}
 
 
-/* ── DRAG AND DROP GOALS ─────────────────────────────────── */
-let dragCtx=null;
 
-// ── DRAG DEBUG (remove after fixing) ──────────────────────
-function dbg(msg){
-  const t=document.createElement('div');
-  t.style.cssText='position:fixed;bottom:60px;right:10px;background:#111;color:#0f0;font:11px monospace;padding:4px 8px;border-radius:4px;z-index:9999;opacity:1;max-width:340px;word-break:break-all;pointer-events:none';
-  t.textContent=msg;
-  document.body.appendChild(t);
-  console.log('[DND]',msg);
-  setTimeout(()=>t.remove(),4000);
-}
-
-function dragGoalStart(e, bucket, sub, cat, idx){
-  dragCtx={bucket,sub,cat,idx};
-  e.dataTransfer.effectAllowed='move';
-  e.dataTransfer.setData('text/plain','goal');
-  dbg('START: '+cat+' idx:'+idx);
-  setTimeout(()=>{
-    e.currentTarget.classList.add('dragging');
-    document.body.classList.add('goal-dragging');
-  },0);
-}
-
-function dragGoalEnd(e){
-  e.currentTarget.classList.remove('dragging');
-  document.body.classList.remove('goal-dragging');
-  document.querySelectorAll('.drag-over,.drag-over-zone').forEach(el=>{
-    el.classList.remove('drag-over','drag-over-zone');
-  });
-  dragCtx=null;
-}
-
-function dragGoalOver(e){
-  e.preventDefault(); // MUST be first - enables drop
-  // NOTE: no stopPropagation - must bubble so container drop zones also see dragover
-  if(!dragCtx)return;
-  e.dataTransfer.dropEffect='move';
-  document.querySelectorAll('.goal-item.drag-over').forEach(el=>el.classList.remove('drag-over'));
-  e.currentTarget.classList.add('drag-over');
-}
-
-function dragGoalLeave(e){
-  // Only remove if truly leaving (not moving to a child element)
-  if(!e.currentTarget.contains(e.relatedTarget)){
-    e.currentTarget.classList.remove('drag-over');
-  }
-}
-
-function dragGoalDrop(e, targetBucket, targetSub, targetCat, targetIdx){
-  e.preventDefault();
-  dbg('GOAL_DROP tgt='+targetCat+' ctx='+(dragCtx?dragCtx.cat:'NULL'));
-  if(!dragCtx)return;
-  const{bucket,sub,cat,idx}=dragCtx;
-
-  // Only handle same-category reorder here; let cross-category drops bubble to zone handler
-  if(bucket===targetBucket&&sub===targetSub&&cat===targetCat){
-    e.stopPropagation(); // only stop for same-cat reorder
-    e.currentTarget.classList.remove('drag-over');
-    if(idx!==targetIdx){
-      const arr=D.goals[bucket][sub][cat];
-      const[moved]=arr.splice(idx,1);
-      arr.splice(idx<targetIdx?targetIdx-1:targetIdx,0,moved);
-      save();renderGoals();
-    }
-    dragCtx=null;
-    return;
-  }
-  // Cross-category: don't stopPropagation — let event bubble to cat-goals/sub-goals ondrop
-  e.currentTarget.classList.remove('drag-over');
-}
-
-function handleCatDrop(e, el){
-  e.preventDefault();e.stopPropagation();
-  el.classList.remove('drag-over-zone');
-  dbg('CAT_DROP fired! dragCtx='+(dragCtx?JSON.stringify(dragCtx):'NULL')+' tgt='+el.dataset.dndCat);
-  if(!dragCtx)return;
-  const bucket=el.dataset.dndBucket;
-  const sub=el.dataset.dndSub;
-  const cat=el.dataset.dndCat;
-  if(!bucket||!sub||!cat)return;
-  const{bucket:srcB,sub:srcS,cat:srcC,idx:srcIdx}=dragCtx;
-  if(srcB===bucket&&srcS===sub&&srcC===cat){dragCtx=null;return;}
-  moveGoalToCategory(srcB,srcS,srcC,srcIdx,bucket,sub,cat,null);
-  dragCtx=null;
-}
-
-function dragCatOver(e, bucket, sub, cat){
-  e.preventDefault(); // MUST be first — enables drop
-  e.stopPropagation();
-  if(!dragCtx)return;
-  if(dragCtx.bucket===bucket&&dragCtx.sub===sub&&dragCtx.cat===cat)return;
-  e.currentTarget.classList.add('drag-over-zone');
-}
-
-function dragCatLeave(e){
-  e.currentTarget.classList.remove('drag-over-zone');
-}
-
-function dragCatDrop(e, bucket, sub, cat){
-  e.preventDefault();
-  e.stopPropagation();
-  e.currentTarget.classList.remove('drag-over-zone');
-  if(!dragCtx)return;
-  const{bucket:srcB,sub:srcS,cat:srcC,idx:srcIdx}=dragCtx;
-  if(srcB===bucket&&srcS===sub&&srcC===cat){dragCtx=null;return;}
-  moveGoalToCategory(srcB,srcS,srcC,srcIdx,bucket,sub,cat,null);
-  dragCtx=null;
-}
-
-function moveGoalToCategory(srcB,srcS,srcC,srcIdx,tgtB,tgtS,tgtC,tgtIdx){
-  const srcArr=D.goals[srcB]?.[srcS]?.[srcC];
-  if(!srcArr)return;
-  ensureSubFormat(tgtB,tgtS);
-  if(!D.goals[tgtB][tgtS][tgtC])D.goals[tgtB][tgtS][tgtC]=[];
-  const[moved]=srcArr.splice(srcIdx,1);
-  const tgtArr=D.goals[tgtB][tgtS][tgtC];
-  if(tgtIdx!=null)tgtArr.splice(tgtIdx,0,moved);
-  else tgtArr.push(moved);
-  save();renderGoals();
-}
-
-
-/* ── HYPE MODAL ──────────────────────────────────────────── */
 .hype-bg{position:fixed;inset:0;z-index:999;display:flex;align-items:center;justify-content:center;animation:hypeFadeIn .2s ease;background:rgba(14,13,12,.85);backdrop-filter:blur(4px)}
 .hype-bg.hidden{display:none}
 @keyframes hypeFadeIn{from{opacity:0}to{opacity:1}}
@@ -345,7 +222,6 @@ body.dark-mode .hype-gold-bar{opacity:.5}
 .drag-handle:hover{opacity:1!important;color:var(--gold)}
 body.goal-dragging .goal-item-inner{pointer-events:none}
 body.goal-dragging .goal-info{pointer-events:none}
-
 body.goal-dragging .system-panel{pointer-events:none}
 .version-toast{position:fixed;bottom:1.5rem;left:1.5rem;background:#0E0D0C;color:rgba(255,255,255,.85);font-family:'Syne',sans-serif;font-size:11px;padding:6px 14px;border-radius:20px;z-index:500;opacity:0;transform:translateY(8px);transition:opacity .4s ease,transform .4s ease;pointer-events:none;border:1px solid rgba(184,134,11,.3);letter-spacing:.02em}
 body.dark-mode .version-toast{background:#1C1917;border-color:rgba(184,134,11,.5);color:rgba(255,255,255,.9)}
@@ -1614,6 +1490,113 @@ body.dark-mode .profile-dropdown{background:var(--paper2);border-color:var(--lin
 </div>
 
 <script>
+/* ── DRAG AND DROP GOALS ─────────────────────────────────── */
+let dragCtx=null;
+
+function dragGoalStart(e, bucket, sub, cat, idx){
+  dragCtx={bucket,sub,cat,idx};
+  e.dataTransfer.effectAllowed='move';
+  e.dataTransfer.setData('text/plain','goal');
+  setTimeout(()=>{
+    e.currentTarget.classList.add('dragging');
+    document.body.classList.add('goal-dragging');
+  },0);
+}
+
+function dragGoalEnd(e){
+  e.currentTarget.classList.remove('dragging');
+  document.body.classList.remove('goal-dragging');
+  document.querySelectorAll('.drag-over,.drag-over-zone').forEach(el=>{
+    el.classList.remove('drag-over','drag-over-zone');
+  });
+  dragCtx=null;
+}
+
+function dragGoalOver(e){
+  e.preventDefault();
+  if(!dragCtx)return;
+  e.dataTransfer.dropEffect='move';
+  document.querySelectorAll('.goal-item.drag-over').forEach(el=>el.classList.remove('drag-over'));
+  e.currentTarget.classList.add('drag-over');
+}
+
+function dragGoalLeave(e){
+  e.currentTarget.classList.remove('drag-over');
+}
+
+function dragGoalDrop(e, targetBucket, targetSub, targetCat, targetIdx){
+  e.preventDefault();
+  if(!dragCtx)return;
+  const{bucket,sub,cat,idx}=dragCtx;
+  // Same-category reorder: handle here and stop
+  if(bucket===targetBucket&&sub===targetSub&&cat===targetCat){
+    e.stopPropagation();
+    e.currentTarget.classList.remove('drag-over');
+    if(idx!==targetIdx){
+      const arr=D.goals[bucket][sub][cat];
+      const[moved]=arr.splice(idx,1);
+      arr.splice(idx<targetIdx?targetIdx-1:targetIdx,0,moved);
+      save();renderGoals();
+    }
+    dragCtx=null;
+    return;
+  }
+  // Cross-category: let event bubble up to cat-goals/sub-goals ondrop
+  e.currentTarget.classList.remove('drag-over');
+}
+
+function handleCatDrop(e, el){
+  e.preventDefault();e.stopPropagation();
+  el.classList.remove('drag-over-zone');
+  if(!dragCtx)return;
+  const bucket=el.dataset.dndBucket;
+  const sub=el.dataset.dndSub;
+  const cat=el.dataset.dndCat;
+  if(!bucket||!sub||!cat)return;
+  const{bucket:srcB,sub:srcS,cat:srcC,idx:srcIdx}=dragCtx;
+  if(srcB===bucket&&srcS===sub&&srcC===cat){dragCtx=null;return;}
+  moveGoalToCategory(srcB,srcS,srcC,srcIdx,bucket,sub,cat,null);
+  dragCtx=null;
+}
+
+function dragCatOver(e, bucket, sub, cat){
+  e.preventDefault(); // MUST be first — enables drop
+  e.stopPropagation();
+  if(!dragCtx)return;
+  if(dragCtx.bucket===bucket&&dragCtx.sub===sub&&dragCtx.cat===cat)return;
+  e.currentTarget.classList.add('drag-over-zone');
+}
+
+function dragCatLeave(e){
+  e.currentTarget.classList.remove('drag-over-zone');
+}
+
+function dragCatDrop(e, bucket, sub, cat){
+  e.preventDefault();
+  e.stopPropagation();
+  e.currentTarget.classList.remove('drag-over-zone');
+  if(!dragCtx)return;
+  const{bucket:srcB,sub:srcS,cat:srcC,idx:srcIdx}=dragCtx;
+  if(srcB===bucket&&srcS===sub&&srcC===cat){dragCtx=null;return;}
+  moveGoalToCategory(srcB,srcS,srcC,srcIdx,bucket,sub,cat,null);
+  dragCtx=null;
+}
+
+function moveGoalToCategory(srcB,srcS,srcC,srcIdx,tgtB,tgtS,tgtC,tgtIdx){
+  const srcArr=D.goals[srcB]?.[srcS]?.[srcC];
+  if(!srcArr)return;
+  ensureSubFormat(tgtB,tgtS);
+  if(!D.goals[tgtB][tgtS][tgtC])D.goals[tgtB][tgtS][tgtC]=[];
+  const[moved]=srcArr.splice(srcIdx,1);
+  const tgtArr=D.goals[tgtB][tgtS][tgtC];
+  if(tgtIdx!=null)tgtArr.splice(tgtIdx,0,moved);
+  else tgtArr.push(moved);
+  save();renderGoals();
+}
+
+
+/* ── HYPE MODAL ──────────────────────────────────────────── */
+
 /* ── DATA ─────────────────────────────────────────────── */
 /* ── SUPABASE CONFIG ─────────────────────────────────── */
 const SUPABASE_URL='https://zugzwnqrhogwivxbpbrw.supabase.co';
@@ -2377,38 +2360,30 @@ function getOpenState(){
 }
 
 function restoreOpenState(open){
-  // Load saved IDs from localStorage
-  let savedIds=null;
-  try{
-    const saved=localStorage.getItem('bp_goals_open');
-    if(saved){savedIds=new Set(JSON.parse(saved));savedIds.forEach(id=>open[id]=true);}
-  }catch(e){}
-
-  // If no saved state at all (first load), default all cat-goals open
-  const hasSavedState=savedIds!==null;
-  if(!hasSavedState){
+  const hasSaved=Object.keys(open).length>0;
+  // If nothing saved yet (first load), default all cat-goals open
+  if(!hasSaved){
     document.querySelectorAll('.cat-goals').forEach(el=>{
       el.classList.add('open');
       const chev=document.getElementById('chev-'+el.id);
       if(chev)chev.classList.add('open');
     });
+    return;
   }
-
-  // Apply open state exactly: open what's in the list, close what isn't
+  // Apply exact saved state: open what's in list, close what isn't
   document.querySelectorAll('.sub-goals,.cat-goals').forEach(el=>{
-    const id=el.id;
-    if(!id)return;
-    const shouldOpen=!!open[id];
-    el.classList.toggle('open',shouldOpen);
-    if(id.startsWith('goals-')){
-      const sid=id.replace('goals-','');
+    if(!el.id)return;
+    const on=!!open[el.id];
+    el.classList.toggle('open',on);
+    if(el.id.startsWith('goals-')){
+      const sid=el.id.replace('goals-','');
       const ar=document.getElementById('ar-'+sid);
-      if(ar)ar.style.display=shouldOpen?'flex':'none';
+      if(ar)ar.style.display=on?'flex':'none';
       const chev=document.getElementById('chev-'+sid);
-      if(chev)chev.classList.toggle('open',shouldOpen);
+      if(chev)chev.classList.toggle('open',on);
     } else {
-      const chev=document.getElementById('chev-'+id);
-      if(chev)chev.classList.toggle('open',shouldOpen);
+      const chev=document.getElementById('chev-'+el.id);
+      if(chev)chev.classList.toggle('open',on);
     }
   });
 }
@@ -2632,13 +2607,12 @@ function toggleAllSubs(bucketKey){
 }
 
 function renderGoals(){
-  // Save open state BEFORE wiping DOM (only if there are open elements to save)
+  // Save open state BEFORE wiping DOM
   const currentOpen=[];
   document.querySelectorAll('.sub-goals.open,.cat-goals.open').forEach(el=>{if(el.id)currentOpen.push(el.id);});
-  if(currentOpen.length>0){
-    try{localStorage.setItem('bp_goals_open',JSON.stringify(currentOpen));}catch(e){}
-  }
+  if(currentOpen.length>0){try{localStorage.setItem('bp_goals_open',JSON.stringify(currentOpen));}catch(e){}}
   const wasOpen={};
+
   const c=document.getElementById('buckets-container');c.innerHTML='';
   [{key:'personal',label:'Personal',cls:'personal',icon:'🌱'},{key:'professional',label:'Professional',cls:'professional',icon:'🚀'}].forEach(b=>{
     const subs=D.goals[b.key];
@@ -2730,11 +2704,8 @@ function renderGoals(){
       sw.appendChild(el);
     });
   });
-  // Restore from localStorage (persists across refresh) merged with any same-session state
-  try{
-    const raw=localStorage.getItem('bp_goals_open');
-    if(raw)JSON.parse(raw).forEach(id=>wasOpen[id]=true);
-  }catch(e){}
+  // Restore from localStorage (survives refresh)
+  try{const raw=localStorage.getItem('bp_goals_open');if(raw)JSON.parse(raw).forEach(id=>wasOpen[id]=true);}catch(e){}
   restoreOpenState(wasOpen);
   syncBucketToggleLabels();
   initMacroTimelines();
@@ -4981,6 +4952,6 @@ window.addEventListener('beforeunload',e=>{
     <button class="hype-close" onclick="closeHype()">Let's get it →</button>
   </div>
 </div>
-<div class="version-toast" id="version-toast">✦ Build Jun 04 · 1:15 PM CT DEBUG ✓</div>
+<div class="version-toast" id="version-toast">✦ Build Jun 04 · 2:05 PM CT ✓</div>
 </body>
 </html>
