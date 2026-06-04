@@ -854,6 +854,29 @@ body.dark-mode .profile-dropdown{background:var(--paper2);border-color:var(--lin
   .backup-bar{padding:0 1rem}
   .backup-dropdown{right:1rem;top:80px}
 }
+
+/* ── WHY PERSPECTIVES ────────────────────────────────────── */
+.why-question{margin-bottom:1.4rem}
+.why-question>label{display:block;font-size:13px;font-weight:600;color:var(--ink2);margin-bottom:.6rem;line-height:1.4}
+.perspective-stack{display:flex;flex-direction:column;gap:6px}
+.perspective-entry{border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--paper2)}
+.perspective-entry.is-new{border-color:rgba(184,134,11,.35);background:rgba(184,134,11,.04)}
+.pe-header{display:flex;align-items:center;gap:8px;padding:7px 10px;cursor:pointer;user-select:none;transition:background .15s}
+.pe-header:hover{background:var(--paper3)}
+.pe-chev{font-size:9px;color:var(--ink3);transition:transform .2s;flex-shrink:0}
+.pe-chev.open{transform:rotate(90deg)}
+.pe-date{font-size:11px;color:var(--gold);font-weight:600;flex-shrink:0}
+.pe-preview{font-size:11px;color:var(--ink3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0}
+.pe-current-badge{font-size:9px;background:rgba(184,134,11,.15);color:var(--gold);padding:1px 6px;border-radius:10px;flex-shrink:0}
+.pe-body{padding:0 10px;max-height:0;overflow:hidden;transition:max-height .25s ease,padding .25s ease}
+.pe-body.open{max-height:300px;padding:0 10px 10px}
+.pe-textarea{width:100%;box-sizing:border-box;background:transparent;border:none;resize:vertical;font-size:13px;color:var(--ink1);line-height:1.6;font-family:inherit;outline:none;min-height:80px;padding:6px 0}
+.pe-textarea:focus{outline:none}
+.pe-delete{font-size:10px;color:var(--ink3);cursor:pointer;padding:2px 6px;border-radius:4px;transition:all .15s;margin-left:auto;flex-shrink:0}
+.pe-delete:hover{color:var(--rose);background:rgba(220,80,80,.1)}
+.add-perspective-btn{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--ink3);cursor:pointer;padding:6px 8px;border:1px dashed var(--line);border-radius:8px;transition:all .2s;background:transparent;width:100%;margin-top:2px}
+.add-perspective-btn:hover{border-color:var(--gold);color:var(--gold);background:rgba(184,134,11,.04)}
+.add-perspective-btn .apb-icon{font-size:13px;line-height:1}
 </style>
 </head>
 <body>
@@ -1137,69 +1160,12 @@ body.dark-mode .profile-dropdown{background:var(--paper2);border-color:var(--lin
       </div>
       <div class="why-body" id="why-body">
 
-        <div class="why-section">
-          <div class="why-section-label">🧬 Identity — who you are</div>
-          <div class="why-question">
-            <label>What did you love doing as a kid before anyone told you what to be?</label>
-            <textarea id="why-q1" placeholder="Think back to what came naturally..."></textarea>
-          </div>
-          <div class="why-question">
-            <label>What makes you completely lose track of time?</label>
-            <textarea id="why-q2" placeholder="When do hours feel like minutes..."></textarea>
-          </div>
-        </div>
-
-        <div class="why-section">
-          <div class="why-section-label">⚖️ Values — what you stand for</div>
-          <div class="why-question">
-            <label>What are your 3 non-negotiables in life — things you'd never compromise on?</label>
-            <textarea id="why-q3" placeholder="The lines you don't cross..."></textarea>
-          </div>
-          <div class="why-question">
-            <label>What do you want people to feel when they're around you?</label>
-            <textarea id="why-q4" placeholder="The energy you want to bring..."></textarea>
-          </div>
-        </div>
-
-        <div class="why-section">
-          <div class="why-section-label">🔭 Vision — where you're going</div>
-          <div class="why-question">
-            <label>What does your ideal life look like in 10 years — specifically?</label>
-            <textarea id="why-q5" placeholder="Be as specific as possible — where, who, what..."></textarea>
-          </div>
-          <div class="why-question">
-            <label>What do you want to have built, created, or changed by the time you're 80?</label>
-            <textarea id="why-q6" placeholder="Your life's work..."></textarea>
-          </div>
-        </div>
-
-        <div class="why-section">
-          <div class="why-section-label">🏛️ Legacy — why it matters</div>
-          <div class="why-question">
-            <label>If your life were a book, what would the title be?</label>
-            <textarea id="why-q7" placeholder="The story of your life in a few words..."></textarea>
-          </div>
-          <div class="why-question">
-            <label>What's the one thing you'd regret not doing if your time was cut short?</label>
-            <textarea id="why-q8" placeholder="Be honest with yourself..."></textarea>
-          </div>
-        </div>
-
-        <div class="why-section">
-          <div class="why-section-label">⚡ Motivation — what drives you</div>
-          <div class="why-question">
-            <label>What gets you out of bed on your hardest days?</label>
-            <textarea id="why-q9" placeholder="The deeper reason behind everything..."></textarea>
-          </div>
-          <div class="why-question">
-            <label>Who do you draw inspiration from and why — real or fictional, alive or not?</label>
-            <textarea id="why-q10" placeholder="The people who shaped how you think..."></textarea>
-          </div>
-        </div>
-
-        <div id="why-manifesto-wrap" style="display:none">
+        <div id="why-manifesto-wrap" style="display:none;margin-bottom:1.5rem">
+          <div style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink3);font-weight:600;margin-bottom:.6rem">✦ Your manifesto</div>
           <div class="why-manifesto" id="why-manifesto"></div>
         </div>
+
+        <div id="why-questions-container"><!-- rendered by renderWhyQuestions() --></div>
 
         <div class="why-actions">
           <button class="why-save-btn" onclick="saveWhy()">Save answers</button>
@@ -2761,17 +2727,154 @@ document.querySelectorAll('.modal-bg').forEach(m=>m.addEventListener('click',e=>
 
 /* ── MY WHY ──────────────────────────────────────────── */
 const WHY_QUESTIONS=[
-  {id:'why-q1',key:'q1'},
-  {id:'why-q2',key:'q2'},
-  {id:'why-q3',key:'q3'},
-  {id:'why-q4',key:'q4'},
-  {id:'why-q5',key:'q5'},
-  {id:'why-q6',key:'q6'},
-  {id:'why-q7',key:'q7'},
-  {id:'why-q8',key:'q8'},
-  {id:'why-q9',key:'q9'},
-  {id:'why-q10',key:'q10'}
+  {key:'q1', label:"What did you love doing as a kid before anyone told you what to be?", placeholder:"Think back to what came naturally...", section:"🧬 Identity — who you are"},
+  {key:'q2', label:"What makes you completely lose track of time?", placeholder:"When do hours feel like minutes...", section:"🧬 Identity — who you are"},
+  {key:'q3', label:"What are your 3 non-negotiables in life — things you'd never compromise on?", placeholder:"The lines you don't cross...", section:"⚖️ Values — what you stand for"},
+  {key:'q4', label:"What do you want people to feel when they're around you?", placeholder:"The energy you want to bring...", section:'⚖️ Values — what you stand for'},
+  {key:'q5', label:"What does your ideal life look like in 10 years — specifically?", placeholder:"Be as specific as possible — where, who, what...", section:"🔭 Vision — where you're going"},
+  {key:'q6', label:"What do you want to have built, created, or changed by the time you're 80?", placeholder:"Your life's work...", section:"🔭 Vision — where you're going"},
+  {key:'q7', label:"If your life were a book, what would the title be?", placeholder:"The story of your life in a few words...", section:"🏛️ Legacy — why it matters"},
+  {key:'q8', label:"What's the one thing you'd regret not doing if your time was cut short?", placeholder:"Be honest with yourself...", section:"🏛️ Legacy — why it matters"},
+  {key:'q9', label:"What gets you out of bed on your hardest days?", placeholder:"The deeper reason behind everything...", section:"⚡ Motivation — what drives you"},
+  {key:'q10', label:"Who do you draw inspiration from and why — real or fictional, alive or not?", placeholder:"The people who shaped how you think...", section:"⚡ Motivation — what drives you"}
 ];
+
+/* ── PERSPECTIVE HELPERS ─────────────────────────────────── */
+// Migrate old string value to entry array
+function getEntries(key){
+  const w=D.why||{};
+  const val=w[key];
+  if(!val) return [];
+  if(Array.isArray(val)) return val;
+  // migrate: old string → first entry
+  return [{text:val, date:w.lastUpdated||Date.now(), id:Date.now()}];
+}
+
+function fmtDate(ts){
+  return new Date(ts).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+}
+
+function renderWhyQuestions(){
+  const container=document.getElementById('why-questions-container');
+  if(!container) return;
+  let html='';
+  let lastSection='';
+  WHY_QUESTIONS.forEach(q=>{
+    if(q.section!==lastSection){
+      if(lastSection) html+='</div>';
+      html+=`<div class="why-section"><div class="why-section-label">${q.section}</div>`;
+      lastSection=q.section;
+    }
+    const entries=getEntries(q.key);
+    html+=`<div class="why-question" id="why-q-wrap-${q.key}">`;
+    html+=`<label>${esc(q.label)}</label>`;
+    html+=`<div class="perspective-stack" id="ps-${q.key}">`;
+    // Render existing entries (newest first in display, oldest at bottom)
+    entries.slice().reverse().forEach((entry,ri)=>{
+      const isLatest=ri===0;
+      const preview=entry.text.slice(0,60)+(entry.text.length>60?'…':'');
+      html+=`<div class="perspective-entry${isLatest?' is-new':''}" id="pe-${q.key}-${entry.id}">`;
+      html+=`<div class="pe-header" onclick="togglePerspective('${q.key}',${entry.id})">`;
+      html+=`<span class="pe-chev${isLatest?' open':''}" id="pechev-${q.key}-${entry.id}">▶</span>`;
+      html+=`<span class="pe-date">${fmtDate(entry.date)}</span>`;
+      if(isLatest) html+=`<span class="pe-current-badge">current</span>`;
+      if(!isLatest) html+=`<span class="pe-preview" id="peprev-${q.key}-${entry.id}">${esc(preview)}</span>`;
+      if(!isLatest) html+=`<span class="pe-delete" onclick="deletePerspective(event,'${q.key}',${entry.id})" title="Delete this entry">✕</span>`;
+      html+=`</div>`;
+      html+=`<div class="pe-body${isLatest?' open':''}" id="pebody-${q.key}-${entry.id}">`;
+      html+=`<textarea class="pe-textarea" id="pe-ta-${q.key}-${entry.id}" oninput="autosizePeTa(this)" onblur="savePerspectiveEntry('${q.key}',${entry.id},this.value)" placeholder="${esc(q.placeholder)}">${esc(entry.text)}</textarea>`;
+      html+=`</div></div>`;
+    });
+    // Add new perspective button (or first-entry textarea if empty)
+    if(entries.length===0){
+      const newId=Date.now()+Math.random();
+      html+=`<div class="perspective-entry is-new" id="pe-${q.key}-new">`;
+      html+=`<div class="pe-body open" style="padding:8px 10px 10px">`;
+      html+=`<textarea class="pe-textarea" id="pe-ta-${q.key}-new" oninput="autosizePeTa(this)" onblur="saveNewPerspective('${q.key}',this)" placeholder="${esc(q.placeholder)}"></textarea>`;
+      html+=`</div></div>`;
+    } else {
+      html+=`<button class="add-perspective-btn" onclick="addNewPerspective('${q.key}')"><span class="apb-icon">＋</span> Add new perspective</button>`;
+    }
+    html+=`</div></div>`;
+  });
+  if(lastSection) html+='</div>';
+  container.innerHTML=html;
+  // Autosize all visible textareas
+  container.querySelectorAll('.pe-textarea').forEach(ta=>autosizePeTa(ta));
+}
+
+function togglePerspective(key, id){
+  const body=document.getElementById(`pebody-${key}-${id}`);
+  const chev=document.getElementById(`pechev-${key}-${id}`);
+  if(!body) return;
+  const open=body.classList.toggle('open');
+  if(chev) chev.classList.toggle('open',open);
+}
+
+function autosizePeTa(ta){
+  ta.style.height='auto';
+  ta.style.height=(ta.scrollHeight)+'px';
+}
+
+function savePerspectiveEntry(key, id, text){
+  if(!D.why) D.why={};
+  const entries=getEntries(key);
+  const entry=entries.find(e=>e.id===id);
+  if(entry){
+    entry.text=text.trim();
+    D.why[key]=entries;
+    D.why.lastUpdated=Date.now();
+    save();
+    updateWhyProgress();
+    updateWhyTimestamp();
+  }
+}
+
+function saveNewPerspective(key, ta){
+  const text=ta.value.trim();
+  if(!text) return;
+  if(!D.why) D.why={};
+  const entries=getEntries(key);
+  // Migrate if needed
+  const newEntry={text, date:Date.now(), id:Date.now()};
+  entries.push(newEntry);
+  D.why[key]=entries;
+  D.why.lastUpdated=Date.now();
+  save();
+  renderWhyQuestions();
+  updateWhyProgress();
+  updateWhyTimestamp();
+}
+
+function addNewPerspective(key){
+  const q=WHY_QUESTIONS.find(q=>q.key===key);
+  const stack=document.getElementById(`ps-${key}`);
+  if(!stack) return;
+  // Remove existing add button
+  const existingBtn=stack.parentElement.querySelector('.add-perspective-btn');
+  if(existingBtn) existingBtn.remove();
+  // Prepend new blank entry
+  const wrap=document.createElement('div');
+  wrap.innerHTML=`<div class="perspective-entry is-new" id="pe-${key}-new" style="margin-bottom:6px">
+    <div class="pe-body open" style="padding:8px 10px 10px">
+      <textarea class="pe-textarea" id="pe-ta-${key}-new" oninput="autosizePeTa(this)" onblur="saveNewPerspective('${key}',this)" placeholder="${esc(q?.placeholder||'')}"></textarea>
+    </div></div>`;
+  stack.insertBefore(wrap.firstElementChild, stack.firstChild);
+  const ta=document.getElementById(`pe-ta-${key}-new`);
+  if(ta){ta.focus();autosizePeTa(ta);}
+}
+
+function deletePerspective(e, key, id){
+  e.stopPropagation();
+  if(!confirm('Delete this perspective entry?')) return;
+  const entries=getEntries(key);
+  const idx=entries.findIndex(en=>en.id===id);
+  if(idx>-1) entries.splice(idx,1);
+  D.why[key]=entries;
+  save();
+  renderWhyQuestions();
+}
+
 
 function toggleWhy(){
   const body=document.getElementById('why-body');
@@ -2783,10 +2886,7 @@ function toggleWhy(){
 
 function loadWhyAnswers(){
   const w=D.why||{};
-  WHY_QUESTIONS.forEach(q=>{
-    const el=document.getElementById(q.id);
-    if(el) el.value=w[q.key]||'';
-  });
+  renderWhyQuestions();
   updateWhyProgress();
   updateWhyTimestamp();
   // restore manifesto if exists
@@ -2802,25 +2902,33 @@ function loadWhyAnswers(){
 }
 
 function updateWhyProgress(){
-  const w=D.why||{};
-  const filled=WHY_QUESTIONS.filter(q=>w[q.key]&&w[q.key].trim()).length;
+  const filled=WHY_QUESTIONS.filter(q=>getEntries(q.key).length>0).length;
   const prog=document.getElementById('why-progress');
   if(prog) prog.textContent=filled>0?`${filled}/10 answered`:'';
 }
 
 function saveWhy(){
   if(!D.why) D.why={};
+  // Save any open/edited textareas
   WHY_QUESTIONS.forEach(q=>{
-    const el=document.getElementById(q.id);
-    if(el) D.why[q.key]=el.value.trim();
+    const entries=getEntries(q.key);
+    entries.forEach(entry=>{
+      const ta=document.getElementById(`pe-ta-${q.key}-${entry.id}`);
+      if(ta && ta.value.trim()!==entry.text){
+        entry.text=ta.value.trim();
+      }
+    });
+    if(entries.length>0) D.why[q.key]=entries;
+    // Also save any pending new entry
+    const newTa=document.getElementById(`pe-ta-${q.key}-new`);
+    if(newTa && newTa.value.trim()) saveNewPerspective(q.key, newTa);
   });
   D.why.lastUpdated=Date.now();
   save();
   updateWhyProgress();
   updateWhyTimestamp();
   const btn=document.querySelector('.why-save-btn');
-  btn.textContent='Saved ✓';
-  setTimeout(()=>btn.textContent='Save answers',2000);
+  if(btn){btn.textContent='Saved ✓';setTimeout(()=>btn.textContent='Save answers',2000);}
 }
 
 function updateWhyTimestamp(){
@@ -2837,7 +2945,18 @@ function updateWhyTimestamp(){
 async function generateManifesto(){
   saveWhy();
   const w=D.why||{};
-  const answers=WHY_QUESTIONS.map((q,i)=>w[q.key]?`Q${i+1}: ${w[q.key]}`:'').filter(Boolean).join('\n');
+  // Build answers showing evolution: most recent answer + prior entries if they exist
+  const answers=WHY_QUESTIONS.map((q,i)=>{
+    const entries=getEntries(q.key);
+    if(!entries.length) return '';
+    const latest=entries[entries.length-1];
+    let txt=`Q${i+1} (${fmtDate(latest.date)}): ${latest.text}`;
+    if(entries.length>1){
+      const older=entries.slice(0,-1).map(e=>`  [${fmtDate(e.date)}] ${e.text}`).join('\n');
+      txt+=`\n  (Previous perspectives:\n${older})`;
+    }
+    return txt;
+  }).filter(Boolean).join('\n\n');
   if(!answers){alert('Fill in at least a few answers first!');return;}
 
   const btn=document.querySelector('.why-gen-btn');
@@ -2847,7 +2966,7 @@ async function generateManifesto(){
   wrap.style.display='block';
   el.innerHTML='<p style="opacity:.5">Writing your manifesto...</p>';
 
-  const prompt='You are writing a deeply personal manifesto for someone based on their answers to foundational life questions. Write it in first person, present tense. Be powerful, honest, and specific to their answers — not generic. 1-2 paragraphs maximum. No bullet points. No headers. Flowing, declarative prose only.\n\nTheir answers:\n'+answers+'\n\nWrite their personal manifesto now in 1-2 paragraphs. Start with "I am..." or a strong declarative statement. Reference their specific words. End with their legacy or purpose. Be concise and earn every word.';
+  const prompt='You are writing a deeply personal manifesto for someone based on their answers to foundational life questions. Some answers include multiple dated entries showing how their thinking has evolved — weave that growth into the manifesto where relevant. Write it in first person, present tense. Be powerful, honest, and specific to their answers — not generic. 1-2 paragraphs maximum. No bullet points. No headers. Flowing, declarative prose only.\n\nTheir answers (with evolution where applicable):\n'+answers+'\n\nWrite their personal manifesto now in 1-2 paragraphs. Start with "I am..." or a strong declarative statement. Reference their specific words and growth. End with their legacy or purpose. Be concise and earn every word.';
 
   try{
     const res=await fetch('https://api.anthropic.com/v1/messages',{
@@ -3009,14 +3128,17 @@ function exportPDF(){
     {key:'q9',label:'What gets you out of bed on hard days?'},
     {key:'q10',label:'Who do you draw inspiration from?'}
   ];
-  const filledWhy=whyQuestions.filter(q=>w[q.key]);
+  const filledWhy=whyQuestions.filter(q=>{const e=getEntries(q.key);return e.length>0;});
   let whyHTML='';
   if(filledWhy.length){
-    whyHTML=filledWhy.map(q=>`
-      <div style="margin-bottom:12px">
+    whyHTML=filledWhy.map(q=>{
+      const entries=getEntries(q.key);
+      const latest=entries[entries.length-1];
+      return `<div style="margin-bottom:12px">
         <div style="font-size:11px;color:#888;font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px">${q.label}</div>
-        <div style="font-size:13px;color:#222;line-height:1.5;padding-left:8px;border-left:2px solid #e8e0d2">${w[q.key]}</div>
-      </div>`).join('');
+        <div style="font-size:13px;color:#222;line-height:1.5;padding-left:8px;border-left:2px solid #e8e0d2">${latest.text}</div>
+        ${entries.length>1?`<div style="font-size:10px;color:#aaa;margin-top:3px">${entries.length} perspectives</div>`:''}
+      </div>`;}).join('');
     if(w.manifesto){
       whyHTML+=`<div style="background:#0E0D0C;color:rgba(255,255,255,.9);border-radius:8px;padding:16px 20px;margin-top:16px;font-family:'Playfair Display',serif;font-size:13px;font-style:italic;line-height:1.7">${w.manifesto.replace(/\n\n/g,'<br><br>')}</div>`;
     }
@@ -4953,6 +5075,6 @@ window.addEventListener('beforeunload',e=>{
     <button class="hype-close" onclick="closeHype()">Let's get it →</button>
   </div>
 </div>
-<div class="version-toast" id="version-toast">✦ Build Jun 04 · 2:45 PM CT ✓</div>
+<div class="version-toast" id="version-toast">✦ Build Jun 04 · 4:22 PM CT ✓</div>
 </body>
 </html>
