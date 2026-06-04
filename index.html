@@ -690,6 +690,18 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
 .user-name-text{font-size:12px;color:var(--ink2);max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .signout-btn{font-family:'Syne',sans-serif;font-size:11px;padding:3px 10px;border-radius:20px;border:1px solid var(--line);background:transparent;color:var(--ink3);cursor:pointer;transition:all .15s}
 .signout-btn:hover{border-color:var(--rose);color:var(--rose)}
+.profile-dropdown{position:absolute;right:0;top:calc(100% + 8px);background:var(--paper);border:1px solid var(--line);border-radius:var(--r);box-shadow:0 4px 20px rgba(0,0,0,.1);z-index:200;min-width:200px;overflow:hidden;display:none}
+.profile-dropdown.open{display:block}
+.profile-dropdown-header{padding:.75rem 1rem .5rem;border-bottom:1px solid var(--line)}
+.profile-dropdown-name{font-size:13px;font-weight:600;color:var(--ink)}
+.profile-dropdown-email{font-size:11px;color:var(--ink3);margin-top:1px}
+.profile-dropdown-item{display:flex;align-items:center;gap:10px;padding:9px 14px;font-family:'Syne',sans-serif;font-size:12px;color:var(--ink2);cursor:pointer;border:none;background:none;width:100%;text-align:left;transition:background .1s}
+.profile-dropdown-item:hover{background:var(--paper2)}
+.profile-dropdown-item.danger{color:var(--rose)}
+.profile-dropdown-item.danger:hover{background:var(--rose-l)}
+.profile-dropdown-divider{height:1px;background:var(--line);margin:.25rem 0}
+.profile-dropdown-status{font-size:10px;color:var(--ink3);padding:.4rem 1rem .6rem;display:flex;align-items:center;gap:5px}
+body.dark-mode .profile-dropdown{background:var(--paper2);border-color:var(--line)}
 
 /* PEOPLE */
 .people-toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:1.25rem;justify-content:flex-start}
@@ -800,10 +812,27 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
     <button class="nav-tab" onclick="showView('calendar',this)">Calendar</button>
   </div>
   <button class="dark-toggle" id="dark-toggle-btn" onclick="toggleDarkMode()" title="Toggle dark mode">🌙</button>
-  <div class="user-badge">
-    <div class="user-avatar" id="user-avatar">?</div>
-    <span class="user-name-text" id="user-name"></span>
-    <button class="signout-btn" onclick="signOut()">Sign out</button>
+  <div class="user-badge" style="position:relative">
+    <div class="user-avatar" id="user-avatar" style="cursor:pointer" onclick="toggleProfileDropdown()" title="Account">?</div>
+    <span class="user-name-text" id="user-name" style="cursor:pointer" onclick="toggleProfileDropdown()"></span>
+    <div class="profile-dropdown" id="profile-dropdown">
+      <div class="profile-dropdown-header">
+        <div class="profile-dropdown-name" id="pd-name"></div>
+        <div class="profile-dropdown-email" id="pd-email"></div>
+      </div>
+      <div class="profile-dropdown-status">
+        <div class="backup-dot" id="backup-dot"></div>
+        <span id="backup-status">Connecting...</span>
+      </div>
+      <div class="profile-dropdown-divider"></div>
+      <button class="profile-dropdown-item" onclick="openApiKeyModal();toggleProfileDropdown()">
+        🔑 <span>API Key <span id="pd-api-status" style="font-size:10px;color:var(--green)"></span></span>
+      </button>
+      <button class="profile-dropdown-item" onclick="exportData();toggleProfileDropdown()">⬇ Data backup</button>
+      <button class="profile-dropdown-item" onclick="document.getElementById('restore-input').click();toggleProfileDropdown()">⬆ Restore backup</button>
+      <div class="profile-dropdown-divider"></div>
+      <button class="profile-dropdown-item danger" onclick="signOut()">↩ Sign out</button>
+    </div>
   </div>
   <button class="hamburger" id="hamburger-btn" onclick="toggleMobileMenu()" aria-label="Menu">
     <span></span><span></span><span></span>
@@ -817,17 +846,7 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
   <button class="mobile-nav-tab" onclick="mobileNav('people',this)">People</button>
   <button class="mobile-nav-tab" onclick="mobileNav('calendar',this)">Calendar</button>
 </div>
-<div class="backup-bar">
-  <div class="backup-dot" id="backup-dot"></div>
-  <span id="backup-status">Connecting...</span>
-  <span style="font-size:10px;color:var(--ink3);margin-left:auto;margin-right:8px;opacity:.6">v Jun 3 · 6:21 PM</span>
-  <button class="backup-menu-btn" onclick="toggleBackupMenu()" title="Backup options">⋯ Backup</button>
-  <button class="backup-menu-btn" onclick="openApiKeyModal()" title="API Key settings" id="api-key-btn">🔑 API Key</button>
-</div>
-<div class="backup-dropdown" id="backup-dropdown">
-  <button class="backup-dropdown-item" onclick="exportData();toggleBackupMenu()">⬇ Export backup</button>
-  <button class="backup-dropdown-item" onclick="document.getElementById('restore-input').click();toggleBackupMenu()">⬆ Restore backup</button>
-</div>
+<div class="backup-bar" style="display:none" id="backup-bar-hidden"></div>
 <input type="file" id="restore-input" accept=".json" style="display:none" onchange="importData(event)"/>
 
 <!-- ═══ OVERVIEW ═══════════════════════════════════════ -->
@@ -1440,6 +1459,10 @@ function showApp(){
   const initials=fullName.split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2)||'?';
   document.getElementById('user-name').textContent=fullName;
   document.getElementById('user-avatar').textContent=initials;
+  const pdName=document.getElementById('pd-name');
+  const pdEmail=document.getElementById('pd-email');
+  if(pdName)pdName.textContent=fullName;
+  if(pdEmail)pdEmail.textContent=email;
   const greet=document.getElementById('hero-greeting');
   if(greet) greet.textContent=firstName;
 }
@@ -2727,7 +2750,11 @@ function togglePeopleDataMenu(){
 
 function toggleBackupMenu(){
   const dd=document.getElementById('backup-dropdown');
-  dd.classList.toggle('open');
+  if(dd)dd.classList.toggle('open');
+}
+
+function toggleProfileDropdown(){
+  document.getElementById('profile-dropdown').classList.toggle('open');
 }
 document.addEventListener('click',e=>{
   const dd=document.getElementById('backup-dropdown');
@@ -4036,10 +4063,10 @@ function openApiKeyModal(){
 }
 
 function updateApiKeyBtn(){
-  const btn = document.getElementById('api-key-btn');
-  if(!btn) return;
-  btn.textContent = cachedApiKey ? '🔑 API Key ✓' : '🔑 API Key';
-  btn.style.color = cachedApiKey ? 'var(--green)' : '';
+  const btn=document.getElementById('api-key-btn');
+  if(btn){btn.textContent=cachedApiKey?'🔑 API Key ✓':'🔑 API Key';btn.style.color=cachedApiKey?'var(--green)':'';}
+  const pdStatus=document.getElementById('pd-api-status');
+  if(pdStatus)pdStatus.textContent=cachedApiKey?'✓':'';
 }
 
 updateFilterCounts();
