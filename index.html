@@ -2786,7 +2786,7 @@ function renderWhyQuestions(){
       html+=`<input type="date" class="pe-date-input" value="${dateVal}" title="Edit date" onclick="event.stopPropagation()" onchange="updatePerspectiveDate('${q.key}',${entry.id},this.value)" />`;
       if(isLatest) html+=`<span class="pe-current-badge">current</span>`;
       if(!isLatest) html+=`<span class="pe-preview" id="peprev-${q.key}-${entry.id}">${esc(preview)}</span>`;
-      if(!isLatest) html+=`<span class="pe-delete" onclick="deletePerspective(event,'${q.key}',${entry.id})" title="Delete this entry">✕</span>`;
+      html+=`<span class="pe-delete" onclick="deletePerspective(event,'${q.key}',${entry.id})" title="Delete this entry">✕</span>`;
       html+=`</div>`;
       html+=`<div class="pe-body${isLatest?' open':''}" id="pebody-${q.key}-${entry.id}">`;
       html+=`<textarea class="pe-textarea" id="pe-ta-${q.key}-${entry.id}" oninput="autosizePeTa(this)" onblur="savePerspectiveEntry('${q.key}',${entry.id},this.value)" placeholder="${esc(q.placeholder)}">${esc(entry.text)}</textarea>`;
@@ -2873,13 +2873,43 @@ function addNewPerspective(key){
 
 function deletePerspective(e, key, id){
   e.stopPropagation();
-  if(!confirm('Delete this perspective entry?')) return;
   const entries=getEntries(key);
   const idx=entries.findIndex(en=>en.id===id);
-  if(idx>-1) entries.splice(idx,1);
+  if(idx<0) return;
+  const removed=entries.splice(idx,1)[0];
   D.why[key]=entries;
   save();
   renderWhyQuestions();
+  // Undo toast
+  let undone=false;
+  const toast=document.createElement('div');
+  toast.style.cssText='position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#1a1812;color:#F0EBE1;font-size:12px;padding:9px 16px;border-radius:8px;z-index:9999;display:flex;align-items:center;gap:12px;border:1px solid rgba(184,134,11,.3);box-shadow:0 4px 16px rgba(0,0,0,.4)';
+  const countdown=document.createElement('span');
+  countdown.textContent='Entry deleted — ';
+  const undoBtn=document.createElement('span');
+  undoBtn.textContent='Undo (10s)';
+  undoBtn.style.cssText='color:var(--gold);cursor:pointer;font-weight:600;text-decoration:underline';
+  toast.appendChild(countdown);
+  toast.appendChild(undoBtn);
+  document.body.appendChild(toast);
+  let secs=10;
+  const iv=setInterval(()=>{
+    secs--;
+    undoBtn.textContent=`Undo (${secs}s)`;
+    if(secs<=0){clearInterval(iv);if(!undone)toast.remove();}
+  },1000);
+  undoBtn.onclick=()=>{
+    undone=true;
+    clearInterval(iv);
+    toast.remove();
+    if(!D.why[key]) D.why[key]=[];
+    const arr=getEntries(key);
+    arr.splice(idx,0,removed);
+    D.why[key]=arr;
+    save();
+    renderWhyQuestions();
+  };
+  setTimeout(()=>{if(!undone)toast.remove();},10500);
 }
 
 function updatePerspectiveDate(key, id, dateStr){
@@ -5098,6 +5128,6 @@ window.addEventListener('beforeunload',e=>{
     <button class="hype-close" onclick="closeHype()">Let's get it →</button>
   </div>
 </div>
-<div class="version-toast" id="version-toast">✦ Build Jun 04 · 5:02 PM CT ✓</div>
+<div class="version-toast" id="version-toast">✦ Build Jun 04 · 5:18 PM CT ✓</div>
 </body>
 </html>
