@@ -1542,20 +1542,30 @@ function checkRecurringTodos(){
   const isWeekday=['mon','tue','wed','thu','fri'].includes(todayDay);
   let changed=false;
   D.todos.forEach(t=>{
-    if(!t.recur||!t.done)return;
+    if(!t.recur)return;
     const lastDone=t.lastDoneDate||'';
-    if(lastDone===today)return; // already handled today
-    // It's a new day — check if this recurrence should reset
-    const shouldReset=
-      t.recur==='daily'||
-      (t.recur==='weekdays'&&isWeekday)||
-      (t.recur==='weekly'&&t.lastDoneDate&&
-        new Date(today)-new Date(t.lastDoneDate)>=6*24*60*60*1000);
-    if(shouldReset){
-      t.done=false;
-      // auto-set horizon to today for daily/weekday recurrers
-      if(t.recur==='daily'||t.recur==='weekdays') t.horizon='today';
-      changed=true;
+    // Fix horizon for all active recurring tasks based on due date or recur type
+    if(!t.done){
+      const correctHorizon=t.due
+        ?(new Date(t.due+'T12:00:00')<=new Date(NOW.toDateString())?'today':new Date(t.due+'T12:00:00')<=END_OF_WEEK?'week':'longterm')
+        :(t.recur==='daily'||t.recur==='weekdays'?'today':t.recur==='weekly'?'week':'today');
+      if(t.horizon!==correctHorizon){t.horizon=correctHorizon;changed=true;}
+    }
+    if(t.done){
+      if(lastDone===today)return; // already handled today
+      // It's a new day — check if this recurrence should reset
+      const shouldReset=
+        t.recur==='daily'||
+        (t.recur==='weekdays'&&isWeekday)||
+        (t.recur==='weekly'&&t.lastDoneDate&&
+          new Date(today)-new Date(t.lastDoneDate)>=6*24*60*60*1000);
+      if(shouldReset){
+        t.done=false;
+        t.horizon=t.due
+          ?(new Date(t.due+'T12:00:00')<=new Date(NOW.toDateString())?'today':new Date(t.due+'T12:00:00')<=END_OF_WEEK?'week':'longterm')
+          :(t.recur==='daily'||t.recur==='weekdays'?'today':'week');
+        changed=true;
+      }
     }
   });
   if(changed){save();renderTodos();updateFilterCounts();}
