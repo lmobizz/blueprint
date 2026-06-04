@@ -1118,38 +1118,42 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
         </div>
       </div>
     </div>
+    <!-- Entries row -->
     <div class="story-layout">
       <div class="story-col wins">
         <h2>🏆 Achievements</h2>
         <div id="wins-list"></div>
-        <div class="add-entry-card">
-          <h3>Log a win</h3>
-          <div class="form-row"><label class="form-label">Title</label><input class="form-input" id="win-title" placeholder="What did you achieve?"/></div>
-          <div class="form-row"><label class="form-label">Details</label><textarea class="form-textarea" id="win-body" placeholder="Tell the story..."></textarea></div>
-          <div style="display:flex;gap:8px">
-            <div class="form-row" style="flex:1"><label class="form-label">Bucket</label>
-              <select class="form-select" id="win-bucket"><option>Personal</option><option>Professional</option></select></div>
-            <div class="form-row" style="flex:1"><label class="form-label">Date</label>
-              <input class="form-input" type="date" id="win-date"/></div>
-          </div>
-          <button class="form-submit" onclick="addEntry('win')">Add win →</button>
-        </div>
       </div>
       <div class="story-col lessons">
         <h2>📖 Lessons</h2>
         <div id="lessons-list"></div>
-        <div class="add-entry-card">
-          <h3>Log a lesson</h3>
-          <div class="form-row"><label class="form-label">Title</label><input class="form-input" id="lesson-title" placeholder="What happened?"/></div>
-          <div class="form-row"><label class="form-label">What I learned</label><textarea class="form-textarea" id="lesson-body" placeholder="What will you do differently?"></textarea></div>
-          <div style="display:flex;gap:8px">
-            <div class="form-row" style="flex:1"><label class="form-label">Bucket</label>
-              <select class="form-select" id="lesson-bucket"><option>Personal</option><option>Professional</option></select></div>
-            <div class="form-row" style="flex:1"><label class="form-label">Date</label>
-              <input class="form-input" type="date" id="lesson-date"/></div>
-          </div>
-          <button class="form-submit" onclick="addEntry('lesson')">Add lesson →</button>
+      </div>
+    </div>
+    <!-- Forms row — always aligned -->
+    <div class="story-layout" style="margin-top:1rem">
+      <div class="add-entry-card">
+        <h3>Log a win</h3>
+        <div class="form-row"><label class="form-label">Title</label><input class="form-input" id="win-title" placeholder="What did you achieve?"/></div>
+        <div class="form-row"><label class="form-label">Details</label><textarea class="form-textarea" id="win-body" placeholder="Tell the story..." style="min-height:100px"></textarea></div>
+        <div style="display:flex;gap:8px">
+          <div class="form-row" style="flex:1"><label class="form-label">Bucket</label>
+            <select class="form-select" id="win-bucket"><option>Personal</option><option>Professional</option></select></div>
+          <div class="form-row" style="flex:1"><label class="form-label">Date</label>
+            <input class="form-input" type="date" id="win-date"/></div>
         </div>
+        <button class="form-submit" onclick="addEntry('win')">Add win →</button>
+      </div>
+      <div class="add-entry-card">
+        <h3>Log a lesson</h3>
+        <div class="form-row"><label class="form-label">Title</label><input class="form-input" id="lesson-title" placeholder="What happened?"/></div>
+        <div class="form-row"><label class="form-label">What I learned</label><textarea class="form-textarea" id="lesson-body" placeholder="What will you do differently?" style="min-height:100px"></textarea></div>
+        <div style="display:flex;gap:8px">
+          <div class="form-row" style="flex:1"><label class="form-label">Bucket</label>
+            <select class="form-select" id="lesson-bucket"><option>Personal</option><option>Professional</option></select></div>
+          <div class="form-row" style="flex:1"><label class="form-label">Date</label>
+            <input class="form-input" type="date" id="lesson-date"/></div>
+        </div>
+        <button class="form-submit" onclick="addEntry('lesson')">Add lesson →</button>
       </div>
     </div>
   </div>
@@ -3049,6 +3053,11 @@ function editMilestoneDue(bucket,sub,cat,idx,mi){
   const save=()=>{
     m.due=input.value||'';
     saveGoalsAndRender();
+    // Refresh modal if open
+    if(goalModalCtx){
+      const{bucket:b,sub:s,cat:c,idx:i}=goalModalCtx;
+      openGoalModal(b,s,c,i);
+    }
   };
   input.addEventListener('blur',save);
   input.addEventListener('change',save);
@@ -3211,7 +3220,8 @@ function openGoalModal(bucket,sub,cat,idx){
     html+=milestones.map(m=>`
       <div class="goal-modal-milestone">
         <div class="goal-modal-ms-check ${m.done?'done':'pending'}">${m.done?'✓':''}</div>
-        <span style="${m.done?'text-decoration:line-through;color:var(--ink3)':''}">${esc(m.text)}</span>
+        <span style="flex:1;${m.done?'text-decoration:line-through;color:var(--ink3)':''}">${esc(m.text)}</span>
+        ${m.due?`<span style="font-size:10px;color:var(--gold);background:var(--gold-l);padding:1px 7px;border-radius:20px;font-weight:500">${m.due}</span>`:''}
       </div>`).join('');
   } else {
     html+=`<div class="goal-modal-empty">No milestones added yet.</div>`;
