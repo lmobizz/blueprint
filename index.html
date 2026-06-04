@@ -2925,17 +2925,24 @@ function updateWhyProgress(){
 
 function saveWhy(){
   if(!D.why) D.why={};
-  // Save any open/edited textareas
+  // Safety: only save if the questions UI has actually rendered
+  // Prevents empty DOM values from overwriting real Supabase data on load
+  const container=document.getElementById('why-questions-container');
+  if(!container || !container.children.length){
+    console.warn('saveWhy blocked — UI not rendered yet');
+    return;
+  }
   WHY_QUESTIONS.forEach(q=>{
     const entries=getEntries(q.key);
     entries.forEach(entry=>{
       const ta=document.getElementById(`pe-ta-${q.key}-${entry.id}`);
-      if(ta && ta.value.trim()!==entry.text){
+      // Only update if textarea exists AND has content — never overwrite with empty
+      if(ta && ta.value.trim() && ta.value.trim()!==entry.text){
         entry.text=ta.value.trim();
       }
     });
     if(entries.length>0) D.why[q.key]=entries;
-    // Also save any pending new entry
+    // Save any pending new entry (only if it has text)
     const newTa=document.getElementById(`pe-ta-${q.key}-new`);
     if(newTa && newTa.value.trim()) saveNewPerspective(q.key, newTa);
   });
@@ -5091,6 +5098,6 @@ window.addEventListener('beforeunload',e=>{
     <button class="hype-close" onclick="closeHype()">Let's get it →</button>
   </div>
 </div>
-<div class="version-toast" id="version-toast">✦ Build Jun 04 · 4:44 PM CT ✓</div>
+<div class="version-toast" id="version-toast">✦ Build Jun 04 · 5:02 PM CT ✓</div>
 </body>
 </html>
