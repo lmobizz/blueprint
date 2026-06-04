@@ -1810,7 +1810,7 @@ function renderHabitsToday(){
   const doneCount=due.filter(x=>x.checked).length;
   wrap.innerHTML=`<div class="habits-today-section">
     <h4>⚡ Habits due today <span style="font-size:11px;font-weight:400;color:rgba(184,134,11,.7)">${doneCount}/${due.length} done</span></h4>
-    ${due.map(({h,hi,gi,bk,sub,goalText,checked})=>`
+    ${due.map(({h,hi,gi,bk,sub,cat,goalText,checked})=>`
       <div class="habit-today-item">
         <div class="ht-check${checked?' done':''}" onclick="toggleHabitToday('${bk}','${sub}','${cat}',${gi},${hi},'${today}')">${checked?'✓':''}</div>
         <span class="ht-label${checked?' done':''}">${esc(h.text)}</span>
@@ -2548,18 +2548,20 @@ function goalHTML(bucket,sub,cat,idx,g){
   const milestones=g.milestones||[];
   const today=NOW.toISOString().split('T')[0];
   const msHTML=milestones.map((m,mi)=>`
-    <div class="milestone-item">
+    <div class="milestone-item" id="ms-item-${bucket}-${makeId(sub)}-${makeId(cat)}-${idx}-${mi}">
       <div class="ms-check${m.done?' done':''}" onclick="toggleMilestone('${bucket}','${sub}','${cat}',${idx},${mi})">${m.done?'✓':''}</div>
-      <span class="ms-text${m.done?' done':''}">${esc(m.text)}</span>
-      <button class="ms-del" onclick="deleteMilestone('${bucket}','${sub}','${cat}',${idx},${mi})">✕</button>
+      <span class="ms-text${m.done?' done':''}" ondblclick="editMilestoneInline('${bucket}','${sub}','${cat}',${idx},${mi})" title="Double-click to edit">${esc(m.text)}</span>
+      <button class="ms-del" style="margin-left:auto" onclick="editMilestoneInline('${bucket}','${sub}','${cat}',${idx},${mi})" title="Edit">✎</button>
+      <button class="ms-del" onclick="deleteMilestone('${bucket}','${sub}','${cat}',${idx},${mi})" title="Delete">✕</button>
     </div>`).join('');
   const habHTML=habits.map((h,hi)=>{
     const checked=(h.checks||{})[today]||false;
-    return`<div class="habit-item">
+    return`<div class="habit-item" id="hab-item-${bucket}-${makeId(sub)}-${makeId(cat)}-${idx}-${hi}">
       <div class="ht-check${checked?' done':''}" onclick="toggleHabitToday('${bucket}','${sub}','${cat}',${idx},${hi},'${today}')" style="width:14px;height:14px;border-radius:3px;border:1.5px solid #D4A827;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:8px;${checked?'background:var(--gold);border-color:var(--gold);color:white':''}">${checked?'✓':''}</div>
-      <span style="flex:1;font-size:12px;color:var(--ink2)">${esc(h.text)}</span>
+      <span style="flex:1;font-size:12px;color:var(--ink2)" ondblclick="editHabitInline('${bucket}','${sub}','${cat}',${idx},${hi})" title="Double-click to edit">${esc(h.text)}</span>
       <span class="habit-freq">${h.freq}</span>
-      <button class="habit-del" onclick="deleteHabit('${bucket}','${sub}','${cat}',${idx},${hi})">✕</button>
+      <button class="habit-del" onclick="editHabitInline('${bucket}','${sub}','${cat}',${idx},${hi})" title="Edit">✎</button>
+      <button class="habit-del" onclick="deleteHabit('${bucket}','${sub}','${cat}',${idx},${hi})" title="Delete">✕</button>
     </div>`;
   }).join('');
   return`<div class="goal-item" style="flex-direction:column;align-items:stretch;padding:0">
@@ -2627,6 +2629,78 @@ function toggleMilestone(bucket,sub,cat,idx,mi){
   save();renderGoals();
   const sid=`sys_${makeId(bucket)}_${makeId(sub)}_${makeId(cat)}_${idx}`;
   setTimeout(()=>{const el=document.getElementById(sid);if(el)el.style.display='block';},10);
+}
+
+
+/* ── INLINE EDITING FOR MILESTONES & HABITS ─────────────── */
+function editMilestoneInline(bucket,sub,cat,idx,mi){
+  const m=D.goals[bucket][sub][cat][idx].milestones[mi];
+  const sid=`ms-item-${bucket}-${makeId(sub)}-${makeId(cat)}-${idx}-${mi}`;
+  const item=document.getElementById(sid);
+  if(!item)return;
+  const span=item.querySelector('.ms-text');
+  if(!span)return;
+  // Replace span with input
+  const input=document.createElement('input');
+  input.value=m.text;
+  input.style.cssText='flex:1;font-family:Syne,sans-serif;font-size:12px;padding:2px 6px;border:1px solid var(--gold);border-radius:5px;background:var(--paper);color:var(--ink);outline:none;';
+  span.replaceWith(input);
+  input.focus();input.select();
+  const save=()=>{
+    const val=input.value.trim();
+    if(val)m.text=val;
+    saveGoalsAndRender();
+  };
+  input.addEventListener('blur',save);
+  input.addEventListener('keydown',e=>{
+    if(e.key==='Enter'){e.preventDefault();save();}
+    if(e.key==='Escape'){saveGoalsAndRender();}
+  });
+}
+
+function editHabitInline(bucket,sub,cat,idx,hi){
+  const h=D.goals[bucket][sub][cat][idx].habits[hi];
+  const sid=`hab-item-${bucket}-${makeId(sub)}-${makeId(cat)}-${idx}-${hi}`;
+  const item=document.getElementById(sid);
+  if(!item)return;
+  const span=item.querySelector('span[style]');
+  const freqBadge=item.querySelector('.habit-freq');
+  if(!span||!freqBadge)return;
+  // Replace text span with input
+  const input=document.createElement('input');
+  input.value=h.text;
+  input.style.cssText='flex:1;font-family:Syne,sans-serif;font-size:12px;padding:2px 6px;border:1px solid var(--gold);border-radius:5px;background:var(--paper);color:var(--ink);outline:none;';
+  span.replaceWith(input);
+  // Replace freq badge with select
+  const sel=document.createElement('select');
+  sel.style.cssText='font-family:Syne,sans-serif;font-size:11px;padding:2px 5px;border:1px solid var(--line);border-radius:5px;background:var(--paper);color:var(--ink);';
+  ['daily','weekdays','weekly'].forEach(f=>{
+    const opt=document.createElement('option');
+    opt.value=f;opt.textContent=f.charAt(0).toUpperCase()+f.slice(1);
+    if(f===h.freq)opt.selected=true;
+    sel.appendChild(opt);
+  });
+  freqBadge.replaceWith(sel);
+  input.focus();input.select();
+  const save=()=>{
+    const val=input.value.trim();
+    if(val)h.text=val;
+    h.freq=sel.value;
+    saveGoalsAndRender();
+  };
+  input.addEventListener('blur',()=>setTimeout(save,150));
+  input.addEventListener('keydown',e=>{
+    if(e.key==='Enter'){e.preventDefault();save();}
+    if(e.key==='Escape'){saveGoalsAndRender();}
+  });
+}
+
+function saveGoalsAndRender(){
+  // keep sys panels open
+  const open={};
+  document.querySelectorAll('.system-panel').forEach(el=>{if(el.style.display==='block')open[el.id]=true;});
+  save();renderGoals();
+  setTimeout(()=>{Object.keys(open).forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='block';});},50);
 }
 
 function deleteMilestone(bucket,sub,cat,idx,mi){
