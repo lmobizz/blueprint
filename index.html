@@ -99,6 +99,13 @@ body.dark-mode .system-panel{background:var(--paper3);border-color:var(--line)}
 body.dark-mode .undo-toast{background:var(--paper3)}
 .dark-toggle{font-family:'Syne',sans-serif;font-size:13px;background:none;border:none;cursor:pointer;color:var(--ink3);padding:3px 8px;border-radius:6px;transition:color .15s;line-height:1}
 .dark-toggle:hover{color:var(--ink)}
+.week-subtoggle{display:none;gap:4px;margin-bottom:10px}
+.week-subtoggle.visible{display:flex}
+.week-sub-btn{font-family:'Syne',sans-serif;font-size:12px;font-weight:500;padding:5px 14px;border-radius:20px;border:1px solid var(--line);background:transparent;color:var(--ink3);cursor:pointer;transition:all .15s}
+.week-sub-btn:hover{border-color:var(--teal);color:var(--teal)}
+.week-sub-btn.active{background:var(--teal);border-color:var(--teal);color:white}
+.week-section-header{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--ink3);padding:8px 0 4px;margin-top:4px;border-bottom:1px solid var(--line);margin-bottom:6px}
+.week-no-due{font-size:12px;color:var(--ink3);font-style:italic;padding:8px 0 4px;border-top:1px dashed var(--line);margin-top:4px}
 html{scroll-behavior:smooth}
 body{font-family:'Syne',sans-serif;background:var(--paper);color:var(--ink);min-height:100vh}
 
@@ -757,7 +764,7 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
           <div class="filter-group-label">Horizon</div>
           <button class="filter-btn active" onclick="setTodoFilter('all',this)"><div class="filter-dot" style="background:var(--ink3)"></div>All <span class="filter-count" id="fc-all">0</span></button>
           <button class="filter-btn" onclick="setTodoFilter('today',this)"><div class="filter-dot" style="background:var(--blue)"></div>Today <span class="filter-count" id="fc-today">0</span></button>
-          <button class="filter-btn" onclick="setTodoFilter('week',this)"><div class="filter-dot" style="background:var(--teal)"></div>This week <span class="filter-count" id="fc-week">0</span></button>
+          <button class="filter-btn" onclick="setTodoFilter('week',this)"><div class="filter-dot" style="background:var(--teal)"></div>This & next week <span class="filter-count" id="fc-week">0</span></button>
           <button class="filter-btn" onclick="setTodoFilter('longterm',this)"><div class="filter-dot" style="background:var(--ink3)"></div>Long-term <span class="filter-count" id="fc-longterm">0</span></button>
         </div>
         <div class="filter-group">
@@ -832,6 +839,10 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
               <option value="weekly">🔁 Weekly</option>
             </select>
           </div>
+        </div>
+        <div class="week-subtoggle" id="week-subtoggle">
+          <button class="week-sub-btn active" id="wsub-thisweek" onclick="setWeekSub('thisweek')">This week</button>
+          <button class="week-sub-btn" id="wsub-nextweek" onclick="setWeekSub('nextweek')">Next week</button>
         </div>
         <div class="todo-list" id="todo-list"></div>
       </div>
@@ -1405,6 +1416,12 @@ function showView(v,btn){
 const NOW=new Date();
 // End of current calendar week (Sunday 23:59:59)
 const END_OF_WEEK=(()=>{const d=new Date(NOW);d.setDate(d.getDate()+(7-d.getDay())%7||7);d.setHours(23,59,59,999);return d;})();
+// End of next calendar week (following Sunday 23:59:59)
+const END_OF_NEXT_WEEK=(()=>{const d=new Date(END_OF_WEEK);d.setDate(d.getDate()+7);return d;})();
+// Start of next week (Monday 00:00:00)
+const START_OF_NEXT_WEEK=(()=>{const d=new Date(END_OF_WEEK);d.setDate(d.getDate()+1);d.setHours(0,0,0,0);return d;})();
+// Long-term = 2 weeks from today
+const START_OF_LONGTERM=(()=>{const d=new Date(NOW);d.setDate(d.getDate()+14);d.setHours(0,0,0,0);return d;})();
 document.getElementById('hero-date').innerHTML=
   NOW.toLocaleDateString('en-US',{weekday:'long'})+'<br>'+
   NOW.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
@@ -1483,6 +1500,7 @@ function renderOverview(){
 
 /* ── TODOS ───────────────────────────────────────────── */
 let todoFilter='all';
+let weekSub='thisweek'; // 'thisweek' or 'nextweek'
 function addTodo(){
   const input=document.getElementById('todo-new');
   const text=input.value.trim();
@@ -1492,7 +1510,7 @@ function addTodo(){
   if(dueVal){
     const dueDate=new Date(dueVal+'T12:00:00');
     if(dueDate<=new Date(NOW.toDateString())) horizon='today';
-    else if(dueDate<=END_OF_WEEK) horizon='week';
+    else if(dueDate<=END_OF_NEXT_WEEK) horizon='week';
     else horizon='longterm';
   }
   D.todos.unshift({
@@ -1577,7 +1595,7 @@ function autoSetHorizon(dueVal){
   const d=new Date(dueVal+'T12:00:00');
   const sel=document.getElementById('todo-horizon');
   if(d<=new Date(NOW.toDateString())) sel.value='today';
-  else if(d<=END_OF_WEEK) sel.value='week';
+  else if(d<=END_OF_NEXT_WEEK) sel.value='week';
   else sel.value='longterm';
 }
 
@@ -1600,11 +1618,23 @@ function deleteTodo(id){
 
 function setTodoFilter(f,btn){
   todoFilter=f;
-  // only update active class on buttons, not selects
+  if(f==='week') weekSub='thisweek'; // reset to this week on tab switch
   if(btn&&btn.tagName==='BUTTON'){
     document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
     btn.classList.add('active');
   }
+  const tw=document.getElementById('wsub-thisweek');
+  const nw=document.getElementById('wsub-nextweek');
+  if(tw&&nw){tw.classList.toggle('active',weekSub==='thisweek');nw.classList.toggle('active',weekSub==='nextweek');}
+  renderTodos();
+}
+
+function setWeekSub(sub){
+  weekSub=sub;
+  const tw=document.getElementById('wsub-thisweek');
+  const nw=document.getElementById('wsub-nextweek');
+  if(tw)tw.classList.toggle('active',sub==='thisweek');
+  if(nw)nw.classList.toggle('active',sub==='nextweek');
   renderTodos();
 }
 
@@ -1627,7 +1657,14 @@ function filterTodos(){
   return D.todos.filter(t=>{
     if(todoFilter==='all')return true;
     if(todoFilter==='today')return t.horizon==='today';
-    if(todoFilter==='week')return t.horizon==='week';
+    if(todoFilter==='week'){
+      if(t.horizon!=='week')return false;
+      if(!t.due)return true; // no due date — show in both
+      const d=new Date(t.due+'T12:00:00');
+      if(weekSub==='thisweek')return d<=END_OF_WEEK||d<START_OF_NEXT_WEEK;
+      if(weekSub==='nextweek')return d>=START_OF_NEXT_WEEK&&d<=END_OF_NEXT_WEEK;
+      return true;
+    }
     if(todoFilter==='longterm')return t.horizon==='longterm';
     if(todoFilter==='active')return!t.done;
     if(todoFilter==='done')return t.done;
@@ -1641,13 +1678,8 @@ function filterTodos(){
   });
 }
 
-function renderTodos(){
-  renderHabitsToday();
-  const list=document.getElementById('todo-list');
-  const filtered=filterTodos();
-  if(!filtered.length){list.innerHTML='<div class="empty-note" style="padding:1rem 0">No tasks here yet.</div>';return;}
-  list.innerHTML=filtered.map(t=>`
-    <div class="todo-card${t.done?' done':''}">
+function todoCardHTML(t){
+  return`<div class="todo-card${t.done?' done':''}">
       <div class="todo-top">
         <div class="todo-check${t.done?' checked':''}" onclick="toggleTodo(${t.id})">${t.done?'✓':''}</div>
         <div class="todo-info">
@@ -1666,7 +1698,36 @@ function renderTodos(){
           <button class="t-btn del" onclick="deleteTodo(${t.id})" title="Delete">✕</button>
         </div>
       </div>
-    </div>`).join('');
+    </div>`;
+}
+
+function renderTodos(){
+  renderHabitsToday();
+  // Show/hide week sub-toggle
+  const subToggle=document.getElementById('week-subtoggle');
+  if(subToggle)subToggle.classList.toggle('visible',todoFilter==='week');
+
+  const list=document.getElementById('todo-list');
+  const filtered=filterTodos();
+
+  if(todoFilter==='week'){
+    // Sort: tasks with due date first (ascending), no due date last
+    const withDue=filtered.filter(t=>t.due).sort((a,b)=>new Date(a.due)-new Date(b.due));
+    const noDue=filtered.filter(t=>!t.due);
+    if(!withDue.length&&!noDue.length){
+      list.innerHTML='<div class="empty-note" style="padding:1rem 0">No tasks here yet.</div>';return;
+    }
+    let html=withDue.map(t=>todoCardHTML(t)).join('');
+    if(noDue.length){
+      html+=`<div class="week-no-due">No assigned due date</div>`;
+      html+=noDue.map(t=>todoCardHTML(t)).join('');
+    }
+    list.innerHTML=html;
+    return;
+  }
+
+  if(!filtered.length){list.innerHTML='<div class="empty-note" style="padding:1rem 0">No tasks here yet.</div>';return;}
+  list.innerHTML=filtered.map(t=>todoCardHTML(t)).join('');
 }
 
 function renderHabitsToday(){
@@ -1875,7 +1936,7 @@ function saveTodoEdit(){
   if(t.due){
     const dueDate=new Date(t.due+'T12:00:00');
     if(dueDate<=new Date(NOW.toDateString())) t.horizon='today';
-    else if(dueDate<=END_OF_WEEK) t.horizon='week';
+    else if(dueDate<=END_OF_NEXT_WEEK) t.horizon='week';
     else t.horizon='longterm';
   } else {
     t.horizon=document.getElementById('et-horizon').value;
