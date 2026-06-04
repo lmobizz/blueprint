@@ -328,7 +328,7 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
 .goal-item-inner{display:flex;align-items:flex-start;gap:8px;padding:7px 8px;border-radius:7px;transition:background .1s;border-left:2px solid transparent}
 .goal-item-inner:hover{background:var(--paper2)}
 .goal-item-inner.status-in-progress{border-left-color:#C9900A}
-.goal-item-inner.status-on-track{border-left-color:#4D9E7A}
+.goal-item-inner.status-on-track{border-left-color:#C9900A}
 .goal-item-inner.status-achieved{border-left-color:var(--blue)}
 .goal-item-inner.status-not-started{border-left-color:var(--line)}
 .goal-meta{display:flex;gap:8px;margin-top:2px;flex-wrap:wrap}
@@ -998,9 +998,8 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
   </div>
   <div class="page-wrap">
     <div class="legend">
-      <div class="leg-item"><div class="leg-dot" style="background:#4D9E7A;border:1px solid #4D9E7A"></div>On track</div>
-      <div class="leg-item"><div class="leg-dot" style="background:#C9900A;border:1px solid #C9900A"></div>In progress</div>
       <div class="leg-item"><div class="leg-dot" style="background:var(--paper3);border:1px solid var(--ink3)"></div>Not started</div>
+      <div class="leg-item"><div class="leg-dot" style="background:#C9900A;border:1px solid #C9900A"></div>In progress</div>
       <div class="leg-item"><div class="leg-dot" style="background:var(--blue);border:1px solid var(--blue)"></div>Achieved</div>
     </div>
     <div class="buckets" id="buckets-container"></div>
@@ -1327,7 +1326,6 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
       <select class="form-select" id="eg-status">
         <option value="not-started">Not started</option>
         <option value="in-progress">In progress</option>
-        <option value="on-track">On track</option>
         <option value="achieved">Achieved</option>
       </select></div>
     <div class="form-row"><label class="form-label">Due date</label><input class="form-input" type="date" id="eg-due"/></div>
@@ -2150,7 +2148,6 @@ function expandAllSubs(bucketKey){
     const ch=document.getElementById('chev-'+sid);
     const ar=document.getElementById('ar-'+sid);
     if(g){g.classList.add('open');if(ch)ch.classList.add('open');if(ar)ar.style.display='flex';}
-    // also expand categories inside
     const subData=D.goals[bucketKey][sn];
     if(subData&&typeof subData==='object'){
       Object.keys(subData).filter(k=>k!=='_goals').forEach(catName=>{
@@ -2161,6 +2158,8 @@ function expandAllSubs(bucketKey){
       });
     }
   });
+  const btn=document.getElementById('bucket-toggle-'+bucketKey);
+  if(btn)btn.textContent='collapse all';
 }
 
 function collapseAllSubs(bucketKey){
@@ -2171,7 +2170,6 @@ function collapseAllSubs(bucketKey){
     const ch=document.getElementById('chev-'+sid);
     const ar=document.getElementById('ar-'+sid);
     if(g){g.classList.remove('open');if(ch)ch.classList.remove('open');if(ar)ar.style.display='none';}
-    // also collapse categories inside
     const subData=D.goals[bucketKey][sn];
     if(subData&&typeof subData==='object'){
       Object.keys(subData).filter(k=>k!=='_goals').forEach(catName=>{
@@ -2182,6 +2180,19 @@ function collapseAllSubs(bucketKey){
       });
     }
   });
+  const btn=document.getElementById('bucket-toggle-'+bucketKey);
+  if(btn)btn.textContent='expand all';
+}
+
+function toggleAllSubs(bucketKey){
+  // Check if any sub is open
+  const subs=D.goals[bucketKey];
+  const anyOpen=Object.keys(subs).some(sn=>{
+    const g=document.getElementById('goals-'+bucketKey+'_'+makeId(sn));
+    return g&&g.classList.contains('open');
+  });
+  if(anyOpen)collapseAllSubs(bucketKey);
+  else expandAllSubs(bucketKey);
 }
 
 function renderGoals(){
@@ -2203,10 +2214,7 @@ function renderGoals(){
         <span class="bucket-icon">${b.icon}</span>
         <span class="bucket-name">${b.label}</span>
         <span class="bucket-meta">${achG}/${bucketGoals.length} · ${pct}%</span>
-        <div style="display:flex;gap:4px;margin-left:8px">
-          <button onclick="expandAllSubs('${b.key}')" title="Expand all" style="font-family:'Syne',sans-serif;font-size:10px;padding:2px 8px;border-radius:20px;border:1px solid var(--line);background:transparent;color:var(--ink3);cursor:pointer;transition:all .15s" onmouseover="this.style.borderColor='var(--gold)';this.style.color='var(--gold)'" onmouseout="this.style.borderColor='var(--line)';this.style.color='var(--ink3)'">Expand all</button>
-          <button onclick="collapseAllSubs('${b.key}')" title="Collapse all" style="font-family:'Syne',sans-serif;font-size:10px;padding:2px 8px;border-radius:20px;border:1px solid var(--line);background:transparent;color:var(--ink3);cursor:pointer;transition:all .15s" onmouseover="this.style.borderColor='var(--gold)';this.style.color='var(--gold)'" onmouseout="this.style.borderColor='var(--line)';this.style.color='var(--ink3)'">Collapse all</button>
-        </div>
+        <button id="bucket-toggle-${b.key}" onclick="toggleAllSubs('${b.key}')" style="font-family:'Syne',sans-serif;font-size:10px;color:var(--ink3);background:none;border:none;cursor:pointer;padding:2px 6px;letter-spacing:.04em;margin-left:8px;opacity:.6" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=.6">collapse all</button>
       </div>
       <div class="bucket-prog"><div class="bucket-prog-fill" style="width:${pct}%"></div></div>
       <div class="sub-buckets" id="sub-${b.key}"></div>`;
@@ -2874,7 +2882,7 @@ function addGoal(bucket,sub,cat,sid){
 }
 
 function cycleStatus(bucket,sub,cat,idx){
-  const order=['not-started','in-progress','on-track','achieved'];
+  const order=['not-started','in-progress','achieved'];
   const g=D.goals[bucket][sub][cat][idx];
   if(!g)return;
   g.status=order[(order.indexOf(g.status)+1)%order.length];
@@ -2991,14 +2999,26 @@ function saveIdentity(bucket,sub,cat,idx,val){
 }
 
 function addMilestone(bucket,sub,cat,idx,sid){
+  // Read values BEFORE any DOM changes
   const inp=document.getElementById('ms-input-'+sid);
   const dueInp=document.getElementById('ms-due-'+sid);
   const text=inp?.value.trim();if(!text)return;
   const due=dueInp?.value||'';
   if(!D.goals[bucket][sub][cat][idx].milestones)D.goals[bucket][sub][cat][idx].milestones=[];
   D.goals[bucket][sub][cat][idx].milestones.push({text,done:false,due});
-  inp.value='';if(dueInp)dueInp.value='';save();renderGoals();
-  setTimeout(()=>{const el=document.getElementById(sid);if(el)el.style.display='block';},10);
+  save();
+  // Keep sys panel open after re-render
+  const openPanels={};
+  document.querySelectorAll('.system-panel').forEach(el=>{
+    if(el.style.display==='block')openPanels[el.id]=true;
+  });
+  renderGoals();
+  setTimeout(()=>{
+    Object.keys(openPanels).forEach(id=>{
+      const el=document.getElementById(id);
+      if(el)el.style.display='block';
+    });
+  },10);
 }
 
 function toggleMilestone(bucket,sub,cat,idx,mi){
@@ -3120,7 +3140,7 @@ function openGoalModal(bucket,sub,cat,idx){
   // Reset to overview tab
   switchGoalModalTab('overview',true);
   const statusColors={'not-started':'var(--line)','in-progress':'#C9900A','on-track':'#4D9E7A','achieved':'var(--blue)'};
-  const statusLabels={'not-started':'Not started','in-progress':'In progress','on-track':'On track','achieved':'Achieved'};
+  const statusLabels={'not-started':'Not started','in-progress':'In progress','on-track':'In progress','achieved':'Achieved'};
   // Header
   document.getElementById('gsm-title').textContent=g.text;
   const dot=document.getElementById('gsm-status-dot');
