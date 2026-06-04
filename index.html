@@ -2290,7 +2290,7 @@ function renderMacroTimeline(bucket){
   // Calculate total height: section header (22px) + goals (36px each) + gap (10px) between sections + bottom axis (30px)
   const totalGoals=allGoals.length;
   const H=sections.length*14 + totalGoals*30 + (sections.length-1)*10 + 45;
-  const W=500,leftPad=155,rightPad=35,trackW=W-leftPad-rightPad;
+  const W=500,leftPad=155,rightPad=50,trackW=W-leftPad-rightPad;
 
   let svg=`<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" style="width:100%;overflow:visible">`;
 
@@ -2321,14 +2321,15 @@ function renderMacroTimeline(bucket){
       svg+=`<line x1="${leftPad}" y1="${y}" x2="${dotX}" y2="${y}" stroke="${dotColor}" stroke-width="1.5" opacity="0.25"/>`;
 
       // Goal name
-      svg+=`<text x="${leftPad-8}" y="${y-3}" text-anchor="end" font-size="9" fill="var(--ink2)" font-family="Syne,sans-serif" font-weight="600">${esc(label)}</text>`;
+      svg+=`<text x="${leftPad-8}" y="${y-2}" text-anchor="end" font-size="8" fill="var(--ink2)" font-family="Syne,sans-serif" font-weight="600">${esc(label)}</text>`;
       if(catLabel){
-        svg+=`<text x="${leftPad-8}" y="${y+7}" text-anchor="end" font-size="7" fill="var(--ink3)" font-family="Syne,sans-serif">📁 ${esc(catLabel)}</text>`;
+        svg+=`<text x="${leftPad-8}" y="${y+7}" text-anchor="end" font-size="6.5" fill="var(--ink3)" font-family="Syne,sans-serif">📁 ${esc(catLabel)}</text>`;
       }
 
       // Due date
       const dueLabel=new Date(item.dueTs).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'2-digit'});
-      svg+=`<text x="${dotX+9}" y="${y+3}" text-anchor="start" font-size="7.5" fill="${isPast?'var(--rose)':'var(--ink3)'}" font-family="Syne,sans-serif">${dueLabel}</text>`;
+      const nearEdge=dotX>(W-rightPad-48);
+      svg+=`<text x="${nearEdge?dotX-9:dotX+9}" y="${y+3}" text-anchor="${nearEdge?'end':'start'}" font-size="7.5" fill="${isPast?'var(--rose)':'var(--ink3)'}" font-family="Syne,sans-serif">${dueLabel}</text>`;
 
       // Milestone ticks
       (g.milestones||[]).filter(m=>m.due).forEach(m=>{
