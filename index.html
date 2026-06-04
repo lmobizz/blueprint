@@ -192,77 +192,98 @@ body.dark-mode .macro-tl-header:hover{background:var(--paper3)}
 
 
 /* ── DRAG AND DROP GOALS ─────────────────────────────────── */
-let dragCtx=null; // {bucket, sub, cat, idx} of dragged goal
+let dragCtx=null;
 
 function dragGoalStart(e, bucket, sub, cat, idx){
   dragCtx={bucket,sub,cat,idx};
   e.dataTransfer.effectAllowed='move';
   e.dataTransfer.setData('text/plain','goal');
-  setTimeout(()=>e.target.closest('.goal-item')?.classList.add('dragging'),0);
+  setTimeout(()=>{
+    e.currentTarget.classList.add('dragging');
+    document.body.classList.add('goal-dragging');
+  },0);
 }
 
 function dragGoalEnd(e){
-  e.target.closest('.goal-item')?.classList.remove('dragging');
+  e.currentTarget.classList.remove('dragging');
+  document.body.classList.remove('goal-dragging');
   document.querySelectorAll('.drag-over,.drag-over-zone').forEach(el=>{
     el.classList.remove('drag-over','drag-over-zone');
   });
+  dragCtx=null;
 }
 
 function dragGoalOver(e){
   if(!dragCtx)return;
   e.preventDefault();
+  e.stopPropagation();
   e.dataTransfer.dropEffect='move';
-  const item=e.target.closest('.goal-item');
-  if(item&&item!==e.currentTarget){
-    document.querySelectorAll('.goal-item.drag-over').forEach(el=>el.classList.remove('drag-over'));
-    item.classList.add('drag-over');
-  }
+  document.querySelectorAll('.goal-item.drag-over').forEach(el=>el.classList.remove('drag-over'));
+  e.currentTarget.classList.add('drag-over');
 }
 
 function dragGoalLeave(e){
-  e.target.closest('.goal-item')?.classList.remove('drag-over');
+  e.currentTarget.classList.remove('drag-over');
 }
 
 function dragGoalDrop(e, targetBucket, targetSub, targetCat, targetIdx){
   e.preventDefault();
+  e.stopPropagation();
+  e.currentTarget.classList.remove('drag-over');
   if(!dragCtx)return;
   const{bucket,sub,cat,idx}=dragCtx;
 
-  // Same array reorder — only handle if same category
+  // Reorder within same category
   if(bucket===targetBucket&&sub===targetSub&&cat===targetCat&&idx!==targetIdx){
-    e.stopPropagation(); // only stop propagation for same-cat reorder
     const arr=D.goals[bucket][sub][cat];
-    const [moved]=arr.splice(idx,1);
-    const newIdx=idx<targetIdx?targetIdx-1:targetIdx;
-    arr.splice(newIdx,0,moved);
-    save();renderGoals();
-    dragCtx=null;
+    const[moved]=arr.splice(idx,1);
+    arr.splice(idx<targetIdx?targetIdx-1:targetIdx,0,moved);
+    save();renderGoals();dragCtx=null;return;
   }
-  // If different category, let it bubble up to dropIntoCategory
+
+  // Move to different category — same as dropIntoCategory but at specific position
+  if(bucket!==targetBucket||sub!==targetSub||cat!==targetCat){
+    moveGoalToCategory(bucket,sub,cat,idx,targetBucket,targetSub,targetCat,targetIdx);
+  }
+  dragCtx=null;
 }
 
-function dropIntoCategory(e, bucket, sub, cat){
-  e.preventDefault();e.stopPropagation();
+function dragCatOver(e, bucket, sub, cat){
+  if(!dragCtx)return;
+  // Don't highlight if it's the same source category
+  if(dragCtx.bucket===bucket&&dragCtx.sub===sub&&dragCtx.cat===cat)return;
+  e.preventDefault();
+  e.stopPropagation();
+  e.currentTarget.classList.add('drag-over-zone');
+}
+
+function dragCatLeave(e){
+  e.currentTarget.classList.remove('drag-over-zone');
+}
+
+function dragCatDrop(e, bucket, sub, cat){
+  e.preventDefault();
+  e.stopPropagation();
+  e.currentTarget.classList.remove('drag-over-zone');
   if(!dragCtx)return;
   const{bucket:srcB,sub:srcS,cat:srcC,idx:srcIdx}=dragCtx;
-
-  // Same category — already handled or no-op
   if(srcB===bucket&&srcS===sub&&srcC===cat){dragCtx=null;return;}
-
-  // Move goal to new category/sub-bucket
-  ensureSubFormat(bucket,sub);
-  if(!D.goals[bucket][sub][cat])D.goals[bucket][sub][cat]=[];
-  const srcArr=D.goals[srcB]?.[srcS]?.[srcC];
-  if(!srcArr){dragCtx=null;return;}
-  const[moved]=srcArr.splice(srcIdx,1);
-  D.goals[bucket][sub][cat].push(moved);
-  save();renderGoals();
+  moveGoalToCategory(srcB,srcS,srcC,srcIdx,bucket,sub,cat,null);
   dragCtx=null;
-  // Clean up visual states
-  document.querySelectorAll('.drag-over-zone,.drag-over').forEach(el=>{
-    el.classList.remove('drag-over-zone','drag-over');
-  });
 }
+
+function moveGoalToCategory(srcB,srcS,srcC,srcIdx,tgtB,tgtS,tgtC,tgtIdx){
+  const srcArr=D.goals[srcB]?.[srcS]?.[srcC];
+  if(!srcArr)return;
+  ensureSubFormat(tgtB,tgtS);
+  if(!D.goals[tgtB][tgtS][tgtC])D.goals[tgtB][tgtS][tgtC]=[];
+  const[moved]=srcArr.splice(srcIdx,1);
+  const tgtArr=D.goals[tgtB][tgtS][tgtC];
+  if(tgtIdx!=null)tgtArr.splice(tgtIdx,0,moved);
+  else tgtArr.push(moved);
+  save();renderGoals();
+}
+
 
 /* ── HYPE MODAL ──────────────────────────────────────────── */
 .hype-bg{position:fixed;inset:0;z-index:999;display:flex;align-items:center;justify-content:center;animation:hypeFadeIn .2s ease;background:rgba(14,13,12,.85);backdrop-filter:blur(4px)}
@@ -293,6 +314,9 @@ body.dark-mode .hype-gold-bar{opacity:.5}
 .drag-handle{display:inline-flex;align-items:center;color:var(--ink3);font-size:11px;cursor:grab;padding:0 4px;opacity:0;transition:opacity .15s;user-select:none}
 .goal-item:hover .drag-handle{opacity:.5}
 .drag-handle:hover{opacity:1!important;color:var(--gold)}
+body.goal-dragging .goal-item-inner{pointer-events:none}
+body.goal-dragging .goal-info{pointer-events:none}
+body.goal-dragging .system-panel{pointer-events:none}
 .dark-toggle{font-family:'Syne',sans-serif;font-size:13px;background:none;border:none;cursor:pointer;color:var(--ink3);padding:3px 8px;border-radius:6px;transition:color .15s;line-height:1}
 .dark-toggle:hover{color:var(--ink)}
 /* Goal system modal */
@@ -2309,15 +2333,21 @@ function getOpenState(){
   const open={};
   document.querySelectorAll('.sub-goals.open').forEach(el=>open[el.id]=true);
   document.querySelectorAll('.cat-goals.open').forEach(el=>open[el.id]=true);
+  // Also save to localStorage for refresh persistence
+  try{localStorage.setItem('bp_goals_open',JSON.stringify(Object.keys(open)));}catch(e){}
   return open;
 }
 
 function restoreOpenState(open){
+  // Merge with localStorage for refresh persistence
+  try{
+    const saved=localStorage.getItem('bp_goals_open');
+    if(saved){JSON.parse(saved).forEach(id=>open[id]=true);}
+  }catch(e){}
   Object.keys(open).forEach(id=>{
     const el=document.getElementById(id);
     if(!el)return;
     el.classList.add('open');
-    // for sub-goals: show add-goal-row
     if(id.startsWith('goals-')){
       const sid=id.replace('goals-','');
       const ar=document.getElementById('ar-'+sid);
@@ -2325,7 +2355,6 @@ function restoreOpenState(open){
       const chev=document.getElementById('chev-'+sid);
       if(chev)chev.classList.add('open');
     }
-    // for cat-goals: show their chevron
     if(!id.startsWith('goals-')){
       const chev=document.getElementById('chev-'+id);
       if(chev)chev.classList.add('open');
@@ -2606,9 +2635,9 @@ function renderGoals(){
             </div>
           </div>
           <div class="cat-goals open" id="${cid}"
-            ondragover="event.preventDefault();this.classList.add('drag-over-zone')"
-            ondragleave="this.classList.remove('drag-over-zone')"
-            ondrop="dropIntoCategory(event,'${b.key}','${esc(sn)}','${esc(catName)}');this.classList.remove('drag-over-zone')">
+            ondragover="dragCatOver(event,'${b.key}','${esc(sn)}','${esc(catName)}')"
+            ondragleave="dragCatLeave(event)"
+            ondrop="dragCatDrop(event,'${b.key}','${esc(sn)}','${esc(catName)}')">
             ${catGoals.length?catGoals.map((g,i)=>goalHTML(b.key,sn,catName,i,g)).join(''):'<div class="empty-note" style="padding-left:.5rem">No goals yet.</div>'}
             <div style="display:flex;gap:6px;padding:.3rem .6rem .3rem 0">
               <input class="add-goal-input" id="ai-${cid}" placeholder="Add a goal…" onkeydown="if(event.key==='Enter')addGoal('${b.key}','${esc(sn)}','${esc(catName)}','${cid}')"/>
@@ -2625,9 +2654,9 @@ function renderGoals(){
           <span class="sub-count">${subGoals.length}</span>
         </div>
         <div class="sub-goals" id="goals-${sid}"
-          ondragover="event.preventDefault();this.classList.add('drag-over-zone')"
-          ondragleave="this.classList.remove('drag-over-zone')"
-          ondrop="dropIntoCategory(event,'${b.key}','${esc(sn)}','_goals');this.classList.remove('drag-over-zone')">
+          ondragover="dragCatOver(event,'${b.key}','${esc(sn)}','_goals')"
+          ondragleave="dragCatLeave(event)"
+          ondrop="dragCatDrop(event,'${b.key}','${esc(sn)}','_goals')">
           ${catsHTML||'<div class="empty-note">No goals yet.</div>'}
           <div class="add-cat-row" id="cat-row-${sid}" style="display:none;border-top:1px dashed var(--line);margin-top:6px;padding-top:6px">
             <input class="add-cat-input" id="cat-input-${sid}" placeholder="New category name…" onkeydown="if(event.key==='Enter')addCat('${b.key}','${esc(sn)}','${sid}')"/>
