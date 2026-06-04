@@ -2289,7 +2289,7 @@ function renderMacroTimeline(bucket){
 
   // Calculate total height: section header (22px) + goals (36px each) + gap (10px) between sections + bottom axis (30px)
   const totalGoals=allGoals.length;
-  const H=sections.length*22 + totalGoals*36 + (sections.length-1)*14 + 50;
+  const H=sections.length*14 + totalGoals*30 + (sections.length-1)*10 + 45;
   const W=500,leftPad=155,rightPad=35,trackW=W-leftPad-rightPad;
 
   let svg=`<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" style="width:100%;overflow:visible">`;
@@ -2303,10 +2303,10 @@ function renderMacroTimeline(bucket){
 
   sections.forEach((section,si)=>{
     // Section header — sub-bucket name
-    svg+=`<text x="${leftPad-8}" y="${currentY+2}" text-anchor="end" font-size="9" fill="var(--ink3)" font-family="Syne,sans-serif" font-weight="700" letter-spacing="0.05em" text-transform="uppercase">${esc(section.subName.toUpperCase())}</text>`;
+    svg+=`<text x="${leftPad-8}" y="${currentY+1}" text-anchor="end" font-size="7" fill="var(--ink3)" font-family="Syne,sans-serif" font-weight="700" letter-spacing="0.08em">${esc(section.subName.toUpperCase())}</text>`;
     // Dashed separator line across full width
-    svg+=`<line x1="${leftPad}" y1="${currentY}" x2="${W-rightPad}" y2="${currentY}" stroke="var(--line)" stroke-width="1" stroke-dasharray="4,4" opacity="0.6"/>`;
-    currentY+=18;
+    svg+=`<line x1="${leftPad}" y1="${currentY}" x2="${W-rightPad}" y2="${currentY}" stroke="var(--line)" stroke-width="1" stroke-dasharray="4,4" opacity="0.5"/>`;
+    currentY+=14;
 
     section.goals.forEach((item,gi)=>{
       const y=currentY;
@@ -2343,11 +2343,11 @@ function renderMacroTimeline(bucket){
         svg+=`<text x="${dotX}" y="${y+3}" text-anchor="middle" font-size="7" fill="white" font-family="Syne,sans-serif" style="pointer-events:none">✓</text>`;
       }
 
-      currentY+=36;
+      currentY+=30;
     });
 
     // Gap between sections
-    if(si<sections.length-1) currentY+=14;
+    if(si<sections.length-1) currentY+=10;
   });
 
   // Bottom axis
