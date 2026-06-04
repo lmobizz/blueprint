@@ -551,7 +551,7 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
 .why-save-btn:hover{background:var(--ink2)}
 .why-gen-btn{font-family:'Syne',sans-serif;font-size:12px;font-weight:500;padding:7px 16px;background:var(--gold-l);color:var(--gold);border:1px solid var(--gold);border-radius:8px;cursor:pointer;transition:all .15s}
 .why-gen-btn:hover{background:var(--gold);color:white}
-.why-manifesto{background:var(--paper);border:1px solid var(--line);border-left:3px solid var(--gold);border-radius:var(--r);padding:1.25rem 1.5rem;margin-top:1.25rem;font-family:'Playfair Display',serif;font-size:1rem;line-height:1.8;color:var(--ink2)}
+.why-manifesto{background:var(--paper);border:1px solid var(--line);border-left:3px solid var(--gold);border-radius:var(--r);padding:1.25rem 1.5rem;margin-top:1.25rem;font-family:'Playfair Display',serif;font-size:.82rem;line-height:1.75;color:var(--ink2)}
 .why-manifesto p{margin-bottom:.75rem}
 .why-manifesto p:last-child{margin-bottom:0}
 .why-progress{font-size:11px;color:var(--gold);margin-left:auto;font-weight:500}
@@ -3031,13 +3031,13 @@ async function generateManifesto(){
   wrap.style.display='block';
   el.innerHTML='<p style="opacity:.5">Writing your manifesto...</p>';
 
-  const prompt='You are writing a deeply personal manifesto for someone based on their answers to foundational life questions. Some answers include multiple dated entries showing how their thinking has evolved — weave that growth into the manifesto where relevant. Write it in first person, present tense. Be powerful, honest, and specific to their answers — not generic. 1-2 paragraphs maximum. No bullet points. No headers. Flowing, declarative prose only.\n\nTheir answers (with evolution where applicable):\n'+answers+'\n\nWrite their personal manifesto now in 1-2 paragraphs. Start with "I am..." or a strong declarative statement. Reference their specific words and growth. End with their legacy or purpose. Be concise and earn every word.';
+  const prompt='You are writing a deeply personal manifesto for someone based on their answers to foundational life questions. Some answers include multiple dated entries showing how their thinking has evolved — weave that growth into the manifesto where relevant. Write it in first person, present tense. Be powerful, honest, and specific to their answers — not generic. 3-4 paragraphs. No bullet points. No headers. Flowing, declarative prose only.\n\nTheir answers (with evolution where applicable):\n'+answers+'\n\nWrite their personal manifesto now in 3-4 paragraphs. Start with "I am..." or a strong declarative statement. Reference their specific words and growth. Each paragraph covers a different dimension: identity, values, vision, legacy. Earn every word.';
 
   try{
     const res=await fetch('https://api.anthropic.com/v1/messages',{
       method:'POST',
       headers:{'Content-Type':'application/json','anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true','x-api-key':getApiKey()},
-      body:JSON.stringify({model:'claude-sonnet-4-5',max_tokens:350,messages:[{role:'user',content:prompt}]})
+      body:JSON.stringify({model:'claude-sonnet-4-5',max_tokens:600,messages:[{role:'user',content:prompt}]})
     });
     const data=await res.json();
     const text=data.content?.find(b=>b.type==='text')?.text||'';
@@ -5140,6 +5140,6 @@ window.addEventListener('beforeunload',e=>{
     <button class="hype-close" onclick="closeHype()">Let's get it →</button>
   </div>
 </div>
-<div class="version-toast" id="version-toast">✦ Build Jun 04 · 5:35 PM CT ✓</div>
+<div class="version-toast" id="version-toast">✦ Build Jun 04 · 5:52 PM CT ✓</div>
 </body>
 </html>
