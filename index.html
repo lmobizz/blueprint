@@ -866,6 +866,9 @@ body.dark-mode .profile-dropdown{background:var(--paper2);border-color:var(--lin
 .pe-chev{font-size:9px;color:var(--ink3);transition:transform .2s;flex-shrink:0}
 .pe-chev.open{transform:rotate(90deg)}
 .pe-date{font-size:11px;color:var(--gold);font-weight:600;flex-shrink:0}
+.pe-date-input{font-size:11px;color:var(--gold);font-weight:600;background:transparent;border:none;border-bottom:1px dashed rgba(184,134,11,.4);outline:none;cursor:pointer;font-family:inherit;padding:0;width:100px;flex-shrink:0}
+.pe-date-input:hover{border-bottom-color:var(--gold)}
+.pe-date-input:focus{border-bottom-color:var(--gold);border-bottom-style:solid}
 .pe-preview{font-size:11px;color:var(--ink3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0}
 .pe-current-badge{font-size:9px;background:rgba(184,134,11,.15);color:var(--gold);padding:1px 6px;border-radius:10px;flex-shrink:0}
 .pe-body{padding:0 10px;max-height:0;overflow:hidden;transition:max-height .25s ease,padding .25s ease}
@@ -2742,12 +2745,15 @@ const WHY_QUESTIONS=[
 /* ── PERSPECTIVE HELPERS ─────────────────────────────────── */
 // Migrate old string value to entry array
 function getEntries(key){
-  const w=D.why||{};
-  const val=w[key];
+  if(!D.why) D.why={};
+  const val=D.why[key];
   if(!val) return [];
   if(Array.isArray(val)) return val;
-  // migrate: old string → first entry
-  return [{text:val, date:w.lastUpdated||Date.now(), id:Date.now()}];
+  // migrate old string to entry array and save it back permanently
+  const entry={text:val, date:D.why.lastUpdated||Date.now(), id:Date.now()};
+  D.why[key]=[entry];
+  save();
+  return D.why[key];
 }
 
 function fmtDate(ts){
@@ -2776,7 +2782,8 @@ function renderWhyQuestions(){
       html+=`<div class="perspective-entry${isLatest?' is-new':''}" id="pe-${q.key}-${entry.id}">`;
       html+=`<div class="pe-header" onclick="togglePerspective('${q.key}',${entry.id})">`;
       html+=`<span class="pe-chev${isLatest?' open':''}" id="pechev-${q.key}-${entry.id}">▶</span>`;
-      html+=`<span class="pe-date">${fmtDate(entry.date)}</span>`;
+      const dateVal=new Date(entry.date).toISOString().split('T')[0];
+      html+=`<input type="date" class="pe-date-input" value="${dateVal}" title="Edit date" onclick="event.stopPropagation()" onchange="updatePerspectiveDate('${q.key}',${entry.id},this.value)" />`;
       if(isLatest) html+=`<span class="pe-current-badge">current</span>`;
       if(!isLatest) html+=`<span class="pe-preview" id="peprev-${q.key}-${entry.id}">${esc(preview)}</span>`;
       if(!isLatest) html+=`<span class="pe-delete" onclick="deletePerspective(event,'${q.key}',${entry.id})" title="Delete this entry">✕</span>`;
@@ -2873,6 +2880,15 @@ function deletePerspective(e, key, id){
   D.why[key]=entries;
   save();
   renderWhyQuestions();
+}
+
+function updatePerspectiveDate(key, id, dateStr){
+  const entries=getEntries(key);
+  const entry=entries.find(e=>e.id===id);
+  if(!entry) return;
+  entry.date=new Date(dateStr+'T12:00:00').getTime();
+  D.why[key]=entries;
+  save();
 }
 
 
@@ -5075,6 +5091,6 @@ window.addEventListener('beforeunload',e=>{
     <button class="hype-close" onclick="closeHype()">Let's get it →</button>
   </div>
 </div>
-<div class="version-toast" id="version-toast">✦ Build Jun 04 · 4:22 PM CT ✓</div>
+<div class="version-toast" id="version-toast">✦ Build Jun 04 · 4:44 PM CT ✓</div>
 </body>
 </html>
