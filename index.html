@@ -1305,6 +1305,8 @@ function showView(v,btn){
 
 /* ── DATE / HERO ─────────────────────────────────────── */
 const NOW=new Date();
+// End of current calendar week (Sunday 23:59:59)
+const END_OF_WEEK=(()=>{const d=new Date(NOW);d.setDate(d.getDate()+(7-d.getDay())%7||7);d.setHours(23,59,59,999);return d;})();
 document.getElementById('hero-date').innerHTML=
   NOW.toLocaleDateString('en-US',{weekday:'long'})+'<br>'+
   NOW.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
@@ -1391,9 +1393,8 @@ function addTodo(){
   let horizon=document.getElementById('todo-horizon').value;
   if(dueVal){
     const dueDate=new Date(dueVal+'T12:00:00');
-    const diff=Math.round((dueDate-NOW)/(1000*60*60*24));
-    if(diff<=0) horizon='today';
-    else if(diff<=7) horizon='week';
+    if(dueDate<=new Date(NOW.toDateString())) horizon='today';
+    else if(dueDate<=END_OF_WEEK) horizon='week';
     else horizon='longterm';
   }
   D.todos.unshift({
@@ -1413,10 +1414,9 @@ document.getElementById('todo-new').addEventListener('keydown',e=>{if(e.key==='E
 function autoSetHorizon(dueVal){
   if(!dueVal)return;
   const d=new Date(dueVal+'T12:00:00');
-  const diff=Math.round((d-NOW)/(1000*60*60*24));
   const sel=document.getElementById('todo-horizon');
-  if(diff<=0) sel.value='today';
-  else if(diff<=7) sel.value='week';
+  if(d<=new Date(NOW.toDateString())) sel.value='today';
+  else if(d<=END_OF_WEEK) sel.value='week';
   else sel.value='longterm';
 }
 
@@ -1707,9 +1707,8 @@ function saveTodoEdit(){
   t.due=document.getElementById('et-due').value;
   if(t.due){
     const dueDate=new Date(t.due+'T12:00:00');
-    const diff=Math.round((dueDate-NOW)/(1000*60*60*24));
-    if(diff<=0) t.horizon='today';
-    else if(diff<=7) t.horizon='week';
+    if(dueDate<=new Date(NOW.toDateString())) t.horizon='today';
+    else if(dueDate<=END_OF_WEEK) t.horizon='week';
     else t.horizon='longterm';
   } else {
     t.horizon=document.getElementById('et-horizon').value;
