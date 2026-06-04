@@ -20,6 +20,35 @@
   --teal:#0E5F6B;--teal-l:#E0F4F6;
   --r:12px;--r2:20px;
 }
+body.dark-mode{
+  --ink:#F0EBE1;--ink2:#D5CFC4;--ink3:#8A847A;
+  --paper:#0E0D0C;--paper2:#1A1917;--paper3:#242220;--line:#2E2C2A;
+  --gold:#D4A827;--gold-l:#1E1800;
+  --blue-l:#0A1520;--green-l:#0A1A0F;--rose-l:#1A0508;--teal-l:#051215;
+}
+body.dark-mode .login-card{background:var(--paper2);border-color:var(--line)}
+body.dark-mode .google-btn{background:var(--paper2);color:var(--ink);border-color:var(--line)}
+body.dark-mode .google-btn:hover{background:var(--paper3)}
+body.dark-mode nav{background:var(--paper);border-color:var(--line)}
+body.dark-mode .backup-bar{background:var(--paper2)}
+body.dark-mode .modal{background:var(--paper2)}
+body.dark-mode .profile-panel{background:var(--paper2)}
+body.dark-mode .profile-header{background:var(--paper2)}
+body.dark-mode .profile-footer{background:var(--paper2)}
+body.dark-mode .todo-sidebar{background:var(--paper2)}
+body.dark-mode .hiw-modal{background:var(--paper2)}
+body.dark-mode .morning-quote{background:var(--paper2);border-color:var(--line);border-left-color:var(--gold)}
+body.dark-mode .narrative-card{background:var(--paper2);border-color:var(--line)}
+body.dark-mode .why-manifesto{background:var(--paper2);border-color:var(--line)}
+body.dark-mode .why-body{background:var(--paper2)}
+body.dark-mode .why-card{background:var(--paper2)}
+body.dark-mode .bucket{background:var(--paper2)}
+body.dark-mode .add-entry-card{background:var(--paper2)}
+body.dark-mode .entry-card{background:var(--paper2)}
+body.dark-mode .people-table-wrap{background:var(--paper2)}
+body.dark-mode .people-table th{background:var(--paper3)}
+.dark-toggle{font-family:'Syne',sans-serif;font-size:13px;background:none;border:none;cursor:pointer;color:var(--ink3);padding:3px 8px;border-radius:6px;transition:color .15s;line-height:1}
+.dark-toggle:hover{color:var(--ink)}
 html{scroll-behavior:smooth}
 body{font-family:'Syne',sans-serif;background:var(--paper);color:var(--ink);min-height:100vh}
 
@@ -592,6 +621,7 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
     <button class="nav-tab" onclick="showView('story',this)">My Story</button>
     <button class="nav-tab" onclick="showView('people',this)">People</button>
   </div>
+  <button class="dark-toggle" id="dark-toggle-btn" onclick="toggleDarkMode()" title="Toggle dark mode">🌙</button>
   <div class="user-badge">
     <div class="user-avatar" id="user-avatar">?</div>
     <span class="user-name-text" id="user-name"></span>
@@ -744,6 +774,12 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
               <option value="long">🕐 Long (1hr+)</option>
             </select>
             <input class="form-input" type="date" id="todo-due" title="Due date" onchange="autoSetHorizon(this.value)"/>
+            <select class="form-select" id="todo-recur">
+              <option value="">🔁 One-time</option>
+              <option value="daily">🔁 Daily</option>
+              <option value="weekdays">🔁 Weekdays</option>
+              <option value="weekly">🔁 Weekly</option>
+            </select>
           </div>
         </div>
         <div class="todo-list" id="todo-list"></div>
@@ -1087,6 +1123,13 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
         <option value="mid">⏳ Mid (15–60 min)</option>
         <option value="long">🕐 Long (1hr+)</option>
       </select></div>
+    <div class="form-row"><label class="form-label">Recurring</label>
+      <select class="form-select" id="et-recur">
+        <option value="">One-time</option>
+        <option value="daily">🔁 Daily</option>
+        <option value="weekdays">🔁 Weekdays</option>
+        <option value="weekly">🔁 Weekly</option>
+      </select></div>
     <div class="form-row"><label class="form-label">Note</label><textarea class="form-textarea" id="et-note" placeholder="Additional context..."></textarea></div>
     <div class="modal-actions">
       <button class="modal-cancel" onclick="closeModals()">Cancel</button>
@@ -1152,6 +1195,7 @@ function showLogin(){
 function showApp(){
   document.getElementById('login-screen').style.display='none';
   document.getElementById('app-shell').style.display='block';
+  initDarkMode();
   const email=currentUser?.email||'';
   const fullName=currentUser?.user_metadata?.full_name||email.split('@')[0]||'';
   const firstName=fullName.split(' ')[0]||'there';
@@ -1206,6 +1250,7 @@ async function loadFromCloud(){
     try{
       const cachedData=JSON.parse(cached);
       applyData(cachedData);
+      checkRecurringTodos();
       updateBackupStatus('Loaded from cache · syncing...');
       renderOverview();
       updateFilterCounts();
@@ -1222,6 +1267,7 @@ async function loadFromCloud(){
     if(error&&error.code!=='PGRST116'){throw error;}
     if(data?.data){
       applyData(data.data);
+      checkRecurringTodos();
       // update cache
       localStorage.setItem('blueprint_cache_'+currentUser.id, JSON.stringify(D));
       updateBackupStatus('Saved to cloud · '+new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}));
@@ -1404,10 +1450,12 @@ function addTodo(){
     priority:document.getElementById('todo-priority').value,
     time:document.getElementById('todo-time').value||'',
     due:dueVal,
+    recur:document.getElementById('todo-recur').value||'',
     note:''
   });
   input.value='';
   document.getElementById('todo-due').value='';
+  document.getElementById('todo-recur').value='';
   save();renderTodos();updateFilterCounts();
 }
 document.getElementById('todo-new').addEventListener('keydown',e=>{if(e.key==='Enter')addTodo();});
@@ -1416,6 +1464,52 @@ function navToSection(view){
   const tab=document.querySelector(`.nav-tab[onclick*="'${view}'"]`);
   if(tab){tab.click();}
 }
+
+/* ── DARK MODE ───────────────────────────────────────────── */
+function toggleDarkMode(){
+  const isDark=document.body.classList.toggle('dark-mode');
+  localStorage.setItem('bp_dark_mode', isDark?'1':'0');
+  document.getElementById('dark-toggle-btn').textContent=isDark?'☀️':'🌙';
+}
+
+function initDarkMode(){
+  const saved=localStorage.getItem('bp_dark_mode');
+  // Auto dark mode based on system preference if no saved preference
+  const prefersDark=window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches;
+  if(saved==='1'||(saved===null&&prefersDark)){
+    document.body.classList.add('dark-mode');
+    const btn=document.getElementById('dark-toggle-btn');
+    if(btn)btn.textContent='☀️';
+  }
+}
+
+
+/* ── RECURRING TODOS ─────────────────────────────────────── */
+function checkRecurringTodos(){
+  const today=NOW.toISOString().split('T')[0];
+  const todayDay=['sun','mon','tue','wed','thu','fri','sat'][NOW.getDay()];
+  const isWeekday=['mon','tue','wed','thu','fri'].includes(todayDay);
+  let changed=false;
+  D.todos.forEach(t=>{
+    if(!t.recur||!t.done)return;
+    const lastDone=t.lastDoneDate||'';
+    if(lastDone===today)return; // already handled today
+    // It's a new day — check if this recurrence should reset
+    const shouldReset=
+      t.recur==='daily'||
+      (t.recur==='weekdays'&&isWeekday)||
+      (t.recur==='weekly'&&t.lastDoneDate&&
+        new Date(today)-new Date(t.lastDoneDate)>=6*24*60*60*1000);
+    if(shouldReset){
+      t.done=false;
+      // auto-set horizon to today for daily/weekday recurrers
+      if(t.recur==='daily'||t.recur==='weekdays') t.horizon='today';
+      changed=true;
+    }
+  });
+  if(changed){save();renderTodos();updateFilterCounts();}
+}
+
 
 function autoSetHorizon(dueVal){
   if(!dueVal)return;
@@ -1432,7 +1526,11 @@ function quickToggleTodo(id){
 }
 function toggleTodo(id){
   const t=D.todos.find(t=>t.id===id);
-  if(t){t.done=!t.done;save();renderTodos();updateFilterCounts();renderOverview();}
+  if(t){
+    t.done=!t.done;
+    if(t.done&&t.recur) t.lastDoneDate=NOW.toISOString().split('T')[0];
+    save();renderTodos();updateFilterCounts();renderOverview();
+  }
 }
 function deleteTodo(id){
   D.todos=D.todos.filter(t=>t.id!==id);
@@ -1497,6 +1595,7 @@ function renderTodos(){
             <span class="todo-tag horizon-${t.horizon}">${horizonLabel(t.horizon)}</span>
             <span class="todo-tag ${t.priority}">${{'p-low':'Low','p-med':'Medium','p-high':'High'}[t.priority]}</span>
             ${t.time?`<span class="todo-tag time-${t.time}">${{quick:'⚡ Quick',mid:'⏳ Mid',long:'🕐 Long'}[t.time]}</span>`:''}
+            ${t.recur?`<span class="todo-tag" style="background:var(--teal-l);color:var(--teal)">🔁 ${{daily:'Daily',weekdays:'Weekdays',weekly:'Weekly'}[t.recur]||t.recur}</span>`:''}
             ${dueBadge(t.due)}
           </div>
           ${t.note?`<div class="todo-note">${esc(t.note)}</div>`:''}
@@ -1705,6 +1804,7 @@ function openTodoEdit(id){
   document.getElementById('et-due').value=t.due||'';
   document.getElementById('et-time').value=t.time||'';
   document.getElementById('et-note').value=t.note||'';
+  document.getElementById('et-recur').value=t.recur||'';
   document.getElementById('edit-todo-modal').classList.remove('hidden');
 }
 function saveTodoEdit(){
@@ -1721,6 +1821,7 @@ function saveTodoEdit(){
   }
   t.priority=document.getElementById('et-priority').value;
   t.time=document.getElementById('et-time').value;
+  t.recur=document.getElementById('et-recur').value||'';
   t.note=document.getElementById('et-note').value.trim();
   save();closeModals();renderTodos();updateFilterCounts();
 }
