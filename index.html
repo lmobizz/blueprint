@@ -742,7 +742,7 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
               <option value="mid">⏳ Mid (15–60 min)</option>
               <option value="long">🕐 Long (1hr+)</option>
             </select>
-            <input class="form-input" type="date" id="todo-due" title="Due date"/>
+            <input class="form-input" type="date" id="todo-due" title="Due date" onchange="autoSetHorizon(this.value)"/>
           </div>
         </div>
         <div class="todo-list" id="todo-list"></div>
@@ -1387,12 +1387,21 @@ function addTodo(){
   const input=document.getElementById('todo-new');
   const text=input.value.trim();
   if(!text)return;
+  const dueVal=document.getElementById('todo-due').value||'';
+  let horizon=document.getElementById('todo-horizon').value;
+  if(dueVal){
+    const dueDate=new Date(dueVal+'T12:00:00');
+    const diff=Math.round((dueDate-NOW)/(1000*60*60*24));
+    if(diff<=0) horizon='today';
+    else if(diff<=7) horizon='week';
+    else horizon='longterm';
+  }
   D.todos.unshift({
     id:Date.now(),text,done:false,
-    horizon:document.getElementById('todo-horizon').value,
+    horizon,
     priority:document.getElementById('todo-priority').value,
     time:document.getElementById('todo-time').value||'',
-    due:document.getElementById('todo-due').value||'',
+    due:dueVal,
     note:''
   });
   input.value='';
@@ -1400,6 +1409,16 @@ function addTodo(){
   save();renderTodos();updateFilterCounts();
 }
 document.getElementById('todo-new').addEventListener('keydown',e=>{if(e.key==='Enter')addTodo();});
+
+function autoSetHorizon(dueVal){
+  if(!dueVal)return;
+  const d=new Date(dueVal+'T12:00:00');
+  const diff=Math.round((d-NOW)/(1000*60*60*24));
+  const sel=document.getElementById('todo-horizon');
+  if(diff<=0) sel.value='today';
+  else if(diff<=7) sel.value='week';
+  else sel.value='longterm';
+}
 
 function quickToggleTodo(id){
   const t=D.todos.find(t=>t.id===id);
@@ -1428,9 +1447,11 @@ function dueBadge(due){
   if(!due)return'';
   const d=new Date(due+'T12:00:00');
   const diff=Math.round((d-NOW)/(1000*60*60*24));
-  if(diff<0)return`<span class="todo-due-tag overdue">Overdue ${fmtDate(d.getTime())}</span>`;
-  if(diff<=3)return`<span class="todo-due-tag soon">Due ${fmtDate(d.getTime())}</span>`;
-  return`<span class="todo-due-tag future">Due ${fmtDate(d.getTime())}</span>`;
+  const label=diff===0?'Today':diff===1?'Tomorrow':diff===-1?'Yesterday':
+    d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});
+  if(diff<0)return`<span class="todo-due-tag overdue">Overdue · ${label}</span>`;
+  if(diff<=3)return`<span class="todo-due-tag soon">Due ${label}</span>`;
+  return`<span class="todo-due-tag future">Due ${label}</span>`;
 }
 
 function horizonLabel(h){
@@ -1683,9 +1704,17 @@ function openTodoEdit(id){
 function saveTodoEdit(){
   const t=D.todos.find(t=>t.id===editTodoCtx);if(!t)return;
   t.text=document.getElementById('et-text').value.trim();
-  t.horizon=document.getElementById('et-horizon').value;
-  t.priority=document.getElementById('et-priority').value;
   t.due=document.getElementById('et-due').value;
+  if(t.due){
+    const dueDate=new Date(t.due+'T12:00:00');
+    const diff=Math.round((dueDate-NOW)/(1000*60*60*24));
+    if(diff<=0) t.horizon='today';
+    else if(diff<=7) t.horizon='week';
+    else t.horizon='longterm';
+  } else {
+    t.horizon=document.getElementById('et-horizon').value;
+  }
+  t.priority=document.getElementById('et-priority').value;
   t.time=document.getElementById('et-time').value;
   t.note=document.getElementById('et-note').value.trim();
   save();closeModals();renderTodos();updateFilterCounts();
