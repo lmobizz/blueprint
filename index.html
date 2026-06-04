@@ -142,6 +142,32 @@ body.dark-mode .cal-day{background:var(--paper2);border-color:var(--line)}
 body.dark-mode .cal-day.today{background:#201C0A;border-color:var(--gold)}
 body.dark-mode .cal-day.other-month{background:var(--paper3)}
 body.dark-mode .cal-detail-panel{background:var(--paper2);border-color:var(--line)}
+
+/* ── GOAL TIMELINE ───────────────────────────────────────── */
+.goal-modal-tabs{display:flex;gap:2px;background:var(--paper2);border-radius:20px;padding:3px;border:1px solid var(--line);margin-bottom:1.25rem}
+.goal-modal-tab{flex:1;font-family:'Syne',sans-serif;font-size:12px;font-weight:500;padding:5px 10px;border-radius:18px;border:none;cursor:pointer;transition:all .2s;background:transparent;color:var(--ink3)}
+.goal-modal-tab.active{background:var(--ink);color:var(--paper)}
+.tl-wrap{padding:.5rem 0}
+.tl-line-container{position:relative;padding:1.5rem 0;overflow:hidden}
+.tl-axis{position:absolute;top:50%;left:40px;right:40px;height:3px;background:var(--line);border-radius:99px;transform:translateY(-50%)}
+.tl-axis-fill{position:absolute;top:0;left:0;height:100%;background:var(--gold);border-radius:99px;transition:width .6s ease}
+.tl-marker{position:absolute;top:50%;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;cursor:default}
+.tl-marker-dot{width:14px;height:14px;border-radius:50%;border:2px solid var(--paper);box-shadow:0 0 0 2px var(--gold);background:var(--gold);z-index:2;transition:transform .15s}
+.tl-marker-dot.start{background:var(--ink);box-shadow:0 0 0 2px var(--ink)}
+.tl-marker-dot.end{background:var(--green);box-shadow:0 0 0 2px var(--green)}
+.tl-marker-dot.today{background:var(--rose);box-shadow:0 0 0 2px var(--rose)}
+.tl-marker-dot.milestone-done{background:var(--green);box-shadow:0 0 0 2px var(--green)}
+.tl-marker-dot.milestone-pending{background:var(--paper);box-shadow:0 0 0 2px var(--gold)}
+.tl-marker-label{font-size:9px;color:var(--ink3);white-space:nowrap;max-width:80px;text-align:center;overflow:hidden;text-overflow:ellipsis;margin-top:6px;line-height:1.3}
+.tl-marker-label.above{margin-top:0;margin-bottom:6px;order:-1}
+.tl-no-dates{font-size:13px;color:var(--ink3);font-style:italic;text-align:center;padding:2rem 0}
+.tl-summary{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:1.25rem}
+.tl-stat{background:var(--paper2);border-radius:8px;padding:.6rem .8rem;text-align:center}
+.tl-stat-num{font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:600;color:var(--ink)}
+.tl-stat-label{font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--ink3);margin-top:1px}
+body.dark-mode .goal-modal-tab.active{background:var(--ink);color:var(--paper)}
+body.dark-mode .tl-stat{background:var(--paper3)}
+body.dark-mode .tl-marker-dot.milestone-pending{background:var(--paper2)}
 .dark-toggle{font-family:'Syne',sans-serif;font-size:13px;background:none;border:none;cursor:pointer;color:var(--ink3);padding:3px 8px;border-radius:6px;transition:color .15s;line-height:1}
 .dark-toggle:hover{color:var(--ink)}
 /* Goal system modal */
@@ -242,8 +268,10 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
 .tl-body{font-size:12px;color:var(--ink2);margin-top:2px;line-height:1.45}
 
 /* GOAL CATEGORIES */
-.cat-header{display:flex;align-items:center;gap:7px;padding:.35rem .6rem .35rem 1.4rem;border-radius:7px;cursor:pointer;transition:background .1s;user-select:none}
-.cat-header:hover{background:var(--paper3)}
+.cat-header{display:flex;align-items:center;gap:7px;padding:.4rem .6rem .4rem 1rem;border-radius:7px;cursor:pointer;transition:background .1s;user-select:none;border-left:2px solid transparent;margin-bottom:1px}
+.cat-header:hover{background:var(--paper2)}
+.bucket.personal .cat-header{border-left-color:rgba(26,58,92,.2)}
+.bucket.professional .cat-header{border-left-color:rgba(30,77,48,.2)}
 .cat-label{font-size:12px;font-weight:600;color:var(--ink);flex:1;letter-spacing:.01em}
 .cat-count{font-size:10px;color:var(--ink3);background:var(--paper3);padding:1px 6px;border-radius:20px;border:1px solid var(--line)}
 .cat-actions{display:flex;gap:2px;opacity:0;transition:opacity .15s}
@@ -251,6 +279,7 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
 .cat-action-btn{background:none;border:none;cursor:pointer;font-size:11px;color:var(--ink3);padding:1px 4px;border-radius:4px}
 .cat-action-btn:hover{background:var(--paper2);color:var(--ink)}
 .cat-action-btn.del:hover{color:var(--rose)}
+.cat-rename-input{font-family:'Syne',sans-serif;font-size:12px;font-weight:600;padding:1px 6px;border:1px solid var(--gold);border-radius:5px;background:var(--paper);color:var(--ink);outline:none;flex:1}
 .cat-goals{padding:0 .6rem .2rem 2.2rem;display:none}
 .cat-goals.open{display:block}
 .add-cat-row{display:flex;gap:6px;padding:.4rem .6rem .4rem 1.4rem}
@@ -276,9 +305,9 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
 .bucket-prog-fill{height:100%;background:var(--gold);border-radius:99px;transition:width .4s ease}
 .sub-buckets{padding:.6rem}
 .sub-bucket{margin-bottom:.3rem}
-.sub-header{display:flex;align-items:center;gap:8px;padding:.4rem .6rem;border-radius:8px;cursor:pointer;transition:background .1s;user-select:none}
-.sub-header:hover{background:var(--paper2)}
-.sub-label{font-size:13px;font-weight:500;color:var(--ink2);flex:1}
+.sub-header{display:flex;align-items:center;gap:8px;padding:.5rem .8rem;border-radius:8px;cursor:pointer;transition:background .1s;user-select:none;background:var(--paper2);margin-bottom:2px}
+.sub-header:hover{background:var(--paper3)}
+.sub-label{font-size:13px;font-weight:600;color:var(--ink);flex:1}
 .sub-count{font-size:11px;color:var(--ink3);background:var(--paper2);padding:2px 7px;border-radius:20px;border:1px solid var(--line)}
 .sub-prog{font-size:10px;color:var(--gold);margin-right:4px;font-weight:600}
 .chevron{font-size:9px;color:var(--ink3);transition:transform .2s}
@@ -296,6 +325,12 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
 .goal-dot.achieved{background:var(--blue);border-color:var(--blue);color:white}
 .goal-info{flex:1;min-width:0}
 .goal-text{font-size:13px;color:var(--ink2);line-height:1.35}
+.goal-item-inner{display:flex;align-items:flex-start;gap:8px;padding:7px 8px;border-radius:7px;transition:background .1s;border-left:2px solid transparent}
+.goal-item-inner:hover{background:var(--paper2)}
+.goal-item-inner.status-in-progress{border-left-color:#C9900A}
+.goal-item-inner.status-on-track{border-left-color:#4D9E7A}
+.goal-item-inner.status-achieved{border-left-color:var(--blue)}
+.goal-item-inner.status-not-started{border-left-color:var(--line)}
 .goal-meta{display:flex;gap:8px;margin-top:2px;flex-wrap:wrap}
 .goal-note{font-size:11px;color:var(--ink3);font-style:italic}
 .goal-due{font-size:11px;padding:1px 7px;border-radius:20px;font-weight:500}
@@ -822,9 +857,7 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
       </div>
     </div>
     <div style="display:flex;justify-content:flex-end;margin-bottom:.35rem">
-      <button onclick="overviewExpandAll()" style="font-family:'Syne',sans-serif;font-size:10px;color:var(--ink3);background:none;border:none;cursor:pointer;padding:2px 6px;letter-spacing:.04em;opacity:.6" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=.6">expand all</button>
-      <span style="color:var(--line);font-size:10px;padding:0 2px">·</span>
-      <button onclick="overviewCollapseAll()" style="font-family:'Syne',sans-serif;font-size:10px;color:var(--ink3);background:none;border:none;cursor:pointer;padding:2px 6px;letter-spacing:.04em;opacity:.6" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=.6">collapse all</button>
+      <button id="ov-toggle-all-btn" onclick="overviewToggleAll()" style="font-family:'Syne',sans-serif;font-size:10px;color:var(--ink3);background:none;border:none;cursor:pointer;padding:2px 6px;letter-spacing:.04em;opacity:.6" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=.6">collapse all</button>
     </div>
     <div id="overview-stats"></div>
     <div class="sec-div" style="cursor:pointer;user-select:none" onclick="toggleOverviewSection('tasks')">
@@ -1614,7 +1647,6 @@ function allGoals(){
 function renderOverview(){
   checkReflection();
   fetchMorningQuote();
-  initOverviewSections();
   const all=allGoals();
   const ach=all.filter(g=>g.status==='achieved').length;
   const ot=all.filter(g=>g.status==='on-track').length;
@@ -1675,6 +1707,7 @@ function renderOverview(){
     </div>
       </div></div>
   `;
+  initOverviewSections();
   const recent=[...D.story].sort((a,b)=>b.date-a.date).slice(0,4);
   document.getElementById('recent-timeline').innerHTML=recent.length
     ?recent.map(e=>`<div class="tl-item"><div class="tl-dot ${e.type}"></div><div><div class="tl-title">${esc(e.title)}</div><div class="tl-date">${fmtDate(e.date)} · ${esc(e.bucket)}</div><div class="tl-body">${esc(e.body)}</div></div></div>`).join('')
@@ -1748,6 +1781,7 @@ function toggleOverviewSection(section){
 function toggleStatGroup(section){toggleOverviewSection(section);}
 
 function initOverviewSections(){
+  let allCollapsed=true;
   Object.entries(OV_SECTIONS).forEach(([s,cfg])=>{
     const saved=localStorage.getItem(cfg.key);
     if(saved==='0'){
@@ -1755,8 +1789,12 @@ function initOverviewSections(){
       const chev=document.getElementById(cfg.chev);
       if(wrap)wrap.style.display='none';
       if(chev)chev.style.transform='rotate(-90deg)';
+    } else {
+      allCollapsed=false;
     }
   });
+  const btn=document.getElementById('ov-toggle-all-btn');
+  if(btn)btn.textContent=allCollapsed?'expand all':'collapse all';
 }
 
 function overviewExpandAll(){
@@ -1767,6 +1805,8 @@ function overviewExpandAll(){
     if(chev)chev.style.transform='rotate(0deg)';
     localStorage.setItem(cfg.key,'1');
   });
+  const btn=document.getElementById('ov-toggle-all-btn');
+  if(btn)btn.textContent='collapse all';
 }
 
 function overviewCollapseAll(){
@@ -1777,6 +1817,18 @@ function overviewCollapseAll(){
     if(chev)chev.style.transform='rotate(-90deg)';
     localStorage.setItem(cfg.key,'0');
   });
+  const btn=document.getElementById('ov-toggle-all-btn');
+  if(btn)btn.textContent='expand all';
+}
+
+function overviewToggleAll(){
+  // Check if any section is currently open
+  const anyOpen=Object.values(OV_SECTIONS).some(cfg=>{
+    const wrap=document.getElementById(cfg.wrap);
+    return wrap&&wrap.style.display!=='none';
+  });
+  if(anyOpen)overviewCollapseAll();
+  else overviewExpandAll();
 }
 
 function toggleDarkMode(){
@@ -2185,6 +2237,7 @@ function renderGoals(){
             <span style="font-size:10px;color:var(--gold);margin-right:4px;font-weight:600">${catPct}%</span>
             <span class="cat-count">${catGoals.length}</span>
             <div class="cat-actions">
+              <button class="cat-action-btn" onclick="event.stopPropagation();renameCat('${b.key}','${esc(sn)}','${esc(catName)}','${cid}')" title="Rename">✎</button>
               <button class="cat-action-btn del" onclick="event.stopPropagation();deleteCat('${b.key}','${esc(sn)}','${esc(catName)}')" title="Delete">✕</button>
             </div>
           </div>
@@ -2749,6 +2802,46 @@ function addCat(bucket,sub,sid){
   },20);
 }
 
+
+/* ── RENAME CATEGORY ─────────────────────────────────────── */
+function renameCat(bucket,sub,catName,cid){
+  // Find the cat-header for this cid
+  const header=document.querySelector(`[onclick*="toggleCat('${cid}')"]`);
+  if(!header)return;
+  const labelSpan=header.querySelector('.cat-label');
+  if(!labelSpan)return;
+
+  // Replace label with input
+  const input=document.createElement('input');
+  input.className='cat-rename-input';
+  input.value=catName;
+  labelSpan.replaceWith(input);
+  input.focus();input.select();
+
+  // Stop the header click from toggling while editing
+  header.onclick=null;
+
+  const commit=()=>{
+    const newName=input.value.trim();
+    if(newName&&newName!==catName){
+      // Rename in data
+      const subData=D.goals[bucket][sub];
+      if(subData[catName]!==undefined){
+        subData[newName]=subData[catName];
+        delete subData[catName];
+        save();
+      }
+    }
+    renderGoals();
+  };
+
+  input.addEventListener('blur',commit);
+  input.addEventListener('keydown',e=>{
+    if(e.key==='Enter'){e.preventDefault();commit();}
+    if(e.key==='Escape'){renderGoals();}
+  });
+}
+
 function deleteCat(bucket,sub,catName){
   const goals=D.goals[bucket][sub][catName]||[];
   if(goals.length&&!confirm(`Delete "${catName}" and its ${goals.length} goal(s)?`))return;
@@ -2763,7 +2856,7 @@ function addGoal(bucket,sub,cat,sid){
   const text=inp.value.trim();if(!text)return;
   ensureSubFormat(bucket,sub);
   if(!D.goals[bucket][sub][cat])D.goals[bucket][sub][cat]=[];
-  D.goals[bucket][sub][cat].push({text,status:'not-started',note:'',due:'',identity:'',milestones:[],habits:[]});
+  D.goals[bucket][sub][cat].push({text,status:'not-started',note:'',due:'',identity:'',milestones:[],habits:[],createdAt:Date.now()});
   inp.value='';save();renderGoals();
   // reopen after render
   const subSid=bucket+'-'+sub.replace(/\W+/g,'-');
@@ -2846,7 +2939,7 @@ function goalHTML(bucket,sub,cat,idx,g){
     </div>`;
   }).join('');
   return`<div class="goal-item" style="flex-direction:column;align-items:stretch;padding:0">
-    <div style="display:flex;align-items:flex-start;gap:8px;padding:7px 0">
+    <div class="goal-item-inner status-${g.status||'not-started'}">
       <div class="goal-dot ${g.status}" onclick="cycleStatus('${bucket}','${sub}','${cat}',${idx})" title="Click to cycle status">${sym[g.status]||''}</div>
       <div class="goal-info">
         <div class="goal-text" onclick="openGoalModal('${bucket}','${sub}','${cat}',${idx})" title="View system">${esc(g.text)}</div>
@@ -2870,8 +2963,9 @@ function goalHTML(bucket,sub,cat,idx,g){
       <div class="sys-section">
         <div class="sys-section-label">🪜 Milestones</div>
         <div class="milestone-list">${msHTML}</div>
-        <div class="add-ms-row">
+        <div class="add-ms-row" style="flex-wrap:wrap;gap:4px">
           <input class="add-ms-input" id="ms-input-${sid}" placeholder="Add a milestone…" onkeydown="if(event.key==='Enter')addMilestone('${bucket}','${sub}','${cat}',${idx},'${sid}')"/>
+          <input type="date" class="add-ms-input" id="ms-due-${sid}" style="max-width:130px;font-size:11px" title="Due date (optional)"/>
           <button class="add-ms-btn" onclick="addMilestone('${bucket}','${sub}','${cat}',${idx},'${sid}')">+</button>
         </div>
       </div>
@@ -2898,10 +2992,12 @@ function saveIdentity(bucket,sub,cat,idx,val){
 
 function addMilestone(bucket,sub,cat,idx,sid){
   const inp=document.getElementById('ms-input-'+sid);
+  const dueInp=document.getElementById('ms-due-'+sid);
   const text=inp?.value.trim();if(!text)return;
+  const due=dueInp?.value||'';
   if(!D.goals[bucket][sub][cat][idx].milestones)D.goals[bucket][sub][cat][idx].milestones=[];
-  D.goals[bucket][sub][cat][idx].milestones.push({text,done:false});
-  inp.value='';save();renderGoals();
+  D.goals[bucket][sub][cat][idx].milestones.push({text,done:false,due});
+  inp.value='';if(dueInp)dueInp.value='';save();renderGoals();
   setTimeout(()=>{const el=document.getElementById(sid);if(el)el.style.display='block';},10);
 }
 
@@ -3016,9 +3112,13 @@ function toggleHabitToday(bucket,sub,cat,idx,hi,today){
 
 
 /* ── GOAL SYSTEM MODAL ───────────────────────────────────── */
+let goalModalCtx=null;
 function openGoalModal(bucket,sub,cat,idx){
   const g=D.goals[bucket][sub][cat][idx];
   if(!g)return;
+  goalModalCtx={bucket,sub,cat,idx};
+  // Reset to overview tab
+  switchGoalModalTab('overview',true);
   const statusColors={'not-started':'var(--line)','in-progress':'#C9900A','on-track':'#4D9E7A','achieved':'var(--blue)'};
   const statusLabels={'not-started':'Not started','in-progress':'In progress','on-track':'On track','achieved':'Achieved'};
   // Header
@@ -3080,6 +3180,175 @@ function openGoalModal(bucket,sub,cat,idx){
   document.getElementById('gsm-body').innerHTML=html;
   document.getElementById('goal-system-modal').classList.remove('hidden');
   document.body.style.overflow='hidden';
+}
+
+function switchGoalModalTab(tab, skipRender){
+  const overviewBtn=document.getElementById('gsm-tab-overview');
+  const timelineBtn=document.getElementById('gsm-tab-timeline');
+  const overviewBody=document.getElementById('gsm-body');
+  const timelineBody=document.getElementById('gsm-timeline-body');
+  if(!overviewBtn||!timelineBtn)return;
+
+  if(tab==='overview'){
+    overviewBtn.classList.add('active');timelineBtn.classList.remove('active');
+    if(overviewBody)overviewBody.style.display='block';
+    if(timelineBody)timelineBody.style.display='none';
+  } else {
+    overviewBtn.classList.remove('active');timelineBtn.classList.add('active');
+    if(overviewBody)overviewBody.style.display='none';
+    if(timelineBody){timelineBody.style.display='block';}
+    if(!skipRender&&goalModalCtx){
+      renderGoalTimeline(goalModalCtx.bucket,goalModalCtx.sub,goalModalCtx.cat,goalModalCtx.idx);
+    }
+  }
+}
+
+
+/* ── GOAL TIMELINE RENDERER ──────────────────────────────── */
+function renderGoalTimeline(bucket,sub,cat,idx){
+  const g=D.goals[bucket][sub][cat][idx];
+  const body=document.getElementById('gsm-timeline-body');
+  if(!g||!body)return;
+
+  const milestones=g.milestones||[];
+  const todayStr=NOW.toISOString().split('T')[0];
+  const todayTs=NOW.getTime();
+
+  // Use goal id as creation timestamp, fall back to 90 days ago
+  const createdTs=g.createdAt||(typeof g.id==='number'?g.id:todayTs-90*24*60*60*1000);
+  const dueTs=g.due?new Date(g.due+'T12:00:00').getTime():null;
+
+  // Build events list: start, milestones with dates, today, due
+  // For milestones without dates, spread them evenly between start and due
+  const msDated=milestones.filter(m=>m.due).map(m=>({
+    type:'milestone',label:m.text,ts:new Date(m.due+'T12:00:00').getTime(),done:m.done
+  }));
+  const msUndated=milestones.filter(m=>!m.due);
+
+  // Timeline span
+  const startTs=createdTs;
+  const endTs=dueTs||Math.max(todayTs+30*24*60*60*1000,...(msDated.length?msDated.map(m=>m.ts):[todayTs+30*24*60*60*1000]));
+  const span=endTs-startTs||1;
+
+  // Position function: 0–1 along the timeline
+  const pos=ts=>Math.max(0,Math.min(1,(ts-startTs)/span));
+
+  // If no due date and no milestone dates, show simplified view
+  const hasDates=dueTs||msDated.length>0;
+
+  if(!hasDates&&milestones.length===0){
+    body.innerHTML=`<div class="tl-no-dates">
+      <div style="font-size:2rem;margin-bottom:.5rem">📅</div>
+      <div>Add a due date or milestones with dates<br>to see your timeline.</div>
+      <button onclick="closeGoalModal();openGoalEdit('${bucket}','${sub}','${cat}',${idx})" style="font-family:'Syne',sans-serif;font-size:12px;font-weight:500;padding:7px 16px;border-radius:20px;border:1px solid var(--line);background:transparent;color:var(--ink2);cursor:pointer;margin-top:1rem;transition:all .15s">✎ Add due date</button>
+    </div>`;
+    return;
+  }
+
+  // Build SVG timeline
+  const W=540;const H=140;
+  const leftPad=50;const rightPad=50;
+  const trackW=W-leftPad-rightPad;
+  const midY=70;
+
+  // Calculate fill % — how far today is along the timeline
+  const fillPct=Math.min(1,Math.max(0,pos(todayTs)));
+  const fillPx=fillPct*trackW;
+
+  let svg=`<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:${W}px;overflow:visible">
+  <!-- Track -->
+  <rect x="${leftPad}" y="${midY-1}" width="${trackW}" height="3" rx="2" fill="var(--line)"/>
+  <!-- Fill -->
+  <rect x="${leftPad}" y="${midY-1}" width="${fillPx}" height="3" rx="2" fill="var(--gold)"/>`;
+
+  // Collect all markers
+  const markers=[];
+
+  // Start marker
+  markers.push({ts:startTs,x:leftPad,label:new Date(startTs).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}),dot:'start',above:false,sublabel:'Started'});
+
+  // Milestone markers (dated)
+  msDated.forEach((m,i)=>{
+    const x=leftPad+pos(m.ts)*trackW;
+    const above=i%2===0;
+    markers.push({ts:m.ts,x,label:m.text.length>18?m.text.slice(0,18)+'…':m.text,dot:m.done?'milestone-done':'milestone-pending',above,sublabel:new Date(m.ts).toLocaleDateString('en-US',{month:'short',day:'numeric'})});
+  });
+
+  // Undated milestones — show as evenly spaced labels below if any
+  // Today marker (only if between start and end)
+  if(todayTs>startTs&&(!dueTs||todayTs<dueTs)){
+    const x=leftPad+pos(todayTs)*trackW;
+    markers.push({ts:todayTs,x,label:'Today',dot:'today',above:true,sublabel:''});
+  }
+
+  // Due date marker
+  if(dueTs){
+    const isPast=dueTs<todayTs;
+    markers.push({ts:dueTs,x:leftPad+trackW,label:new Date(dueTs).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}),dot:isPast?'milestone-done':'end',above:false,sublabel:'Due'});
+  }
+
+  // Draw markers
+  markers.forEach(m=>{
+    const dotR=6;
+    const dotColors={
+      'start':'var(--ink3)',
+      'end':'var(--green)',
+      'today':'var(--rose)',
+      'milestone-done':'var(--green)',
+      'milestone-pending':'var(--gold)',
+    };
+    const dotFill=dotColors[m.dot]||'var(--gold)';
+    const labelY=m.above?midY-18:midY+24;
+    const subY=m.above?midY-30:midY+36;
+
+    // Connector line
+    if(m.above){
+      svg+=`<line x1="${m.x}" y1="${midY-dotR}" x2="${m.x}" y2="${midY-12}" stroke="var(--line)" stroke-width="1" stroke-dasharray="2,2"/>`;
+    } else {
+      svg+=`<line x1="${m.x}" y1="${midY+dotR}" x2="${m.x}" y2="${midY+14}" stroke="var(--line)" stroke-width="1" stroke-dasharray="2,2"/>`;
+    }
+
+    // Dot
+    svg+=`<circle cx="${m.x}" cy="${midY}" r="${dotR}" fill="${dotFill}" stroke="var(--paper)" stroke-width="2"/>`;
+
+    // Sub-label (date or type)
+    if(m.sublabel){
+      svg+=`<text x="${m.x}" y="${m.above?midY-32:midY+46}" text-anchor="middle" font-size="8" fill="var(--ink3)" font-family="Syne,sans-serif">${m.sublabel}</text>`;
+    }
+
+    // Main label
+    svg+=`<text x="${m.x}" y="${labelY}" text-anchor="middle" font-size="9" fill="var(--ink2)" font-family="Syne,sans-serif" font-weight="600">${m.label}</text>`;
+  });
+
+  svg+=`</svg>`;
+
+  // Summary stats
+  const doneMs=milestones.filter(m=>m.done).length;
+  const daysLeft=dueTs?Math.round((dueTs-todayTs)/(1000*60*60*24)):null;
+  const daysTotal=dueTs?Math.round((dueTs-startTs)/(1000*60*60*24)):null;
+  const pctDone=daysTotal?Math.min(100,Math.max(0,Math.round(fillPct*100))):null;
+
+  const summaryHtml=`<div class="tl-summary">
+    <div class="tl-stat"><div class="tl-stat-num">${doneMs}/${milestones.length}</div><div class="tl-stat-label">Milestones</div></div>
+    <div class="tl-stat"><div class="tl-stat-num">${pctDone!==null?pctDone+'%':'—'}</div><div class="tl-stat-label">Time elapsed</div></div>
+    <div class="tl-stat"><div class="tl-stat-num" style="${daysLeft!==null&&daysLeft<0?'color:var(--rose)':daysLeft!==null&&daysLeft<=14?'color:var(--gold)':''}">${daysLeft!==null?(daysLeft<0?Math.abs(daysLeft)+' ago':daysLeft+' left'):'—'}</div><div class="tl-stat-label">Days ${daysLeft!==null&&daysLeft<0?'overdue':'remaining'}</div></div>
+  </div>`;
+
+  // Undated milestones note
+  let undatedHtml='';
+  if(msUndated.length){
+    undatedHtml=`<div style="margin-top:1rem;padding:.75rem 1rem;background:var(--paper2);border-radius:8px;border:1px dashed var(--line)">
+      <div style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink3);font-weight:600;margin-bottom:.5rem">Milestones without dates</div>
+      ${msUndated.map(m=>`<div style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--ink2);padding:3px 0">
+        <div style="width:8px;height:8px;border-radius:50%;background:${m.done?'var(--green)':'var(--line)'}"></div>
+        <span style="${m.done?'text-decoration:line-through;color:var(--ink3)':''}">${esc(m.text)}</span>
+        <span style="font-size:10px;color:var(--ink3);margin-left:auto">${m.done?'Done':'Pending'}</span>
+      </div>`).join('')}
+      <div style="font-size:11px;color:var(--ink3);margin-top:.5rem;font-style:italic">Add due dates to milestones to place them on the timeline</div>
+    </div>`;
+  }
+
+  body.innerHTML=`<div class="tl-wrap"><div style="overflow-x:auto;padding:.5rem 0">${svg}</div>${summaryHtml}${undatedHtml}</div>`;
 }
 
 function closeGoalModal(){
@@ -4005,7 +4274,14 @@ window.addEventListener('beforeunload',e=>{
       <div class="goal-modal-title" id="gsm-title"></div>
       <button class="goal-modal-close" onclick="closeGoalModal()">✕</button>
     </div>
+    <div style="padding:.75rem 1.5rem 0">
+      <div class="goal-modal-tabs">
+        <button class="goal-modal-tab active" id="gsm-tab-overview" onclick="switchGoalModalTab('overview')">Overview</button>
+        <button class="goal-modal-tab" id="gsm-tab-timeline" onclick="switchGoalModalTab('timeline')">Timeline</button>
+      </div>
+    </div>
     <div class="goal-modal-body" id="gsm-body"></div>
+    <div class="goal-modal-body" id="gsm-timeline-body" style="display:none"></div>
     <div class="goal-modal-footer">
       <button class="modal-cancel" onclick="closeGoalModal()">Close</button>
       <button class="modal-save" id="gsm-edit-btn">✎ Edit goal</button>
