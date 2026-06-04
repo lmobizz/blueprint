@@ -214,8 +214,8 @@ function dragGoalEnd(e){
 }
 
 function dragGoalOver(e){
-  e.preventDefault(); // MUST be first
-  e.stopPropagation();
+  e.preventDefault(); // MUST be first - enables drop
+  // NOTE: no stopPropagation - must bubble so container drop zones also see dragover
   if(!dragCtx)return;
   e.dataTransfer.dropEffect='move';
   document.querySelectorAll('.goal-item.drag-over').forEach(el=>el.classList.remove('drag-over'));
@@ -223,7 +223,10 @@ function dragGoalOver(e){
 }
 
 function dragGoalLeave(e){
-  e.currentTarget.classList.remove('drag-over');
+  // Only remove if truly leaving (not moving to a child element)
+  if(!e.currentTarget.contains(e.relatedTarget)){
+    e.currentTarget.classList.remove('drag-over');
+  }
 }
 
 function dragGoalDrop(e, targetBucket, targetSub, targetCat, targetIdx){
@@ -2360,25 +2363,38 @@ function getOpenState(){
 }
 
 function restoreOpenState(open){
-  // Merge with localStorage for refresh persistence
+  // Load saved IDs from localStorage
+  let savedIds=null;
   try{
     const saved=localStorage.getItem('bp_goals_open');
-    if(saved){JSON.parse(saved).forEach(id=>open[id]=true);}
+    if(saved){savedIds=new Set(JSON.parse(saved));savedIds.forEach(id=>open[id]=true);}
   }catch(e){}
-  Object.keys(open).forEach(id=>{
-    const el=document.getElementById(id);
-    if(!el)return;
-    el.classList.add('open');
+
+  // If no saved state at all (first load), default all cat-goals open
+  const hasSavedState=savedIds!==null;
+  if(!hasSavedState){
+    document.querySelectorAll('.cat-goals').forEach(el=>{
+      el.classList.add('open');
+      const chev=document.getElementById('chev-'+el.id);
+      if(chev)chev.classList.add('open');
+    });
+  }
+
+  // Apply open state exactly: open what's in the list, close what isn't
+  document.querySelectorAll('.sub-goals,.cat-goals').forEach(el=>{
+    const id=el.id;
+    if(!id)return;
+    const shouldOpen=!!open[id];
+    el.classList.toggle('open',shouldOpen);
     if(id.startsWith('goals-')){
       const sid=id.replace('goals-','');
       const ar=document.getElementById('ar-'+sid);
-      if(ar)ar.style.display='flex';
+      if(ar)ar.style.display=shouldOpen?'flex':'none';
       const chev=document.getElementById('chev-'+sid);
-      if(chev)chev.classList.add('open');
-    }
-    if(!id.startsWith('goals-')){
+      if(chev)chev.classList.toggle('open',shouldOpen);
+    } else {
       const chev=document.getElementById('chev-'+id);
-      if(chev)chev.classList.add('open');
+      if(chev)chev.classList.toggle('open',shouldOpen);
     }
   });
 }
@@ -2662,7 +2678,7 @@ function renderGoals(){
               <button class="cat-action-btn del" onclick="event.stopPropagation();deleteCat('${b.key}','${esc(sn)}','${esc(catName)}')" title="Delete">✕</button>
             </div>
           </div>
-          <div class="cat-goals open" id="${cid}"
+          <div class="cat-goals" id="${cid}"
             data-dnd-bucket="${b.key}" data-dnd-sub="${sn}" data-dnd-cat="${catName}"
             ondragover="event.preventDefault();event.stopPropagation();if(dragCtx)this.classList.add('drag-over-zone')"
             ondragleave="this.classList.remove('drag-over-zone')"
@@ -4955,6 +4971,6 @@ window.addEventListener('beforeunload',e=>{
     <button class="hype-close" onclick="closeHype()">Let's get it →</button>
   </div>
 </div>
-<div class="version-toast" id="version-toast">✦ Build Jun 04 · 04:10 PM</div>
+<div class="version-toast" id="version-toast">✦ Build Jun 04 · 11:23 AM CT ✓</div>
 </body>
 </html>
