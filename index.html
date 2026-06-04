@@ -190,6 +190,84 @@ body.dark-mode .tl-marker-dot.milestone-pending{background:var(--paper2)}
 body.dark-mode .macro-tl-card{background:var(--paper2);border-color:var(--line)}
 body.dark-mode .macro-tl-header:hover{background:var(--paper3)}
 
+
+/* ── DRAG AND DROP GOALS ─────────────────────────────────── */
+let dragCtx=null; // {bucket, sub, cat, idx} of dragged goal
+
+function dragGoalStart(e, bucket, sub, cat, idx){
+  dragCtx={bucket,sub,cat,idx};
+  e.dataTransfer.effectAllowed='move';
+  e.dataTransfer.setData('text/plain','goal');
+  setTimeout(()=>e.target.closest('.goal-item')?.classList.add('dragging'),0);
+}
+
+function dragGoalEnd(e){
+  e.target.closest('.goal-item')?.classList.remove('dragging');
+  document.querySelectorAll('.drag-over,.drag-over-zone').forEach(el=>{
+    el.classList.remove('drag-over','drag-over-zone');
+  });
+}
+
+function dragGoalOver(e){
+  if(!dragCtx)return;
+  e.preventDefault();
+  e.dataTransfer.dropEffect='move';
+  const item=e.target.closest('.goal-item');
+  if(item&&item!==e.currentTarget){
+    document.querySelectorAll('.goal-item.drag-over').forEach(el=>el.classList.remove('drag-over'));
+    item.classList.add('drag-over');
+  }
+}
+
+function dragGoalLeave(e){
+  e.target.closest('.goal-item')?.classList.remove('drag-over');
+}
+
+function dragGoalDrop(e, targetBucket, targetSub, targetCat, targetIdx){
+  e.preventDefault();e.stopPropagation();
+  if(!dragCtx)return;
+  const{bucket,sub,cat,idx}=dragCtx;
+
+  // Same array reorder
+  if(bucket===targetBucket&&sub===targetSub&&cat===targetCat&&idx!==targetIdx){
+    const arr=D.goals[bucket][sub][cat];
+    const [moved]=arr.splice(idx,1);
+    const newIdx=idx<targetIdx?targetIdx-1:targetIdx;
+    arr.splice(newIdx,0,moved);
+    save();renderGoals();
+    dragCtx=null;return;
+  }
+
+  // Move to different category or sub-bucket
+  if(bucket!==targetBucket||sub!==targetSub||cat!==targetCat){
+    const srcArr=D.goals[bucket][sub][cat];
+    const [moved]=srcArr.splice(idx,1);
+    if(!D.goals[targetBucket][targetSub][targetCat])D.goals[targetBucket][targetSub][targetCat]=[];
+    const tgtArr=D.goals[targetBucket][targetSub][targetCat];
+    tgtArr.splice(targetIdx,0,moved);
+    save();renderGoals();
+  }
+  dragCtx=null;
+}
+
+function dropIntoCategory(e, bucket, sub, cat){
+  e.preventDefault();e.stopPropagation();
+  if(!dragCtx)return;
+  const{bucket:srcB,sub:srcS,cat:srcC,idx:srcIdx}=dragCtx;
+
+  // Don't drop into same category at end (already handled by dragGoalDrop)
+  if(srcB===bucket&&srcS===sub&&srcC===cat){dragCtx=null;return;}
+
+  // Move goal to new category
+  ensureSubFormat(bucket,sub);
+  if(!D.goals[bucket][sub][cat])D.goals[bucket][sub][cat]=[];
+  const srcArr=D.goals[srcB][srcS][srcC];
+  const[moved]=srcArr.splice(srcIdx,1);
+  D.goals[bucket][sub][cat].push(moved);
+  save();renderGoals();
+  dragCtx=null;
+}
+
 /* ── HYPE MODAL ──────────────────────────────────────────── */
 .hype-bg{position:fixed;inset:0;z-index:999;display:flex;align-items:center;justify-content:center;animation:hypeFadeIn .2s ease;background:rgba(14,13,12,.85);backdrop-filter:blur(4px)}
 .hype-bg.hidden{display:none}
@@ -208,6 +286,17 @@ body.dark-mode .hype-sub{color:rgba(240,235,225,.5)}
 body.dark-mode .hype-close:hover{color:#0E0D0C}
 .hype-gold-bar{height:2px;background:linear-gradient(90deg,transparent,var(--gold),transparent);margin-bottom:2rem;opacity:.35}
 body.dark-mode .hype-gold-bar{opacity:.5}
+
+/* ── DRAG AND DROP ───────────────────────────────────────── */
+.goal-item[draggable]{cursor:grab}
+.goal-item[draggable]:active{cursor:grabbing}
+.goal-item.dragging{opacity:.4;background:var(--paper2)}
+.goal-item.drag-over{border-top:2px solid var(--gold)!important}
+.cat-goals.drag-over-zone{background:rgba(184,134,11,.06);border-radius:8px;min-height:32px;transition:background .15s}
+.sub-goals.drag-over-zone{background:rgba(184,134,11,.04);border-radius:8px;transition:background .15s}
+.drag-handle{display:inline-flex;align-items:center;color:var(--ink3);font-size:11px;cursor:grab;padding:0 4px;opacity:0;transition:opacity .15s;user-select:none}
+.goal-item:hover .drag-handle{opacity:.5}
+.drag-handle:hover{opacity:1!important;color:var(--gold)}
 .dark-toggle{font-family:'Syne',sans-serif;font-size:13px;background:none;border:none;cursor:pointer;color:var(--ink3);padding:3px 8px;border-radius:6px;transition:color .15s;line-height:1}
 .dark-toggle:hover{color:var(--ink)}
 /* Goal system modal */
@@ -2520,7 +2609,10 @@ function renderGoals(){
               <button class="cat-action-btn del" onclick="event.stopPropagation();deleteCat('${b.key}','${esc(sn)}','${esc(catName)}')" title="Delete">✕</button>
             </div>
           </div>
-          <div class="cat-goals open" id="${cid}">
+          <div class="cat-goals open" id="${cid}"
+            ondragover="event.preventDefault();this.classList.add('drag-over-zone')"
+            ondragleave="this.classList.remove('drag-over-zone')"
+            ondrop="dropIntoCategory(event,'${b.key}','${esc(sn)}','${esc(catName)}');this.classList.remove('drag-over-zone')">
             ${catGoals.length?catGoals.map((g,i)=>goalHTML(b.key,sn,catName,i,g)).join(''):'<div class="empty-note" style="padding-left:.5rem">No goals yet.</div>'}
             <div style="display:flex;gap:6px;padding:.3rem .6rem .3rem 0">
               <input class="add-goal-input" id="ai-${cid}" placeholder="Add a goal…" onkeydown="if(event.key==='Enter')addGoal('${b.key}','${esc(sn)}','${esc(catName)}','${cid}')"/>
@@ -2536,7 +2628,10 @@ function renderGoals(){
           <span class="sub-prog">${p}%</span>
           <span class="sub-count">${subGoals.length}</span>
         </div>
-        <div class="sub-goals" id="goals-${sid}">
+        <div class="sub-goals" id="goals-${sid}"
+          ondragover="event.preventDefault();this.classList.add('drag-over-zone')"
+          ondragleave="this.classList.remove('drag-over-zone')"
+          ondrop="dropIntoCategory(event,'${b.key}','${esc(sn)}','_goals');this.classList.remove('drag-over-zone')">
           ${catsHTML||'<div class="empty-note">No goals yet.</div>'}
           <div class="add-cat-row" id="cat-row-${sid}" style="display:none;border-top:1px dashed var(--line);margin-top:6px;padding-top:6px">
             <input class="add-cat-input" id="cat-input-${sid}" placeholder="New category name…" onkeydown="if(event.key==='Enter')addCat('${b.key}','${esc(sn)}','${sid}')"/>
@@ -3249,8 +3344,14 @@ function goalHTML(bucket,sub,cat,idx,g){
       <button class="habit-del" onclick="deleteHabit('${bucket}','${sub}','${cat}',${idx},${hi})" title="Delete">✕</button>
     </div>`;
   }).join('');
-  return`<div class="goal-item" style="flex-direction:column;align-items:stretch;padding:0">
+  return`<div class="goal-item" style="flex-direction:column;align-items:stretch;padding:0" draggable="true"
+    ondragstart="dragGoalStart(event,'${bucket}','${sub}','${cat}',${idx})"
+    ondragend="dragGoalEnd(event)"
+    ondragover="dragGoalOver(event)"
+    ondragleave="dragGoalLeave(event)"
+    ondrop="dragGoalDrop(event,'${bucket}','${sub}','${cat}',${idx})">
     <div class="goal-item-inner status-${g.status||'not-started'}">
+      <span class="drag-handle" title="Drag to reorder">⠿</span>
       <div class="goal-dot ${g.status}" onclick="cycleStatus('${bucket}','${sub}','${cat}',${idx})" title="Click to cycle status">${sym[g.status]||''}</div>
       <div class="goal-info">
         <div class="goal-text" onclick="openGoalModal('${bucket}','${sub}','${cat}',${idx})" title="View system">${esc(g.text)}</div>
