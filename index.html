@@ -3435,7 +3435,36 @@ function renderGoalTimeline(bucket,sub,cat,idx){
     </div>`;
   }
 
-  body.innerHTML=`<div class="tl-wrap"><div style="overflow-x:auto;padding:.5rem 0">${svg}</div>${summaryHtml}${undatedHtml}</div>`;
+  // Milestone key — all dated milestones listed clearly
+  let milestoneKeyHtml='';
+  if(msDated.length){
+    milestoneKeyHtml=`<div style="margin-top:1rem;border:1px solid var(--line);border-radius:var(--r);overflow:hidden">
+      <div style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink3);font-weight:600;padding:.6rem 1rem;background:var(--paper2);border-bottom:1px solid var(--line)">Milestone key</div>
+      ${msDated.map(m=>{
+        const d=new Date(m.ts).toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
+        const isPast=m.ts<todayTs;
+        const dotColor=m.done?'var(--green)':isPast?'var(--rose)':'var(--gold)';
+        const status=m.done?'Done':isPast?'Overdue':'Upcoming';
+        const statusColor=m.done?'var(--green)':isPast?'var(--rose)':'var(--gold)';
+        return`<div style="display:flex;align-items:center;gap:10px;padding:.65rem 1rem;border-bottom:1px dashed var(--line)">
+          <div style="width:10px;height:10px;border-radius:50%;background:${dotColor};flex-shrink:0"></div>
+          <span style="flex:1;font-size:13px;color:var(--ink2);${m.done?'text-decoration:line-through;color:var(--ink3)':''}">${esc(m.text)}</span>
+          <span style="font-size:11px;color:var(--ink3)">${d}</span>
+          <span style="font-size:10px;padding:1px 8px;border-radius:20px;font-weight:500;background:${dotColor}22;color:${statusColor}">${status}</span>
+        </div>`;
+      }).join('')}
+    </div>`;
+  }
+
+  // Dot legend
+  const legendHtml=`<div style="display:flex;gap:1rem;flex-wrap:wrap;margin-top:.75rem;padding:.5rem 0">
+    <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--ink3)"><div style="width:8px;height:8px;border-radius:50%;background:var(--ink3)"></div>Started</div>
+    <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--ink3)"><div style="width:8px;height:8px;border-radius:50%;background:var(--rose)"></div>Today</div>
+    <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--ink3)"><div style="width:8px;height:8px;border-radius:50%;background:var(--gold)"></div>Milestone (upcoming)</div>
+    <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--ink3)"><div style="width:8px;height:8px;border-radius:50%;background:var(--green)"></div>Milestone (done) / Due</div>
+  </div>`;
+
+  body.innerHTML=`<div class="tl-wrap"><div style="overflow-x:auto;padding:.5rem 0">${svg}</div>${legendHtml}${summaryHtml}${milestoneKeyHtml}${undatedHtml}</div>`;
   }catch(e){
     console.error('Timeline render error:',e);
     const body2=document.getElementById('gsm-timeline-body');
@@ -4405,6 +4434,14 @@ window.addEventListener('beforeunload',e=>{
         <p>I built Blueprint because I wanted to slow down before speeding up. To get grounded before getting busy. To lay the foundation — goals, habits, relationships, my story — before jumping into the next hundred things.</p>
         <p>It started as a simple idea: what if everything that actually matters lived in one place? Not meetings, not emails, not noise. Just the things I'm building toward. The person I'm becoming. The people I want to show up for.</p>
         <p style="font-family:'Playfair Display',serif;font-size:1rem;font-style:italic;color:var(--ink)">This is that place.</p>
+      </div>
+      <div style="height:1px;background:var(--line);margin:1.5rem 0"></div>
+      <div style="font-size:13px;color:var(--ink2);line-height:1.8;display:flex;flex-direction:column;gap:.75rem">
+        <p style="font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--gold);font-weight:600">A note on building</p>
+        <p>The biggest barrier to building something like this isn't technical anymore — it's knowing what you want and being willing to start.</p>
+        <p>Most people assume software requires years of experience. That belief is just outdated. The real skill now is clarity — knowing what you're trying to solve, being able to articulate it, and not quitting when the first thing breaks.</p>
+        <p>The people who figure that out are going to have an enormous advantage. Not because they can code. Because they can <em>build</em>.</p>
+        <p style="font-family:'Playfair Display',serif;font-size:1rem;font-style:italic;color:var(--ink)">And if you're reading this — you clearly have that.</p>
       </div>
       <div style="height:1.5rem"></div>
     </div>
