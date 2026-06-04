@@ -564,7 +564,7 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
 .ht-source{font-size:10px;color:var(--gold);background:rgba(184,134,11,.12);padding:1px 7px;border-radius:20px}
 
 /* STORY */
-.story-layout{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.story-layout{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
 @media(max-width:640px){.story-layout{grid-template-columns:1fr}}
 .story-col h2{font-family:'Playfair Display',serif;font-size:1.15rem;font-weight:400;margin-bottom:.9rem}
 .story-col.wins h2{color:var(--green)}
@@ -2930,10 +2930,11 @@ function goalHTML(bucket,sub,cat,idx,g){
   const milestones=g.milestones||[];
   const today=NOW.toISOString().split('T')[0];
   const msHTML=milestones.map((m,mi)=>`
-    <div class="milestone-item" id="ms-item-${bucket}-${makeId(sub)}-${makeId(cat)}-${idx}-${mi}">
+    <div class="milestone-item" id="ms-item-${bucket}-${makeId(sub)}-${makeId(cat)}-${idx}-${mi}" style="flex-wrap:wrap">
       <div class="ms-check${m.done?' done':''}" onclick="toggleMilestone('${bucket}','${sub}','${cat}',${idx},${mi})">${m.done?'✓':''}</div>
-      <span class="ms-text${m.done?' done':''}" ondblclick="editMilestoneInline('${bucket}','${sub}','${cat}',${idx},${mi})" title="Double-click to edit">${esc(m.text)}</span>
-      <button class="ms-del" style="margin-left:auto" onclick="editMilestoneInline('${bucket}','${sub}','${cat}',${idx},${mi})" title="Edit">✎</button>
+      <span class="ms-text${m.done?' done':''}" ondblclick="editMilestoneInline('${bucket}','${sub}','${cat}',${idx},${mi})" title="Double-click to edit" style="flex:1">${esc(m.text)}</span>
+      ${m.due?`<span style="font-size:10px;color:var(--gold);background:var(--gold-l);padding:1px 6px;border-radius:20px;cursor:pointer" onclick="editMilestoneDue('${bucket}','${sub}','${cat}',${idx},${mi})" title="Edit date">${m.due}</span>`:`<button class="ms-del" onclick="editMilestoneDue('${bucket}','${sub}','${cat}',${idx},${mi})" title="Add date" style="opacity:.5;font-size:10px">+ date</button>`}
+      <button class="ms-del" onclick="editMilestoneInline('${bucket}','${sub}','${cat}',${idx},${mi})" title="Edit">✎</button>
       <button class="ms-del" onclick="deleteMilestone('${bucket}','${sub}','${cat}',${idx},${mi})" title="Delete">✕</button>
     </div>`).join('');
   const habHTML=habits.map((h,hi)=>{
@@ -2971,10 +2972,15 @@ function goalHTML(bucket,sub,cat,idx,g){
       <div class="sys-section">
         <div class="sys-section-label">🪜 Milestones</div>
         <div class="milestone-list">${msHTML}</div>
-        <div class="add-ms-row" style="flex-wrap:wrap;gap:4px">
-          <input class="add-ms-input" id="ms-input-${sid}" placeholder="Add a milestone…" onkeydown="if(event.key==='Enter')addMilestone('${bucket}','${sub}','${cat}',${idx},'${sid}')"/>
-          <input type="date" class="add-ms-input" id="ms-due-${sid}" style="max-width:130px;font-size:11px" title="Due date (optional)"/>
-          <button class="add-ms-btn" onclick="addMilestone('${bucket}','${sub}','${cat}',${idx},'${sid}')">+</button>
+        <div class="add-ms-row" style="flex-direction:column;gap:4px">
+          <div style="display:flex;gap:4px">
+            <input class="add-ms-input" id="ms-input-${sid}" placeholder="Add a milestone…"/>
+            <button class="add-ms-btn" onclick="addMilestone('${bucket}','${sub}','${cat}',${idx},'${sid}')">+</button>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px">
+            <span style="font-size:10px;color:var(--ink3);white-space:nowrap">Due date (optional)</span>
+            <input type="date" id="ms-due-${sid}" style="font-family:'Syne',sans-serif;font-size:11px;padding:3px 6px;border:1px solid var(--line);border-radius:6px;background:var(--paper);color:var(--ink);outline:none;flex:1" onchange="this.style.borderColor='var(--gold)'"/>
+          </div>
         </div>
       </div>
       <div class="sys-section">
@@ -3019,6 +3025,37 @@ function addMilestone(bucket,sub,cat,idx,sid){
       if(el)el.style.display='block';
     });
   },10);
+}
+
+
+function editMilestoneDue(bucket,sub,cat,idx,mi){
+  const m=D.goals[bucket][sub][cat][idx].milestones[mi];
+  const sid=`ms-item-${bucket}-${makeId(sub)}-${makeId(cat)}-${idx}-${mi}`;
+  const item=document.getElementById(sid);
+  if(!item)return;
+
+  // Find the date badge or "+ date" button
+  const existing=item.querySelector('span[style*="gold"],button.ms-del[title="Add date"]');
+  if(!existing)return;
+
+  // Replace with date input
+  const input=document.createElement('input');
+  input.type='date';
+  input.value=m.due||'';
+  input.style.cssText='font-family:Syne,sans-serif;font-size:11px;padding:2px 6px;border:1px solid var(--gold);border-radius:6px;background:var(--paper);color:var(--ink);outline:none;width:120px';
+  existing.replaceWith(input);
+  input.focus();
+
+  const save=()=>{
+    m.due=input.value||'';
+    saveGoalsAndRender();
+  };
+  input.addEventListener('blur',save);
+  input.addEventListener('change',save);
+  input.addEventListener('keydown',e=>{
+    if(e.key==='Enter'){e.preventDefault();save();}
+    if(e.key==='Escape'){saveGoalsAndRender();}
+  });
 }
 
 function toggleMilestone(bucket,sub,cat,idx,mi){
