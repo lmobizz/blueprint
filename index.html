@@ -1260,6 +1260,8 @@ body.dark-mode .profile-dropdown{background:var(--paper2);border-color:var(--lin
           <div class="backup-dropdown" id="people-data-dropdown">
             <button class="backup-dropdown-item" onclick="openImportModal();togglePeopleDataMenu()">⬆ Import CSV / Excel</button>
             <button class="backup-dropdown-item" onclick="exportPeopleCsv();togglePeopleDataMenu()">⬇ Export CSV</button>
+            <div style="height:1px;background:var(--line);margin:.25rem 0"></div>
+            <button class="backup-dropdown-item" style="color:var(--rose)" onclick="clearAllPeople();togglePeopleDataMenu()">✕ Clear all people</button>
           </div>
         </div>
       </div>
@@ -1267,7 +1269,7 @@ body.dark-mode .profile-dropdown{background:var(--paper2);border-color:var(--lin
         <button class="ppl-btn primary" onclick="openPersonModal(null)">+ Add person</button>
         <div style="flex:1"></div>
         <button class="expand-btn" id="people-expand-btn" onclick="togglePeopleFullscreen()">⛶ Expand</button>
-        <button class="ppl-btn" style="color:var(--rose);border-color:var(--rose)" onclick="clearAllPeople()">✕ Clear all</button>
+
       </div>
     </div>
     <div class="people-table-wrap">
