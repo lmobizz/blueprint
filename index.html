@@ -3056,7 +3056,7 @@ function editMilestoneDue(bucket,sub,cat,idx,mi){
     // Refresh modal if open
     if(goalModalCtx){
       const{bucket:b,sub:s,cat:c,idx:i}=goalModalCtx;
-      openGoalModal(b,s,c,i);
+      setTimeout(()=>openGoalModal(b,s,c,i),50);
     }
   };
   input.addEventListener('blur',save);
@@ -3183,37 +3183,114 @@ function openGoalModal(bucket,sub,cat,idx){
   const g=D.goals[bucket][sub][cat][idx];
   if(!g)return;
   goalModalCtx={bucket,sub,cat,idx};
-  // Reset to overview tab
-  switchGoalModalTab('overview',true);
-  const statusColors={'not-started':'var(--line)','in-progress':'#C9900A','on-track':'#4D9E7A','achieved':'var(--blue)'};
+
+  const statusColors={'not-started':'var(--line)','in-progress':'#C9900A','on-track':'#C9900A','achieved':'var(--blue)'};
   const statusLabels={'not-started':'Not started','in-progress':'In progress','on-track':'In progress','achieved':'Achieved'};
-  // Header
+  const milestones=g.milestones||[];
+  const habits=g.habits||[];
+  const today=NOW.toISOString().split('T')[0];
+  const todayTs=NOW.getTime();
+
+  // Header dot
   document.getElementById('gsm-title').textContent=g.text;
   const dot=document.getElementById('gsm-status-dot');
   dot.style.background=statusColors[g.status||'not-started'];
   dot.title=statusLabels[g.status||'not-started'];
-  // Edit button
   document.getElementById('gsm-edit-btn').onclick=()=>{closeGoalModal();openGoalEdit(bucket,sub,cat,idx);};
-  // Body
-  const milestones=g.milestones||[];
-  const habits=g.habits||[];
-  const today=NOW.toISOString().split('T')[0];
+
   let html='';
-  // Status + due
-  let metaHtml=`<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:1rem">
+
+  // ── Meta badges ──────────────────────────────────────
+  html+=`<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:1.25rem">
     <span style="font-size:11px;padding:2px 10px;border-radius:20px;font-weight:500;background:${statusColors[g.status||'not-started']}22;color:${statusColors[g.status||'not-started']}">${statusLabels[g.status||'not-started']}</span>
     ${g.due?`<span style="font-size:11px;padding:2px 10px;border-radius:20px;background:var(--paper2);color:var(--ink3)">Due ${g.due}</span>`:''}
-    ${g.note?`<span style="font-size:11px;padding:2px 10px;border-radius:20px;background:var(--paper2);color:var(--ink3)">${g.note}</span>`:''}
+    ${g.note?`<span style="font-size:11px;padding:2px 10px;border-radius:20px;background:var(--paper2);color:var(--ink3)">${esc(g.note)}</span>`:''}
   </div>`;
-  html+=metaHtml;
-  // Identity
+
+  // ── Identity ─────────────────────────────────────────
   if(g.identity){
-    html+=`<div class="goal-modal-section">
+    html+=`<div style="margin-bottom:1.25rem">
       <div class="goal-modal-section-label">🧠 Identity</div>
-      <div class="goal-modal-identity">I am someone who ${g.identity}</div>
+      <div class="goal-modal-identity">I am someone who ${esc(g.identity)}</div>
     </div>`;
   }
-  // Milestones
+
+  // ── Timeline SVG ─────────────────────────────────────
+  const createdTs=(()=>{
+    const minTs=new Date('2020-01-01').getTime();
+    const idTs=(typeof g.id==='number'&&g.id>minTs)?g.id:null;
+    return g.createdAt||(idTs&&idTs<todayTs?idTs:todayTs-90*24*60*60*1000);
+  })();
+  const dueTs=g.due?new Date(g.due+'T12:00:00').getTime():null;
+  const msDated=milestones.filter(m=>m.due).map(m=>({
+    text:m.text,label:(m.text||'').length>18?(m.text||'').slice(0,18)+'…':(m.text||''),
+    ts:new Date(m.due+'T12:00:00').getTime(),done:m.done
+  }));
+  const msUndated=milestones.filter(m=>!m.due);
+  const msTs=msDated.map(m=>m.ts);
+  const endTs=dueTs||(msTs.length?Math.max(...msTs):todayTs+30*24*60*60*1000);
+  const startTs=createdTs;
+  const span=endTs-startTs||1;
+  const pos=ts=>Math.max(0,Math.min(1,(ts-startTs)/span));
+
+  try{
+    const W=520,H=120,leftPad=50,rightPad=50,trackW=W-leftPad-rightPad,midY=60;
+    const fillPct=Math.min(1,Math.max(0,pos(todayTs)));
+    const fillPx=fillPct*trackW;
+    let svg=`<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" style="width:100%;overflow:visible">
+      <rect x="${leftPad}" y="${midY-1}" width="${trackW}" height="3" rx="2" fill="var(--line)"/>
+      <rect x="${leftPad}" y="${midY-1}" width="${fillPx}" height="3" rx="2" fill="var(--gold)"/>`;
+
+    const markers=[];
+    // Start
+    try{markers.push({x:leftPad,label:new Date(startTs).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}),sublabel:'Started',dot:'start',above:false});}catch(e){markers.push({x:leftPad,label:'Start',sublabel:'Started',dot:'start',above:false});}
+    // Milestones
+    msDated.forEach((m,i)=>{
+      markers.push({x:leftPad+pos(m.ts)*trackW,label:m.label,sublabel:new Date(m.ts).toLocaleDateString('en-US',{month:'short',day:'numeric'}),dot:m.done?'milestone-done':'milestone-pending',above:i%2===0});
+    });
+    // Today
+    if(todayTs>startTs&&(!dueTs||todayTs<dueTs)){
+      markers.push({x:leftPad+pos(todayTs)*trackW,label:'Today',sublabel:'',dot:'today',above:true});
+    }
+    // Due
+    if(dueTs){
+      markers.push({x:leftPad+trackW,label:new Date(dueTs).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}),sublabel:'Due',dot:dueTs<todayTs?'milestone-done':'end',above:false});
+    }
+
+    const dotColors={'start':'var(--ink3)','end':'var(--green)','today':'var(--rose)','milestone-done':'var(--green)','milestone-pending':'var(--gold)'};
+    markers.forEach(m=>{
+      const dotFill=dotColors[m.dot]||'var(--gold)';
+      if(m.above){svg+=`<line x1="${m.x}" y1="${midY-6}" x2="${m.x}" y2="${midY-12}" stroke="var(--line)" stroke-width="1" stroke-dasharray="2,2"/>`;}
+      else{svg+=`<line x1="${m.x}" y1="${midY+6}" x2="${m.x}" y2="${midY+14}" stroke="var(--line)" stroke-width="1" stroke-dasharray="2,2"/>`;}
+      svg+=`<circle cx="${m.x}" cy="${midY}" r="6" fill="${dotFill}" stroke="var(--paper)" stroke-width="2"/>`;
+      if(m.sublabel)svg+=`<text x="${m.x}" y="${m.above?midY-32:midY+46}" text-anchor="middle" font-size="8" fill="var(--ink3)" font-family="Syne,sans-serif">${m.sublabel}</text>`;
+      svg+=`<text x="${m.x}" y="${m.above?midY-18:midY+24}" text-anchor="middle" font-size="9" fill="var(--ink2)" font-family="Syne,sans-serif" font-weight="600">${m.label}</text>`;
+    });
+    svg+=`</svg>`;
+
+    // Dot legend
+    const legendHtml=`<div style="display:flex;gap:1rem;flex-wrap:wrap;margin-top:.5rem;margin-bottom:1rem">
+      <div style="display:flex;align-items:center;gap:5px;font-size:10px;color:var(--ink3)"><div style="width:8px;height:8px;border-radius:50%;background:var(--ink3)"></div>Started</div>
+      <div style="display:flex;align-items:center;gap:5px;font-size:10px;color:var(--ink3)"><div style="width:8px;height:8px;border-radius:50%;background:var(--rose)"></div>Today</div>
+      <div style="display:flex;align-items:center;gap:5px;font-size:10px;color:var(--ink3)"><div style="width:8px;height:8px;border-radius:50%;background:var(--gold)"></div>Upcoming</div>
+      <div style="display:flex;align-items:center;gap:5px;font-size:10px;color:var(--ink3)"><div style="width:8px;height:8px;border-radius:50%;background:var(--green)"></div>Done / Due</div>
+    </div>`;
+
+    // Stats
+    const doneMs=milestones.filter(m=>m.done).length;
+    const daysLeft=dueTs?Math.round((dueTs-todayTs)/(1000*60*60*24)):null;
+    const daysTotal=dueTs?Math.round((dueTs-startTs)/(1000*60*60*24)):null;
+    const pctDone=daysTotal?Math.min(100,Math.max(0,Math.round(fillPct*100))):null;
+    const summaryHtml=`<div class="tl-summary" style="margin-bottom:1.25rem">
+      <div class="tl-stat"><div class="tl-stat-num">${doneMs}/${milestones.length}</div><div class="tl-stat-label">Milestones</div></div>
+      <div class="tl-stat"><div class="tl-stat-num">${pctDone!==null?pctDone+'%':'—'}</div><div class="tl-stat-label">Time elapsed</div></div>
+      <div class="tl-stat"><div class="tl-stat-num" style="${daysLeft!==null&&daysLeft<0?'color:var(--rose)':daysLeft!==null&&daysLeft<=14?'color:var(--gold)':''}">${daysLeft!==null?(daysLeft<0?Math.abs(daysLeft)+' ago':daysLeft+' left'):'—'}</div><div class="tl-stat-label">Days ${daysLeft!==null&&daysLeft<0?'overdue':'remaining'}</div></div>
+    </div>`;
+
+    html+=`<div style="overflow-x:auto;padding:.25rem 0">${svg}</div>${legendHtml}${summaryHtml}`;
+  }catch(e){console.error('Timeline error:',e);}
+
+  // ── Milestones list ──────────────────────────────────
   html+=`<div class="goal-modal-section">
     <div class="goal-modal-section-label">🪜 Milestones <span style="font-weight:400;opacity:.6">${milestones.filter(m=>m.done).length}/${milestones.length} done</span></div>`;
   if(milestones.length){
@@ -3223,11 +3300,12 @@ function openGoalModal(bucket,sub,cat,idx){
         <span style="flex:1;${m.done?'text-decoration:line-through;color:var(--ink3)':''}">${esc(m.text)}</span>
         ${m.due?`<span style="font-size:10px;color:var(--gold);background:var(--gold-l);padding:1px 7px;border-radius:20px;font-weight:500">${m.due}</span>`:''}
       </div>`).join('');
-  } else {
+  }else{
     html+=`<div class="goal-modal-empty">No milestones added yet.</div>`;
   }
   html+=`</div>`;
-  // Habits
+
+  // ── Habits list ──────────────────────────────────────
   html+=`<div class="goal-modal-section">
     <div class="goal-modal-section-label">🔁 Habits</div>`;
   if(habits.length){
@@ -3240,237 +3318,17 @@ function openGoalModal(bucket,sub,cat,idx){
         ${checked?'<span style="font-size:10px;color:var(--green);font-weight:500">✓ Done today</span>':''}
       </div>`;
     }).join('');
-  } else {
+  }else{
     html+=`<div class="goal-modal-empty">No habits added yet.</div>`;
   }
   html+=`</div>`;
+
   document.getElementById('gsm-body').innerHTML=html;
   document.getElementById('goal-system-modal').classList.remove('hidden');
   document.body.style.overflow='hidden';
 }
 
-function switchGoalModalTab(tab, skipRender){
-  const overviewBtn=document.getElementById('gsm-tab-overview');
-  const timelineBtn=document.getElementById('gsm-tab-timeline');
-  const overviewBody=document.getElementById('gsm-body');
-  const timelineBody=document.getElementById('gsm-timeline-body');
-  if(!overviewBtn||!timelineBtn)return;
 
-  if(tab==='overview'){
-    overviewBtn.classList.add('active');timelineBtn.classList.remove('active');
-    if(overviewBody)overviewBody.style.display='block';
-    if(timelineBody)timelineBody.style.display='none';
-  } else {
-    overviewBtn.classList.remove('active');timelineBtn.classList.add('active');
-    if(overviewBody)overviewBody.style.display='none';
-    if(timelineBody){timelineBody.style.display='block';}
-    if(!skipRender&&goalModalCtx){
-      renderGoalTimeline(goalModalCtx.bucket,goalModalCtx.sub,goalModalCtx.cat,goalModalCtx.idx);
-    }
-  }
-}
-
-
-/* ── GOAL TIMELINE RENDERER ──────────────────────────────── */
-function renderGoalTimeline(bucket,sub,cat,idx){
-  try{
-  // Safe lookup — sub might be nested object
-  let g=null;
-  try{
-    const subData=D.goals[bucket][sub];
-    if(subData&&subData[cat]){
-      g=Array.isArray(subData[cat])?subData[cat][idx]:null;
-    }
-    // fallback: search allGoals for matching text via goalModalCtx
-    if(!g&&goalModalCtx){
-      const all=D.goals[goalModalCtx.bucket]?.[goalModalCtx.sub]?.[goalModalCtx.cat];
-      if(Array.isArray(all))g=all[goalModalCtx.idx];
-    }
-  }catch(e2){console.error('goal lookup error',e2);}
-  const body=document.getElementById('gsm-timeline-body');
-  if(!g||!body){
-    if(body)body.innerHTML='<div class="tl-no-dates"><div>Could not load goal data.</div></div>';
-    return;
-  }
-
-  const milestones=g.milestones||[];
-  const todayStr=NOW.toISOString().split('T')[0];
-  const todayTs=NOW.getTime();
-
-  // Use goal id as creation timestamp, fall back to 90 days ago
-  // Safe creation time — g.id is Date.now() but only if it's a reasonable timestamp (after 2020)
-  const minTs=new Date('2020-01-01').getTime();
-  const idTs=(typeof g.id==='number'&&g.id>minTs)?g.id:null;
-  const createdTs=g.createdAt||(idTs&&idTs<todayTs?idTs:todayTs-90*24*60*60*1000);
-  const dueTs=g.due?new Date(g.due+'T12:00:00').getTime():null;
-
-  // Build events list: start, milestones with dates, today, due
-  // For milestones without dates, spread them evenly between start and due
-  const msDated=milestones.filter(m=>m.due).map(m=>({
-    type:'milestone',label:m.text,ts:new Date(m.due+'T12:00:00').getTime(),done:m.done
-  }));
-  const msUndated=milestones.filter(m=>!m.due);
-
-  // Timeline span
-  const startTs=createdTs;
-  const msTs=msDated.map(m=>m.ts);
-  const endTs=dueTs||(msTs.length?Math.max(...msTs):todayTs+30*24*60*60*1000);
-  const span=endTs-startTs||1;
-
-  // Position function: 0–1 along the timeline
-  const pos=ts=>Math.max(0,Math.min(1,(ts-startTs)/span));
-
-  // If no due date and no milestone dates, show simplified view
-  const hasDates=dueTs||msDated.length>0;
-
-  if(!hasDates&&milestones.length===0){
-    body.innerHTML=`<div class="tl-no-dates">
-      <div style="font-size:2rem;margin-bottom:.5rem">📅</div>
-      <div>Add a due date or milestones with dates<br>to see your timeline.</div>
-      <button onclick="closeGoalModal();openGoalEdit('${bucket}','${sub}','${cat}',${idx})" style="font-family:'Syne',sans-serif;font-size:12px;font-weight:500;padding:7px 16px;border-radius:20px;border:1px solid var(--line);background:transparent;color:var(--ink2);cursor:pointer;margin-top:1rem;transition:all .15s">✎ Add due date</button>
-    </div>`;
-    return;
-  }
-
-  // Build SVG timeline
-  const W=540;const H=140;
-  const leftPad=50;const rightPad=50;
-  const trackW=W-leftPad-rightPad;
-  const midY=70;
-
-  // Calculate fill % — how far today is along the timeline
-  const fillPct=Math.min(1,Math.max(0,pos(todayTs)));
-  const fillPx=fillPct*trackW;
-
-  let svg=`<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:${W}px;overflow:visible">
-  <!-- Track -->
-  <rect x="${leftPad}" y="${midY-1}" width="${trackW}" height="3" rx="2" fill="var(--line)"/>
-  <!-- Fill -->
-  <rect x="${leftPad}" y="${midY-1}" width="${fillPx}" height="3" rx="2" fill="var(--gold)"/>`;
-
-  // Collect all markers
-  const markers=[];
-
-  // Start marker
-  try{markers.push({ts:startTs,x:leftPad,label:new Date(startTs).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}),dot:'start',above:false,sublabel:'Started'});}catch(e){markers.push({ts:startTs,x:leftPad,label:'Start',dot:'start',above:false,sublabel:'Started'});}
-
-  // Milestone markers (dated)
-  msDated.forEach((m,i)=>{
-    const x=leftPad+pos(m.ts)*trackW;
-    const above=i%2===0;
-    const msText=(m.text||'').toString();markers.push({ts:m.ts,x,label:msText.length>18?msText.slice(0,18)+'…':msText,dot:m.done?'milestone-done':'milestone-pending',above,sublabel:new Date(m.ts).toLocaleDateString('en-US',{month:'short',day:'numeric'})});
-  });
-
-  // Undated milestones — show as evenly spaced labels below if any
-  // Today marker (only if between start and end)
-  if(todayTs>startTs&&(!dueTs||todayTs<dueTs)){
-    const x=leftPad+pos(todayTs)*trackW;
-    markers.push({ts:todayTs,x,label:'Today',dot:'today',above:true,sublabel:''});
-  }
-
-  // Due date marker
-  if(dueTs){
-    const isPast=dueTs<todayTs;
-    markers.push({ts:dueTs,x:leftPad+trackW,label:new Date(dueTs).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}),dot:isPast?'milestone-done':'end',above:false,sublabel:'Due'});
-  }
-
-  // Draw markers
-  markers.forEach(m=>{
-    const dotR=6;
-    const dotColors={
-      'start':'var(--ink3)',
-      'end':'var(--green)',
-      'today':'var(--rose)',
-      'milestone-done':'var(--green)',
-      'milestone-pending':'var(--gold)',
-    };
-    const dotFill=dotColors[m.dot]||'var(--gold)';
-    const labelY=m.above?midY-18:midY+24;
-    const subY=m.above?midY-30:midY+36;
-
-    // Connector line
-    if(m.above){
-      svg+=`<line x1="${m.x}" y1="${midY-dotR}" x2="${m.x}" y2="${midY-12}" stroke="var(--line)" stroke-width="1" stroke-dasharray="2,2"/>`;
-    } else {
-      svg+=`<line x1="${m.x}" y1="${midY+dotR}" x2="${m.x}" y2="${midY+14}" stroke="var(--line)" stroke-width="1" stroke-dasharray="2,2"/>`;
-    }
-
-    // Dot
-    svg+=`<circle cx="${m.x}" cy="${midY}" r="${dotR}" fill="${dotFill}" stroke="var(--paper)" stroke-width="2"/>`;
-
-    // Sub-label (date or type)
-    if(m.sublabel){
-      svg+=`<text x="${m.x}" y="${m.above?midY-32:midY+46}" text-anchor="middle" font-size="8" fill="var(--ink3)" font-family="Syne,sans-serif">${m.sublabel}</text>`;
-    }
-
-    // Main label
-    svg+=`<text x="${m.x}" y="${labelY}" text-anchor="middle" font-size="9" fill="var(--ink2)" font-family="Syne,sans-serif" font-weight="600">${m.label}</text>`;
-  });
-
-  svg+=`</svg>`;
-
-  // Summary stats
-  const doneMs=milestones.filter(m=>m.done).length;
-  const daysLeft=dueTs?Math.round((dueTs-todayTs)/(1000*60*60*24)):null;
-  const daysTotal=dueTs?Math.round((dueTs-startTs)/(1000*60*60*24)):null;
-  const pctDone=daysTotal?Math.min(100,Math.max(0,Math.round(fillPct*100))):null;
-
-  const summaryHtml=`<div class="tl-summary">
-    <div class="tl-stat"><div class="tl-stat-num">${doneMs}/${milestones.length}</div><div class="tl-stat-label">Milestones</div></div>
-    <div class="tl-stat"><div class="tl-stat-num">${pctDone!==null?pctDone+'%':'—'}</div><div class="tl-stat-label">Time elapsed</div></div>
-    <div class="tl-stat"><div class="tl-stat-num" style="${daysLeft!==null&&daysLeft<0?'color:var(--rose)':daysLeft!==null&&daysLeft<=14?'color:var(--gold)':''}">${daysLeft!==null?(daysLeft<0?Math.abs(daysLeft)+' ago':daysLeft+' left'):'—'}</div><div class="tl-stat-label">Days ${daysLeft!==null&&daysLeft<0?'overdue':'remaining'}</div></div>
-  </div>`;
-
-  // Undated milestones note
-  let undatedHtml='';
-  if(msUndated.length){
-    undatedHtml=`<div style="margin-top:1rem;padding:.75rem 1rem;background:var(--paper2);border-radius:8px;border:1px dashed var(--line)">
-      <div style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink3);font-weight:600;margin-bottom:.5rem">Milestones without dates</div>
-      ${msUndated.map(m=>`<div style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--ink2);padding:3px 0">
-        <div style="width:8px;height:8px;border-radius:50%;background:${m.done?'var(--green)':'var(--line)'}"></div>
-        <span style="${m.done?'text-decoration:line-through;color:var(--ink3)':''}">${esc(m.text)}</span>
-        <span style="font-size:10px;color:var(--ink3);margin-left:auto">${m.done?'Done':'Pending'}</span>
-      </div>`).join('')}
-      <div style="font-size:11px;color:var(--ink3);margin-top:.5rem;font-style:italic">Add due dates to milestones to place them on the timeline</div>
-    </div>`;
-  }
-
-  // Milestone key — all dated milestones listed clearly
-  let milestoneKeyHtml='';
-  if(msDated.length){
-    milestoneKeyHtml=`<div style="margin-top:1rem;border:1px solid var(--line);border-radius:var(--r);overflow:hidden">
-      <div style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink3);font-weight:600;padding:.6rem 1rem;background:var(--paper2);border-bottom:1px solid var(--line)">Milestone key</div>
-      ${msDated.map(m=>{
-        const d=new Date(m.ts).toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
-        const isPast=m.ts<todayTs;
-        const dotColor=m.done?'var(--green)':isPast?'var(--rose)':'var(--gold)';
-        const status=m.done?'Done':isPast?'Overdue':'Upcoming';
-        const statusColor=m.done?'var(--green)':isPast?'var(--rose)':'var(--gold)';
-        return`<div style="display:flex;align-items:center;gap:10px;padding:.65rem 1rem;border-bottom:1px dashed var(--line)">
-          <div style="width:10px;height:10px;border-radius:50%;background:${dotColor};flex-shrink:0"></div>
-          <span style="flex:1;font-size:13px;color:var(--ink2);${m.done?'text-decoration:line-through;color:var(--ink3)':''}">${esc(m.text)}</span>
-          <span style="font-size:11px;color:var(--ink3)">${d}</span>
-          <span style="font-size:10px;padding:1px 8px;border-radius:20px;font-weight:500;background:${dotColor}22;color:${statusColor}">${status}</span>
-        </div>`;
-      }).join('')}
-    </div>`;
-  }
-
-  // Dot legend
-  const legendHtml=`<div style="display:flex;gap:1rem;flex-wrap:wrap;margin-top:.75rem;padding:.5rem 0">
-    <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--ink3)"><div style="width:8px;height:8px;border-radius:50%;background:var(--ink3)"></div>Started</div>
-    <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--ink3)"><div style="width:8px;height:8px;border-radius:50%;background:var(--rose)"></div>Today</div>
-    <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--ink3)"><div style="width:8px;height:8px;border-radius:50%;background:var(--gold)"></div>Milestone (upcoming)</div>
-    <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--ink3)"><div style="width:8px;height:8px;border-radius:50%;background:var(--green)"></div>Milestone (done) / Due</div>
-  </div>`;
-
-  body.innerHTML=`<div class="tl-wrap"><div style="overflow-x:auto;padding:.5rem 0">${svg}</div>${legendHtml}${summaryHtml}${milestoneKeyHtml}${undatedHtml}</div>`;
-  }catch(e){
-    console.error('Timeline render error:',e);
-    const body2=document.getElementById('gsm-timeline-body');
-    if(body2)body2.innerHTML=`<div class="tl-no-dates"><div style="font-size:1.5rem">⚠️</div><div style="margin-top:.5rem">Timeline error: ${e.message}</div></div>`;
-  }
-}
 
 function closeGoalModal(){
   document.getElementById('goal-system-modal').classList.add('hidden');
@@ -4395,14 +4253,7 @@ window.addEventListener('beforeunload',e=>{
       <div class="goal-modal-title" id="gsm-title"></div>
       <button class="goal-modal-close" onclick="closeGoalModal()">✕</button>
     </div>
-    <div style="padding:.75rem 1.5rem 0">
-      <div class="goal-modal-tabs">
-        <button class="goal-modal-tab active" id="gsm-tab-overview" onclick="switchGoalModalTab('overview')">Overview</button>
-        <button class="goal-modal-tab" id="gsm-tab-timeline" onclick="switchGoalModalTab('timeline')">Timeline</button>
-      </div>
-    </div>
     <div class="goal-modal-body" id="gsm-body"></div>
-    <div class="goal-modal-body" id="gsm-timeline-body" style="display:none"></div>
     <div class="goal-modal-footer">
       <button class="modal-cancel" onclick="closeGoalModal()">Close</button>
       <button class="modal-save" id="gsm-edit-btn">✎ Edit goal</button>
