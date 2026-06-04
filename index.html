@@ -1570,6 +1570,7 @@ async function loadFromCloud(){
       renderOverview();
       updateFilterCounts();
       fetchMorningQuote();
+      restoreActiveTab();
     }catch(e){}
   }
 
@@ -1588,6 +1589,7 @@ async function loadFromCloud(){
       updateBackupStatus('Saved to cloud · '+new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}));
       renderOverview();
       updateFilterCounts();
+      restoreActiveTab();
     } else {
       updateBackupStatus('Ready');
     }
@@ -1658,12 +1660,20 @@ function showView(v,btn){
   document.querySelectorAll('.nav-tab').forEach(el=>el.classList.remove('active'));
   document.getElementById('view-'+v).classList.add('active');
   btn.classList.add('active');
+  localStorage.setItem('bp_active_tab',v);
   if(v==='goals')renderGoals();
   if(v==='story')renderStory();
   if(v==='overview')renderOverview();
   if(v==='todo'){renderTodos();updateFilterCounts();}
   if(v==='people')renderPeople();
   if(v==='calendar')renderCalendar();
+}
+
+function restoreActiveTab(){
+  const saved=localStorage.getItem('bp_active_tab');
+  if(!saved||saved==='overview')return; // overview is default, no action needed
+  const btn=document.querySelector(`.nav-tab[onclick*="'${saved}'"]`);
+  if(btn)showView(saved,btn);
 }
 
 /* ── DATE / HERO ─────────────────────────────────────── */
@@ -2283,7 +2293,7 @@ function renderMacroTimeline(bucket){
   }
 
   const startTs=Math.min(...allGoals.map(g=>g.createdTs),todayTs-30*24*60*60*1000);
-  const endTs=Math.max(...allGoals.map(g=>g.dueTs),todayTs+30*24*60*60*1000);
+  const endTs=Math.max(...allGoals.map(g=>g.dueTs),todayTs+30*24*60*60*1000)+30*24*60*60*1000;
   const span=endTs-startTs||1;
   const pos=ts=>Math.max(0,Math.min(1,(ts-startTs)/span));
 
@@ -2296,8 +2306,10 @@ function renderMacroTimeline(bucket){
 
   // Today vertical line
   const todayX=leftPad+pos(todayTs)*trackW;
-  svg+=`<line x1="${todayX}" y1="0" x2="${todayX}" y2="${H-25}" stroke="var(--rose)" stroke-width="1" stroke-dasharray="3,3" opacity="0.5"/>`;
-  svg+=`<text x="${todayX}" y="9" text-anchor="middle" font-size="8" fill="var(--rose)" font-family="Syne,sans-serif" font-weight="600">Today</text>`;
+  svg+=`<line x1="${todayX}" y1="18" x2="${todayX}" y2="${H-25}" stroke="var(--rose)" stroke-width="1" stroke-dasharray="3,3" opacity="0.5"/>`;
+  // Today pill label — clear background so it doesn't overlay the line
+  svg+=`<rect x="${todayX-16}" y="2" width="32" height="13" rx="4" fill="var(--rose)" opacity="0.15"/>`;
+  svg+=`<text x="${todayX}" y="12" text-anchor="middle" font-size="7.5" fill="var(--rose)" font-family="Syne,sans-serif" font-weight="700">Today</text>`;
 
   let currentY=18;
 
