@@ -330,7 +330,8 @@ body.dark-mode .hype-gold-bar{opacity:.5}
 body.goal-dragging .goal-item-inner{pointer-events:none}
 body.goal-dragging .goal-info{pointer-events:none}
 body.goal-dragging .system-panel{pointer-events:none}
-.version-toast{position:fixed;bottom:1.5rem;left:1.5rem;background:var(--ink);color:rgba(255,255,255,.7);font-family:'Syne',sans-serif;font-size:11px;padding:6px 12px;border-radius:20px;z-index:500;opacity:0;transform:translateY(8px);transition:opacity .4s ease,transform .4s ease;pointer-events:none;border:1px solid rgba(255,255,255,.08)}
+.version-toast{position:fixed;bottom:1.5rem;left:1.5rem;background:#0E0D0C;color:rgba(255,255,255,.85);font-family:'Syne',sans-serif;font-size:11px;padding:6px 14px;border-radius:20px;z-index:500;opacity:0;transform:translateY(8px);transition:opacity .4s ease,transform .4s ease;pointer-events:none;border:1px solid rgba(184,134,11,.3);letter-spacing:.02em}
+body.dark-mode .version-toast{background:#1C1917;border-color:rgba(184,134,11,.5);color:rgba(255,255,255,.9)}
 .version-toast.show{opacity:1;transform:translateY(0)}
 .dark-toggle{font-family:'Syne',sans-serif;font-size:13px;background:none;border:none;cursor:pointer;color:var(--ink3);padding:3px 8px;border-radius:6px;transition:color .15s;line-height:1}
 .dark-toggle:hover{color:var(--ink)}
@@ -2662,7 +2663,7 @@ function renderGoals(){
             </div>
           </div>
           <div class="cat-goals open" id="${cid}"
-            data-dnd-bucket="${b.key}" data-dnd-sub="${esc(sn)}" data-dnd-cat="${esc(catName)}"
+            data-dnd-bucket="${b.key}" data-dnd-sub="${sn}" data-dnd-cat="${catName}"
             ondragover="event.preventDefault();event.stopPropagation();if(dragCtx)this.classList.add('drag-over-zone')"
             ondragleave="this.classList.remove('drag-over-zone')"
             ondrop="handleCatDrop(event,this)">
@@ -2682,7 +2683,7 @@ function renderGoals(){
           <span class="sub-count">${subGoals.length}</span>
         </div>
         <div class="sub-goals" id="goals-${sid}"
-          data-dnd-bucket="${b.key}" data-dnd-sub="${esc(sn)}" data-dnd-cat="_goals"
+          data-dnd-bucket="${b.key}" data-dnd-sub="${sn}" data-dnd-cat="_goals"
           ondragover="event.preventDefault();event.stopPropagation();if(dragCtx)this.classList.add('drag-over-zone')"
           ondragleave="this.classList.remove('drag-over-zone')"
           ondrop="handleCatDrop(event,this)">
@@ -2700,6 +2701,14 @@ function renderGoals(){
       sw.appendChild(el);
     });
   });
+  // Restore from localStorage first (cold refresh), then from wasOpen (same-session)
+  const savedIds=[];
+  try{
+    const raw=localStorage.getItem('bp_goals_open');
+    if(raw)JSON.parse(raw).forEach(id=>savedIds.push(id));
+  }catch(e){}
+  // Merge saved IDs into wasOpen
+  savedIds.forEach(id=>wasOpen[id]=true);
   restoreOpenState(wasOpen);
   syncBucketToggleLabels();
   initMacroTimelines();
