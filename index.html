@@ -21,32 +21,82 @@
   --r:12px;--r2:20px;
 }
 body.dark-mode{
-  --ink:#F0EBE1;--ink2:#D5CFC4;--ink3:#8A847A;
-  --paper:#0E0D0C;--paper2:#1A1917;--paper3:#242220;--line:#2E2C2A;
-  --gold:#D4A827;--gold-l:#1E1800;
-  --blue-l:#0A1520;--green-l:#0A1A0F;--rose-l:#1A0508;--teal-l:#051215;
+  /* Warm dark — deep espresso tones, not pure black */
+  --ink:#EDE8E0;--ink2:#C8C0B4;--ink3:#7A7268;
+  --paper:#1C1917;--paper2:#252220;--paper3:#2E2B28;--line:#3A3632;
+  --gold:#D4A827;--gold-l:#2A2000;
+  --blue:#6B9FD4;--blue-l:#0F1E2E;
+  --green:#5FAF82;--green-l:#0D1F15;
+  --rose:#C97080;--rose-l:#2A1018;
+  --teal:#5BBFCC;--teal-l:#091E22;
 }
-body.dark-mode .login-card{background:var(--paper2);border-color:var(--line)}
-body.dark-mode .google-btn{background:var(--paper2);color:var(--ink);border-color:var(--line)}
-body.dark-mode .google-btn:hover{background:var(--paper3)}
+/* Nav & bars */
 body.dark-mode nav{background:var(--paper);border-color:var(--line)}
-body.dark-mode .backup-bar{background:var(--paper2)}
-body.dark-mode .modal{background:var(--paper2)}
-body.dark-mode .profile-panel{background:var(--paper2)}
-body.dark-mode .profile-header{background:var(--paper2)}
-body.dark-mode .profile-footer{background:var(--paper2)}
-body.dark-mode .todo-sidebar{background:var(--paper2)}
-body.dark-mode .hiw-modal{background:var(--paper2)}
-body.dark-mode .morning-quote{background:var(--paper2);border-color:var(--line);border-left-color:var(--gold)}
-body.dark-mode .narrative-card{background:var(--paper2);border-color:var(--line)}
-body.dark-mode .why-manifesto{background:var(--paper2);border-color:var(--line)}
+body.dark-mode .backup-bar{background:var(--paper2);border-color:var(--line)}
+/* Cards — slightly lighter than page bg so they pop */
+body.dark-mode .stat-card{background:var(--paper2);border-color:var(--line)}
+body.dark-mode .bucket{background:var(--paper2);border-color:var(--line)}
+body.dark-mode .todo-card{background:var(--paper2);border-color:var(--line)}
+body.dark-mode .todo-sidebar{background:var(--paper2);border-color:var(--line)}
+body.dark-mode .add-todo-section{background:var(--paper2);border-color:var(--line)}
+body.dark-mode .entry-card{background:var(--paper2);border-color:var(--line)}
+body.dark-mode .add-entry-card{background:var(--paper2);border-color:var(--line)}
+body.dark-mode .why-card{background:var(--paper2);border-color:var(--line)}
 body.dark-mode .why-body{background:var(--paper2)}
-body.dark-mode .why-card{background:var(--paper2)}
-body.dark-mode .bucket{background:var(--paper2)}
-body.dark-mode .add-entry-card{background:var(--paper2)}
-body.dark-mode .entry-card{background:var(--paper2)}
-body.dark-mode .people-table-wrap{background:var(--paper2)}
-body.dark-mode .people-table th{background:var(--paper3)}
+body.dark-mode .why-header:hover{background:var(--paper3)}
+body.dark-mode .pstat{background:var(--paper2);border-color:var(--line)}
+body.dark-mode .people-table-wrap{background:var(--paper2);border-color:var(--line)}
+body.dark-mode .people-table th{background:var(--paper3);border-color:var(--line)}
+body.dark-mode .people-table td{border-color:var(--line)}
+body.dark-mode .people-table tr:hover td{background:var(--paper3)}
+/* AI cards — warm tint to stand out */
+body.dark-mode .morning-quote{background:#201C0A;border-color:#3D3000;border-left-color:var(--gold)}
+body.dark-mode .mq-label{color:var(--gold)}
+body.dark-mode .mq-text{color:var(--ink)}
+body.dark-mode .narrative-card{background:var(--paper2);border-color:var(--line);border-left-color:var(--gold)}
+body.dark-mode .narrative-label{color:var(--gold)}
+body.dark-mode .narrative-text{color:var(--ink2)}
+body.dark-mode .why-manifesto{background:var(--paper2);border-color:var(--line);border-left-color:var(--gold)}
+/* Forms & inputs */
+body.dark-mode .form-input,
+body.dark-mode .form-textarea,
+body.dark-mode .form-select,
+body.dark-mode .add-todo-input,
+body.dark-mode .add-goal-input,
+body.dark-mode .add-cat-input,
+body.dark-mode .add-ms-input,
+body.dark-mode .add-habit-input,
+body.dark-mode .people-search,
+body.dark-mode .people-filter-select,
+body.dark-mode .identity-input,
+body.dark-mode .why-question textarea{background:var(--paper3);border-color:var(--line);color:var(--ink)}
+body.dark-mode .form-input:focus,
+body.dark-mode .form-textarea:focus,
+body.dark-mode .form-select:focus,
+body.dark-mode .add-todo-input:focus,
+body.dark-mode .why-question textarea:focus{border-color:var(--gold);background:var(--paper2)}
+/* Modals & panels */
+body.dark-mode .modal{background:var(--paper2);border-color:var(--line)}
+body.dark-mode .profile-panel{background:var(--paper2)}
+body.dark-mode .profile-header{background:var(--paper2);border-color:var(--line)}
+body.dark-mode .profile-footer{background:var(--paper2);border-color:var(--line)}
+body.dark-mode .hiw-modal{background:var(--paper2)}
+body.dark-mode .hiw-item{background:var(--paper3);border-color:var(--line)}
+body.dark-mode .login-card{background:var(--paper2);border-color:var(--line)}
+body.dark-mode .google-btn{background:var(--paper3);color:var(--ink);border-color:var(--line)}
+body.dark-mode .google-btn:hover{background:var(--paper2);border-color:var(--gold)}
+/* Filter buttons */
+body.dark-mode .filter-btn:hover{background:var(--paper3)}
+body.dark-mode .filter-btn.active{background:var(--paper3);color:var(--ink)}
+/* Reflection banner */
+body.dark-mode .reflection-banner{background:#201C0A;border-color:#3D3000}
+/* Sub-bucket hover */
+body.dark-mode .sub-header:hover{background:var(--paper3)}
+body.dark-mode .cat-header:hover{background:var(--paper3)}
+/* System panel */
+body.dark-mode .system-panel{background:var(--paper3);border-color:var(--line)}
+/* Undo toast */
+body.dark-mode .undo-toast{background:var(--paper3)}
 .dark-toggle{font-family:'Syne',sans-serif;font-size:13px;background:none;border:none;cursor:pointer;color:var(--ink3);padding:3px 8px;border-radius:6px;transition:color .15s;line-height:1}
 .dark-toggle:hover{color:var(--ink)}
 html{scroll-behavior:smooth}
@@ -3176,24 +3226,24 @@ window.addEventListener('beforeunload',e=>{
   <div class="hiw-modal" style="position:relative">
     <button class="hiw-close" onclick="document.getElementById('hiw-modal-bg').classList.add('hidden')">✕</button>
     <div class="hiw-title">Behind your <em>Blueprint</em></div>
-    <div class="hiw-intro">You built something real today. Here's exactly what's happening under the hood — explained the way you'd tell a friend.</div>
+    <div class="hiw-intro">Here's exactly what's powering this — explained the way you'd tell a friend.</div>
 
-    <div class="hiw-quote">"Three free tools working together to give you a personal life OS that lives in the cloud, belongs entirely to you, and works from any device on earth."</div>
+    <div class="hiw-quote">"Five tools working together to give you a personal life OS that lives in the cloud, belongs entirely to you, and works from any device on earth."</div>
 
     <div class="hiw-stack">
       <div class="hiw-item">
         <div class="hiw-icon">🐙</div>
         <div>
           <div class="hiw-item-title">GitHub Pages — the address</div>
-          <div class="hiw-item-desc">GitHub hosts the Blueprint file (one HTML file) and gives it a real URL: <strong>lmobizz.github.io/blueprint</strong>. Think of it like a free website host. When you open that URL, your browser downloads the file and runs it. Every time you want to update Blueprint, you upload a new version of that file here.</div>
-          <span class="hiw-item-tag">Free forever · github.com/lmobizz/blueprint</span>
+          <div class="hiw-item-desc">GitHub hosts Blueprint as a single HTML file and serves it at <strong>lmobizz.github.io/blueprint</strong>. The repo is private so only you can see the code. Every time you want to update Blueprint, you upload a new version of that file here.</div>
+          <span class="hiw-item-tag">Private repo · github.com/lmobizz/blueprint</span>
         </div>
       </div>
       <div class="hiw-item">
         <div class="hiw-icon">⚡</div>
         <div>
           <div class="hiw-item-title">Supabase — the memory</div>
-          <div class="hiw-item-desc">Every goal, task, person, and story entry you save gets stored in a Supabase database in Virginia (AWS us-east-1). When you sign in on any device, Blueprint fetches your data from there. It's like Google Drive but just for your Blueprint data — tied to your Google account so only you can see it.</div>
+          <div class="hiw-item-desc">Every goal, task, person, story entry, habit, and setting gets stored in a Supabase database tied to your Google account. Your Anthropic API key is also stored here securely — never in the code. Sign in on any device and everything is right there.</div>
           <span class="hiw-item-tag">Free tier · zugzwnqrhogwivxbpbrw.supabase.co</span>
         </div>
       </div>
@@ -3201,7 +3251,7 @@ window.addEventListener('beforeunload',e=>{
         <div class="hiw-icon">🔐</div>
         <div>
           <div class="hiw-item-title">Google Auth — the lock</div>
-          <div class="hiw-item-desc">When you click "Sign in with Google," Google verifies it's really you and hands Blueprint a secure token. Supabase uses that token to make sure only your account can read or write your data. Nobody else — not even someone with the URL — can see your Blueprint.</div>
+          <div class="hiw-item-desc">When you sign in with Google, Supabase uses that token to make sure only your account can read or write your data. Row Level Security means nobody else — not even someone with the URL — can see your Blueprint.</div>
           <span class="hiw-item-tag">Row Level Security enabled · your data is private</span>
         </div>
       </div>
@@ -3209,24 +3259,24 @@ window.addEventListener('beforeunload',e=>{
         <div class="hiw-icon">✦</div>
         <div>
           <div class="hiw-item-title">Claude (Anthropic) — the intelligence</div>
-          <div class="hiw-item-desc">The morning reflection, your personal narrative, and the AI conversation starters in People all call Claude's API in real time. It reads your actual goals, wins, and habits — so the reflection each morning is about your life, not a generic quote. It's the same Claude you're talking to right now.</div>
-          <span class="hiw-item-tag">Claude Sonnet · api.anthropic.com</span>
+          <div class="hiw-item-desc">Four features call Claude's API in real time using your personal API key stored in Supabase: the daily morning reflection, your personal narrative, your manifesto in My Why, and AI conversation starters in People. Each one reads your actual data — goals, wins, habits — so the output is about your life, not generic advice.</div>
+          <span class="hiw-item-tag">claude-sonnet-4-5 · $10 credits · pay as you go</span>
         </div>
       </div>
       <div class="hiw-item">
         <div class="hiw-icon">📁</div>
         <div>
           <div class="hiw-item-title">Your data — fully yours</div>
-          <div class="hiw-item-desc">Everything lives in your Supabase project under your Google account. You can export a full backup JSON anytime using the ⋯ Backup button. If you ever want to move, delete, or own your data differently — it's all there. No subscription, no lock-in.</div>
-          <span class="hiw-item-tag">Export anytime · $0/month · yours forever</span>
+          <div class="hiw-item-desc">Everything lives in your Supabase project under your Google account. Export a full backup JSON anytime using the ⋯ Backup button. No subscription, no lock-in, no ads. The app costs $0/month to run — the only cost is your Anthropic API usage, which at normal personal use is a few cents a month.</div>
+          <span class="hiw-item-tag">Export anytime · ~$0/month · yours forever</span>
         </div>
       </div>
     </div>
 
     <div class="hiw-footer">
-      Built in one session with Claude · Hosted free on GitHub · Data stored free on Supabase<br>
+      Built with Claude · Hosted free on GitHub · Data stored free on Supabase<br>
       <a href="https://github.com/lmobizz/blueprint" target="_blank">github.com/lmobizz/blueprint</a><br>
-      <span style="opacity:.5">Last updated: June 3, 2026 · 6:21 PM CT</span>
+      <span style="opacity:.5">Last updated: June 3, 2026</span>
     </div>
   </div>
 </div>
