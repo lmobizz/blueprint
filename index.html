@@ -3273,9 +3273,10 @@ function switchGoalModalTab(tab, skipRender){
 
 /* ── GOAL TIMELINE RENDERER ──────────────────────────────── */
 function renderGoalTimeline(bucket,sub,cat,idx){
+  try{
   const g=D.goals[bucket][sub][cat][idx];
   const body=document.getElementById('gsm-timeline-body');
-  if(!g||!body)return;
+  if(!g||!body){console.error('renderGoalTimeline: missing g or body',bucket,sub,cat,idx);return;}
 
   const milestones=g.milestones||[];
   const todayStr=NOW.toISOString().split('T')[0];
@@ -3294,7 +3295,8 @@ function renderGoalTimeline(bucket,sub,cat,idx){
 
   // Timeline span
   const startTs=createdTs;
-  const endTs=dueTs||Math.max(todayTs+30*24*60*60*1000,...(msDated.length?msDated.map(m=>m.ts):[todayTs+30*24*60*60*1000]));
+  const msTs=msDated.map(m=>m.ts);
+  const endTs=dueTs||(msTs.length?Math.max(...msTs):todayTs+30*24*60*60*1000);
   const span=endTs-startTs||1;
 
   // Position function: 0–1 along the timeline
@@ -3416,6 +3418,11 @@ function renderGoalTimeline(bucket,sub,cat,idx){
   }
 
   body.innerHTML=`<div class="tl-wrap"><div style="overflow-x:auto;padding:.5rem 0">${svg}</div>${summaryHtml}${undatedHtml}</div>`;
+  }catch(e){
+    console.error('Timeline render error:',e);
+    const body2=document.getElementById('gsm-timeline-body');
+    if(body2)body2.innerHTML=`<div class="tl-no-dates"><div style="font-size:1.5rem">⚠️</div><div style="margin-top:.5rem">Timeline error: ${e.message}</div></div>`;
+  }
 }
 
 function closeGoalModal(){
