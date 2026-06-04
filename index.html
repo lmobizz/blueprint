@@ -47,7 +47,8 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
 
 /* STAT CARDS */
 .stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:1.5rem}
-.stat-card{background:var(--paper);border:1px solid var(--line);border-radius:var(--r);padding:.9rem 1rem}
+.stat-card{background:var(--paper);border:1px solid var(--line);border-radius:var(--r);padding:.9rem 1rem;cursor:pointer;transition:border-color .15s,box-shadow .15s}
+.stat-card:hover{border-color:var(--gold);box-shadow:0 2px 8px rgba(184,134,11,.12)}
 .stat-num{font-family:'Playfair Display',serif;font-size:2rem;font-weight:600;line-height:1;color:var(--ink)}
 .stat-label{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink3);margin-top:3px}
 .stat-bar{height:3px;background:var(--line);border-radius:99px;margin-top:8px;overflow:hidden}
@@ -1366,12 +1367,12 @@ function renderOverview(){
   const overdueContacts=(D.people||[]).filter(p=>{const d=daysSinceContact(p);return d!==null&&d>30;}).length;
   const pct=all.length?Math.round(ach/all.length*100):0;
   document.getElementById('overview-stats').innerHTML=`
-    <div class="stat-card"><div class="stat-num">${todayTodos}</div><div class="stat-label">Tasks today</div><div class="stat-bar"><div class="stat-bar-fill" style="width:100%"></div></div></div>
-    <div class="stat-card"><div class="stat-num">${all.length}</div><div class="stat-label">Total goals</div></div>
-    <div class="stat-card"><div class="stat-num">${ach}</div><div class="stat-label">Achieved</div><div class="stat-bar"><div class="stat-bar-fill" style="width:${pct}%"></div></div></div>
-    <div class="stat-card"><div class="stat-num">${ot}</div><div class="stat-label">On track</div></div>
-    <div class="stat-card"><div class="stat-num">${wins}</div><div class="stat-label">Wins logged</div></div>
-    <div class="stat-card"><div class="stat-num">${lessons}</div><div class="stat-label">Lessons learned</div></div>
+    <div class="stat-card" onclick="navToSection('todo')" title="Go to To-Do"><div class="stat-num">${todayTodos}</div><div class="stat-label">Tasks today</div><div class="stat-bar"><div class="stat-bar-fill" style="width:100%"></div></div></div>
+    <div class="stat-card" onclick="navToSection('goals')" title="Go to Goals"><div class="stat-num">${all.length}</div><div class="stat-label">Total goals</div></div>
+    <div class="stat-card" onclick="navToSection('goals')" title="Go to Goals"><div class="stat-num">${ach}</div><div class="stat-label">Achieved</div><div class="stat-bar"><div class="stat-bar-fill" style="width:${pct}%"></div></div></div>
+    <div class="stat-card" onclick="navToSection('goals')" title="Go to Goals"><div class="stat-num">${ot}</div><div class="stat-label">On track</div></div>
+    <div class="stat-card" onclick="navToSection('story')" title="Go to My Story"><div class="stat-num">${wins}</div><div class="stat-label">Wins logged</div></div>
+    <div class="stat-card" onclick="navToSection('story')" title="Go to My Story"><div class="stat-num">${lessons}</div><div class="stat-label">Lessons learned</div></div>
   `;
   const recent=[...D.story].sort((a,b)=>b.date-a.date).slice(0,4);
   document.getElementById('recent-timeline').innerHTML=recent.length
@@ -1410,6 +1411,11 @@ function addTodo(){
   save();renderTodos();updateFilterCounts();
 }
 document.getElementById('todo-new').addEventListener('keydown',e=>{if(e.key==='Enter')addTodo();});
+
+function navToSection(view){
+  const tab=document.querySelector(`.nav-tab[onclick*="'${view}'"]`);
+  if(tab){tab.click();}
+}
 
 function autoSetHorizon(dueVal){
   if(!dueVal)return;
