@@ -873,7 +873,7 @@ body.dark-mode .profile-dropdown{background:var(--paper2);border-color:var(--lin
 .pe-current-badge{font-size:9px;background:rgba(184,134,11,.15);color:var(--gold);padding:1px 6px;border-radius:10px;flex-shrink:0}
 .pe-body{padding:0 10px;max-height:0;overflow:hidden;transition:max-height .3s ease,padding .3s ease}
 .pe-body.open{max-height:none;overflow:visible;padding:0 10px 10px}
-.pe-textarea{width:100%;box-sizing:border-box;background:transparent;border:none;resize:vertical;font-size:13px;color:var(--ink1);line-height:1.6;font-family:inherit;outline:none;min-height:80px;padding:6px 0}
+.pe-textarea{width:100%;box-sizing:border-box;background:transparent;border:none;resize:none;font-size:13px;color:var(--ink1);line-height:1.6;font-family:inherit;outline:none;min-height:80px;padding:6px 0;overflow:hidden}
 .pe-textarea:focus{outline:none}
 .pe-delete{font-size:10px;color:var(--ink3);cursor:pointer;padding:2px 6px;border-radius:4px;transition:all .15s;margin-left:auto;flex-shrink:0}
 .pe-delete:hover{color:var(--rose);background:rgba(220,80,80,.1)}
@@ -1176,19 +1176,19 @@ body.dark-mode .profile-dropdown{background:var(--paper2);border-color:var(--lin
       </div>
       <div class="why-body" id="why-body">
 
+        <div class="why-actions" style="margin-bottom:1.25rem;padding-bottom:1.25rem;border-bottom:1px solid var(--line);padding-top:0;margin-top:0;border-top:none">
+          <button class="why-save-btn" onclick="saveWhy()">Save answers</button>
+          <button class="why-gen-btn" onclick="generateManifesto()">✦ Generate my manifesto</button>
+          <button class="narrative-btn" id="why-copy-btn" style="display:none;font-size:12px;padding:7px 14px" onclick="copyManifesto()">Copy manifesto</button>
+          <span id="why-last-updated" style="font-size:11px;color:var(--ink3);margin-left:auto;align-self:center"></span>
+        </div>
+
         <div id="why-manifesto-wrap" style="display:none;margin-bottom:1.5rem">
           <div style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink3);font-weight:600;margin-bottom:.6rem">✦ Your manifesto</div>
           <div class="why-manifesto" id="why-manifesto"></div>
         </div>
 
         <div id="why-questions-container"><!-- rendered by renderWhyQuestions() --></div>
-
-        <div class="why-actions">
-          <button class="why-save-btn" onclick="saveWhy()">Save answers</button>
-          <button class="why-gen-btn" onclick="generateManifesto()">✦ Generate my manifesto</button>
-          <button class="narrative-btn" id="why-copy-btn" style="display:none;font-size:12px;padding:7px 14px" onclick="copyManifesto()">Copy manifesto</button>
-          <span id="why-last-updated" style="font-size:11px;color:var(--ink3);margin-left:auto;align-self:center"></span>
-        </div>
       </div>
     </div>
 
@@ -5219,7 +5219,7 @@ window.addEventListener('beforeunload',e=>{
     <button class="hype-close" onclick="closeHype()">Let's get it →</button>
   </div>
 </div>
-<div class="version-toast" id="version-toast">✦ Build Jun 04 · 7:28 PM CT ✓</div>
+<div class="version-toast" id="version-toast">✦ Build Jun 04 · 7:42 PM CT ✓</div>
 <!-- TIMELINE FULLSCREEN MODAL -->
 <div class="tl-fs-overlay hidden" id="tl-fs-overlay">
   <div class="tl-fs-header">
