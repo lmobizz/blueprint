@@ -880,6 +880,17 @@ body.dark-mode .profile-dropdown{background:var(--paper2);border-color:var(--lin
 .add-perspective-btn{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--ink3);cursor:pointer;padding:6px 8px;border:1px dashed var(--line);border-radius:8px;transition:all .2s;background:transparent;width:100%;margin-top:2px}
 .add-perspective-btn:hover{border-color:var(--gold);color:var(--gold);background:rgba(184,134,11,.04)}
 .add-perspective-btn .apb-icon{font-size:13px;line-height:1}
+
+/* ── TIMELINE FULLSCREEN ─────────────────────────────────── */
+.tl-fullscreen-btn{background:none;border:none;cursor:pointer;font-size:14px;color:var(--ink3);padding:2px 6px;border-radius:4px;transition:all .15s;line-height:1}
+.tl-fullscreen-btn:hover{color:var(--gold);background:rgba(184,134,11,.1)}
+.tl-fs-overlay{position:fixed;inset:0;background:rgba(14,13,12,.92);z-index:1000;display:flex;flex-direction:column;backdrop-filter:blur(4px)}
+.tl-fs-overlay.hidden{display:none}
+.tl-fs-header{display:flex;align-items:center;gap:12px;padding:1rem 1.5rem;border-bottom:1px solid var(--line);flex-shrink:0}
+.tl-fs-title{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:600;flex:1}
+.tl-fs-close{background:none;border:none;cursor:pointer;font-size:20px;color:var(--ink3);padding:4px 8px;border-radius:6px;transition:all .15s;line-height:1}
+.tl-fs-close:hover{color:var(--ink1);background:var(--paper3)}
+.tl-fs-body{flex:1;overflow:auto;padding:1.5rem 2rem}
 </style>
 </head>
 <body>
@@ -1124,6 +1135,7 @@ body.dark-mode .profile-dropdown{background:var(--paper2);border-color:var(--lin
         <div class="macro-tl-header" onclick="toggleMacroTimeline('personal')">
           <span class="macro-tl-icon">🌱</span>
           <span class="macro-tl-title">Timeline</span>
+          <button class="tl-fullscreen-btn" onclick="event.stopPropagation();openTimelineFullscreen('personal')" title="Fullscreen view">⛶</button>
           <span class="macro-tl-chev" id="macro-chev-personal">▶</span>
         </div>
         <div class="macro-tl-body" id="macro-body-personal"></div>
@@ -1132,6 +1144,7 @@ body.dark-mode .profile-dropdown{background:var(--paper2);border-color:var(--lin
         <div class="macro-tl-header" onclick="toggleMacroTimeline('professional')">
           <span class="macro-tl-icon">🚀</span>
           <span class="macro-tl-title">Timeline</span>
+          <button class="tl-fullscreen-btn" onclick="event.stopPropagation();openTimelineFullscreen('professional')" title="Fullscreen view">⛶</button>
           <span class="macro-tl-chev" id="macro-chev-professional">▶</span>
         </div>
         <div class="macro-tl-body" id="macro-body-professional"></div>
@@ -2364,6 +2377,45 @@ function makeId(str){return str.replace(/[^a-zA-Z0-9]/g,'_');}
 
 
 /* ── MACRO GOAL TIMELINES ────────────────────────────────── */
+function openTimelineFullscreen(bucket){
+  const icons={personal:'🌱',professional:'🚀'};
+  const labels={personal:'Personal Timeline',professional:'Professional Timeline'};
+  const overlay=document.getElementById('tl-fs-overlay');
+  const fsBody=document.getElementById('tl-fs-body');
+  const fsTitle=document.getElementById('tl-fs-title');
+  const fsIcon=document.getElementById('tl-fs-icon');
+  fsTitle.textContent=labels[bucket]||'Timeline';
+  fsIcon.textContent=icons[bucket]||'';
+  overlay.classList.remove('hidden');
+  document.body.style.overflow='hidden';
+  // Render timeline into a temp container, grab HTML, inject into fullscreen body
+  const tmp=document.createElement('div');
+  tmp.id='macro-body-'+bucket+'_fs';
+  tmp.style.display='none';
+  document.body.appendChild(tmp);
+  // Temporarily swap body ref so renderMacroTimeline writes to tmp
+  const realBody=document.getElementById('macro-body-'+bucket);
+  realBody.id='macro-body-'+bucket+'_real';
+  tmp.id='macro-body-'+bucket;
+  renderMacroTimeline(bucket);
+  fsBody.innerHTML=tmp.innerHTML;
+  // Restore
+  tmp.id='macro-body-'+bucket+'_fs';
+  realBody.id='macro-body-'+bucket;
+  document.body.removeChild(tmp);
+  // Make SVG bigger for fullscreen
+  const svg=fsBody.querySelector('svg');
+  if(svg){svg.style.width='100%';svg.style.minHeight='500px';}
+}
+
+function closeTimelineFullscreen(){
+  document.getElementById('tl-fs-overlay').classList.add('hidden');
+  document.body.style.overflow='';
+}
+
+// Close on Escape
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeTimelineFullscreen();});
+
 function toggleMacroTimeline(bucket){
   const body=document.getElementById('macro-body-'+bucket);
   const chev=document.getElementById('macro-chev-'+bucket);
@@ -3283,7 +3335,17 @@ function exportPDF(){
   <hr class="divider"/>
   <p style="font-size:10px;color:#ccc;text-align:center;margin-top:16px">Generated from lmobizz.github.io/blueprint · ${dateStr}</p>
   <script>window.onload=function(){window.print();}<\/script>
-  </body></html>`);
+  
+<!-- TIMELINE FULLSCREEN MODAL -->
+<div class="tl-fs-overlay hidden" id="tl-fs-overlay">
+  <div class="tl-fs-header">
+    <span class="tl-fs-icon" id="tl-fs-icon"></span>
+    <span class="tl-fs-title" id="tl-fs-title">Timeline</span>
+    <button class="tl-fs-close" onclick="closeTimelineFullscreen()">✕</button>
+  </div>
+  <div class="tl-fs-body" id="tl-fs-body"></div>
+</div>
+</body></html>`);
   win.document.close();
 }
 
@@ -5167,6 +5229,6 @@ window.addEventListener('beforeunload',e=>{
     <button class="hype-close" onclick="closeHype()">Let's get it →</button>
   </div>
 </div>
-<div class="version-toast" id="version-toast">✦ Build Jun 04 · 6:55 PM CT ✓</div>
+<div class="version-toast" id="version-toast">✦ Build Jun 04 · 7:15 PM CT ✓</div>
 </body>
 </html>
