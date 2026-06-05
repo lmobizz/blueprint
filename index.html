@@ -261,7 +261,7 @@ body.dark-mode .version-toast{background:#1C1917;border-color:rgba(184,134,11,.5
 .week-section-header{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--ink3);padding:8px 0 4px;margin-top:4px;border-bottom:1px solid var(--line);margin-bottom:6px}
 .week-no-due{font-size:12px;color:var(--ink3);font-style:italic;padding:8px 0 4px;border-top:1px dashed var(--line);margin-top:4px}
 html{scroll-behavior:smooth}
-body{font-family:'Syne',sans-serif;background:var(--paper);color:var(--ink);min-height:100vh}
+body{font-family:'Syne',sans-serif;background:var(--paper);color:var(--ink);min-height:100vh}#app-shell{min-height:100vh;display:flex;flex-direction:column}.view.active{flex:1;min-height:calc(100vh - 52px)}
 
 /* NAV */
 nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:0;padding:0 2rem;height:52px;}
@@ -3136,15 +3136,21 @@ function saveWhy(){
     const entries=getEntries(q.key);
     entries.forEach(entry=>{
       const ta=document.getElementById(`pe-ta-${q.key}-${entry.id}`);
-      // Only update if textarea exists AND has content — never overwrite with empty
-      if(ta && ta.value.trim() && ta.value.trim()!==entry.text){
-        entry.text=ta.value.trim();
+      if(!ta) return;
+      const newVal=ta.value.trim();
+      if(!newVal) return; // never overwrite with empty
+      // Never overwrite longer existing text with shorter new text
+      // (protects against saving stale/partial DOM state over real answers)
+      if(newVal.length < entry.text.length * 0.5 && entry.text.length > 20){
+        console.warn(`saveWhy: skipping suspicious overwrite for ${q.key} — existing: ${entry.text.length} chars, new: ${newVal.length} chars`);
+        return;
       }
+      if(newVal !== entry.text) entry.text=newVal;
     });
     if(entries.length>0) D.why[q.key]=entries;
-    // Save any pending new entry (only if it has text)
+    // Save any pending new entry (only if it has meaningful text)
     const newTa=document.getElementById(`pe-ta-${q.key}-new`);
-    if(newTa && newTa.value.trim()) saveNewPerspective(q.key, newTa);
+    if(newTa && newTa.value.trim().length>3) saveNewPerspective(q.key, newTa);
   });
   D.why.lastUpdated=Date.now();
   save();
@@ -3166,7 +3172,7 @@ function updateWhyTimestamp(){
 }
 
 async function generateManifesto(){
-  saveWhy();
+  // Do NOT saveWhy() here — reads directly from D.why to avoid overwriting with DOM state
   const w=D.why||{};
   // Build answers showing evolution: most recent answer + prior entries if they exist
   const answers=WHY_QUESTIONS.map((q,i)=>{
@@ -5298,7 +5304,7 @@ window.addEventListener('beforeunload',e=>{
     <button class="hype-close" onclick="closeHype()">Let's get it →</button>
   </div>
 </div>
-<div class="version-toast" id="version-toast">✦ Build Jun 04 · 9:22 PM CT ✓</div>
+<div class="version-toast" id="version-toast">✦ Build Jun 04 · 10:14 PM CT ✓</div>
 <!-- TIMELINE FULLSCREEN MODAL -->
 <div class="tl-fs-overlay hidden" id="tl-fs-overlay">
   <div class="tl-fs-header">
