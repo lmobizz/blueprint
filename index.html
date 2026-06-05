@@ -924,7 +924,7 @@ body.dark-mode .profile-dropdown{background:var(--paper2);border-color:var(--lin
     <button class="nav-tab active" onclick="showView('overview',this)">Overview</button>
     <button class="nav-tab" onclick="showView('todo',this)">To-Do</button>
     <button class="nav-tab" onclick="showView('goals',this)">Goals</button>
-    <button class="nav-tab" onclick="showView('story',this)">My Story</button>
+    <button class="nav-tab" onclick="showView('story',this)">My Journey</button>
     <button class="nav-tab" onclick="showView('people',this)">People</button>
     <button class="nav-tab" onclick="showView('calendar',this)">Calendar</button>
   </div>
@@ -959,7 +959,7 @@ body.dark-mode .profile-dropdown{background:var(--paper2);border-color:var(--lin
   <button class="mobile-nav-tab active" onclick="mobileNav('overview',this)">Overview</button>
   <button class="mobile-nav-tab" onclick="mobileNav('todo',this)">To-Do</button>
   <button class="mobile-nav-tab" onclick="mobileNav('goals',this)">Goals</button>
-  <button class="mobile-nav-tab" onclick="mobileNav('story',this)">My Story</button>
+  <button class="mobile-nav-tab" onclick="mobileNav('story',this)">My Journey</button>
   <button class="mobile-nav-tab" onclick="mobileNav('people',this)">People</button>
   <button class="mobile-nav-tab" onclick="mobileNav('calendar',this)">Calendar</button>
 </div>
@@ -1165,8 +1165,8 @@ body.dark-mode .profile-dropdown{background:var(--paper2);border-color:var(--lin
 <div class="view" id="view-story">
   <div class="hero">
     <div>
-      <div class="hero-title">My <em>Story</em></div>
-      <div class="hero-sub">Document your journey — wins, lessons, pivots. This is your living autobiography.</div>
+      <div class="hero-title">My <em>Journey</em></div>
+      <div class="hero-sub">Your wins, lessons, and pivots — a living autobiography.</div>
     </div>
     <div class="story-tab-toggle">
       <button class="story-tab-btn active" id="story-tab-why" onclick="switchStoryTab('why')">🧭 My Why</button>
@@ -1866,7 +1866,7 @@ document.getElementById('hero-date').innerHTML=
 /* ── REFLECTION ──────────────────────────────────────── */
 const PROMPTS=[
   "It's been a week — take 2 minutes to log a win or a lesson you picked up.",
-  "Reflection time: what moved the needle most this week? Log it in My Story.",
+  "Reflection time: what moved the needle most this week? Log it in My Journey.",
   "Weekly check-in: are your goals still your goals? Add, update, or mark one achieved.",
   "What's one thing you learned this week — about yourself, your work, or your relationships?",
   "A small win still counts. What's something you can celebrate from this week?"
@@ -1953,7 +1953,7 @@ function renderOverview(){
       <div class="stat-group-label" onclick="toggleStatGroup('char')" style="cursor:pointer;user-select:none">📖 Character building<span id="sg-char-chev" style="margin-left:auto;font-size:10px;transition:transform .2s;display:inline-block">▼</span></div>
       <div id="sg-char-wrap">
       <div class="stat-group-grid cols-2">
-        <div class="stat-card" onclick="navToSection('story')" title="Go to My Story"><div class="stat-num">${wins}</div><div class="stat-label">Wins logged</div></div>
+        <div class="stat-card" onclick="navToSection('story')" title="Go to My Journey"><div class="stat-num">${wins}</div><div class="stat-label">Wins logged</div></div>
         <div class="stat-card" onclick="navToSection('story')" title="Go to My Story"><div class="stat-num">${lessons}</div><div class="stat-label">Lessons learned</div></div>
       </div>
     </div>
@@ -2441,7 +2441,7 @@ function openTimelineFullscreen(bucket){
   document.body.removeChild(tmp);
   // Make SVG bigger for fullscreen
   const svg=fsBody.querySelector('svg');
-  if(svg){svg.style.width='100%';svg.style.minHeight='500px';}
+  if(svg){svg.style.width='100%';svg.style.height='auto';}
 }
 
 function closeTimelineFullscreen(){
@@ -2628,8 +2628,7 @@ function renderMacroTimeline(bucket){
     <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--ink3)"><div style="width:9px;height:9px;border-radius:50%;background:#4D9E7A"></div>Achieved</div>
     <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--ink3)"><div style="width:3px;height:14px;background:#C9900A;border-radius:1px"></div>Milestone</div>
     <div style="margin-left:auto;display:flex;align-items:center;gap:4px;font-size:10px;color:var(--ink3);opacity:.6">
-      <svg width="11" height="11" viewBox="0 0 11 11"><circle cx="5.5" cy="5.5" r="4.5" fill="none" stroke="currentColor" stroke-width="1.2"/><line x1="5.5" y1="3" x2="5.5" y2="5.5" stroke="currentColor" stroke-width="1.2"/><circle cx="5.5" cy="7.5" r=".8" fill="currentColor"/></svg>
-      click a circle to open goal
+      ↑ click a circle to open goal
     </div>
   </div>`;
 
@@ -3364,7 +3363,7 @@ function exportPDF(){
   ${goalsHTML||'<p style="font-size:12px;color:#aaa;font-style:italic">No goals set yet</p>'}
 
   <hr class="divider"/>
-  <div class="section-badge">My Story</div>
+  <div class="section-badge">My Journey</div>
   <h2>Achievements & Lessons</h2>
   ${storyHTML}
 
@@ -5098,7 +5097,7 @@ window.addEventListener('beforeunload',e=>{
       <div class="hiw-quote" style="font-style:normal;font-size:.9rem">"Most productivity tools are built for output. This one is built for clarity."</div>
       <div style="font-size:13px;color:var(--ink2);line-height:1.8;display:flex;flex-direction:column;gap:.9rem">
         <p>I wasn't looking for another app to manage tasks. I already had those. What I didn't have was a single place where I could see — clearly and honestly — who I was trying to become, what I was working toward, and whether my daily actions were actually connected to any of it.</p>
-        <p>I built Blueprint because I wanted to slow down before speeding up. To get grounded before getting busy. To lay the foundation — goals, habits, relationships, my story — before jumping into the next hundred things.</p>
+        <p>I built Blueprint because I wanted to slow down before speeding up. To get grounded before getting busy. To lay the foundation — goals, habits, relationships, my journey — before jumping into the next hundred things.</p>
         <p>It started as a simple idea: what if everything that actually matters lived in one place? Not meetings, not emails, not noise. Just the things I'm building toward. The person I'm becoming. The people I want to show up for.</p>
         <p style="font-family:'Playfair Display',serif;font-size:1rem;font-style:italic;color:var(--ink)">This is that place.</p>
       </div>
@@ -5255,7 +5254,7 @@ window.addEventListener('beforeunload',e=>{
     <button class="hype-close" onclick="closeHype()">Let's get it →</button>
   </div>
 </div>
-<div class="version-toast" id="version-toast">✦ Build Jun 04 · 8:18 PM CT ✓</div>
+<div class="version-toast" id="version-toast">✦ Build Jun 04 · 8:45 PM CT ✓</div>
 <!-- TIMELINE FULLSCREEN MODAL -->
 <div class="tl-fs-overlay hidden" id="tl-fs-overlay">
   <div class="tl-fs-header">
