@@ -1176,19 +1176,23 @@ body.dark-mode .profile-dropdown{background:var(--paper2);border-color:var(--lin
       </div>
       <div class="why-body" id="why-body">
 
-        <div class="why-actions" style="margin-bottom:1.25rem;padding-bottom:1.25rem;border-bottom:1px solid var(--line);padding-top:0;margin-top:0;border-top:none">
-          <button class="why-save-btn" onclick="saveWhy()">Save answers</button>
-          <button class="why-gen-btn" onclick="generateManifesto()">✦ Generate my manifesto</button>
-          <button class="narrative-btn" id="why-copy-btn" style="display:none;font-size:12px;padding:7px 14px" onclick="copyManifesto()">Copy manifesto</button>
-          <span id="why-last-updated" style="font-size:11px;color:var(--ink3);margin-left:auto;align-self:center"></span>
-        </div>
-
         <div id="why-manifesto-wrap" style="display:none;margin-bottom:1.5rem">
-          <div style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink3);font-weight:600;margin-bottom:.6rem">✦ Your manifesto</div>
+          <div style="display:flex;align-items:center;margin-bottom:.6rem;gap:8px">
+            <div style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink3);font-weight:600">✦ Your manifesto</div>
+            <div style="margin-left:auto;display:flex;gap:6px;align-items:center">
+              <button class="why-gen-btn" onclick="generateManifesto()" style="font-size:11px;padding:4px 12px">✦ Regenerate</button>
+              <button class="narrative-btn" id="why-copy-btn" style="display:none;font-size:11px;padding:4px 12px" onclick="copyManifesto()">Copy</button>
+            </div>
+          </div>
           <div class="why-manifesto" id="why-manifesto"></div>
         </div>
 
         <div id="why-questions-container"><!-- rendered by renderWhyQuestions() --></div>
+
+        <div class="why-actions">
+          <button class="why-save-btn" onclick="saveWhy()">Save answers</button>
+          <span id="why-last-updated" style="font-size:11px;color:var(--ink3);margin-left:auto;align-self:center"></span>
+        </div>
       </div>
     </div>
 
@@ -3034,7 +3038,7 @@ function loadWhyAnswers(){
     el.innerHTML=paras.map(p=>`<p>${esc(p)}</p>`).join('');
     wrap.style.display='block';
     document.getElementById('why-copy-btn').style.display='inline-block';
-    document.querySelector('.why-gen-btn').textContent='✦ Regenerate manifesto';
+    document.querySelector('.why-gen-btn').textContent='✦ Regenerate';
   }
 }
 
@@ -3104,7 +3108,7 @@ async function generateManifesto(){
   if(!answers){alert('Fill in at least a few answers first!');return;}
 
   const btn=document.querySelector('.why-gen-btn');
-  btn.textContent='Generating...';btn.disabled=true;
+  btn.textContent='...';btn.disabled=true;
   const wrap=document.getElementById('why-manifesto-wrap');
   const el=document.getElementById('why-manifesto');
   wrap.style.display='block';
@@ -3126,13 +3130,13 @@ async function generateManifesto(){
       D.why.manifesto=text;
       save();
       document.getElementById('why-copy-btn').style.display='inline-block';
-      btn.textContent='✦ Regenerate manifesto';
+      btn.textContent='✦ Regenerate';
     } else throw new Error('empty — API response: '+JSON.stringify(data).slice(0,200));
   }catch(e){
     const msg=e?.message||JSON.stringify(e)||'unknown';
     el.innerHTML='<p style="opacity:.5">Error: '+msg+'</p>';
     console.error('Manifesto error:',e);
-    btn.textContent='✦ Generate my manifesto';
+    btn.textContent='✦ Regenerate';
   }
   btn.disabled=false;
 }
@@ -5219,7 +5223,7 @@ window.addEventListener('beforeunload',e=>{
     <button class="hype-close" onclick="closeHype()">Let's get it →</button>
   </div>
 </div>
-<div class="version-toast" id="version-toast">✦ Build Jun 04 · 7:42 PM CT ✓</div>
+<div class="version-toast" id="version-toast">✦ Build Jun 04 · 7:58 PM CT ✓</div>
 <!-- TIMELINE FULLSCREEN MODAL -->
 <div class="tl-fs-overlay hidden" id="tl-fs-overlay">
   <div class="tl-fs-header">
