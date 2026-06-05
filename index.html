@@ -899,6 +899,17 @@ body.dark-mode .profile-dropdown{background:var(--paper2);border-color:var(--lin
 .story-tab-btn.active{background:var(--gold);color:#0E0D0C;border-color:var(--gold)}
 #story-panel-why,#story-panel-story{display:none}
 #story-panel-why.active,#story-panel-story.active{display:block}
+
+/* ── WHY GUIDING QUESTIONS COLLAPSIBLE ───────────────────── */
+.why-questions-section{border:1px solid var(--line);border-radius:var(--r2);overflow:hidden;margin-bottom:1.25rem}
+.why-questions-header{display:flex;align-items:center;gap:10px;padding:.85rem 1.1rem;cursor:pointer;user-select:none;transition:background .15s}
+.why-questions-header:hover{background:var(--paper2)}
+.why-questions-label{font-size:12px;font-weight:700;color:var(--ink2);flex:1;letter-spacing:.02em}
+.why-questions-sub{font-size:11px;color:var(--ink3)}
+.why-questions-chev{font-size:10px;color:var(--ink3);transition:transform .2s}
+.why-questions-chev.open{transform:rotate(90deg)}
+.why-questions-body{display:none;padding:1.25rem 1.25rem .5rem}
+.why-questions-body.open{display:block}
 </style>
 </head>
 <body>
@@ -1200,11 +1211,22 @@ body.dark-mode .profile-dropdown{background:var(--paper2);border-color:var(--lin
           <div class="why-manifesto" id="why-manifesto"></div>
         </div>
 
-        <div id="why-questions-container"><!-- rendered by renderWhyQuestions() --></div>
-
-        <div class="why-actions">
-          <button class="why-save-btn" onclick="saveWhy()">Save answers</button>
-          <span id="why-last-updated" style="font-size:11px;color:var(--ink3);margin-left:auto;align-self:center"></span>
+        <div class="why-questions-section">
+          <div class="why-questions-header" onclick="toggleWhyQuestions()">
+            <span style="font-size:15px">🧭</span>
+            <div style="flex:1">
+              <div class="why-questions-label">Guiding questions</div>
+              <div class="why-questions-sub">The foundation behind your manifesto — your identity, values, vision &amp; legacy</div>
+            </div>
+            <span class="why-questions-chev" id="why-questions-chev">▶</span>
+          </div>
+          <div class="why-questions-body" id="why-questions-body">
+            <div id="why-questions-container"><!-- rendered by renderWhyQuestions() --></div>
+            <div class="why-actions" style="margin-top:.75rem">
+              <button class="why-save-btn" onclick="saveWhy()">Save answers</button>
+              <span id="why-last-updated" style="font-size:11px;color:var(--ink3);margin-left:auto;align-self:center"></span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -2441,7 +2463,7 @@ function openTimelineFullscreen(bucket){
   document.body.removeChild(tmp);
   // Make SVG bigger for fullscreen
   const svg=fsBody.querySelector('svg');
-  if(svg){svg.style.width='100%';svg.style.height='auto';}
+  if(svg){svg.style.width='100%';svg.style.height='auto';const isDesktop=window.innerWidth>768;if(isDesktop){svg.style.maxWidth='900px';svg.parentElement.style.maxWidth='900px';svg.parentElement.style.margin='0 auto';}}
 }
 
 function closeTimelineFullscreen(){
@@ -3047,6 +3069,27 @@ function toggleWhy(){
   if(open) loadWhyAnswers();
 }
 
+
+function toggleWhyQuestions(){
+  const body=document.getElementById('why-questions-body');
+  const chev=document.getElementById('why-questions-chev');
+  if(!body)return;
+  const open=body.classList.toggle('open');
+  if(chev)chev.classList.toggle('open',open);
+  try{localStorage.setItem('bp_why_q_open',open?'1':'0');}catch(e){}
+  if(open)renderWhyQuestions();
+}
+
+function restoreWhyQuestionsState(){
+  const saved=localStorage.getItem('bp_why_q_open');
+  // Default open if never set
+  if(saved===null||saved==='1'){
+    const body=document.getElementById('why-questions-body');
+    const chev=document.getElementById('why-questions-chev');
+    if(body){body.classList.add('open');if(chev)chev.classList.add('open');}
+  }
+}
+
 function restoreWhyOpenState(){
   const was=localStorage.getItem('bp_why_open');
   if(was==='1'){
@@ -3058,6 +3101,7 @@ function restoreWhyOpenState(){
 
 function loadWhyAnswers(){
   const w=D.why||{};
+  restoreWhyQuestionsState();
   renderWhyQuestions();
   updateWhyProgress();
   updateWhyTimestamp();
@@ -5254,7 +5298,7 @@ window.addEventListener('beforeunload',e=>{
     <button class="hype-close" onclick="closeHype()">Let's get it →</button>
   </div>
 </div>
-<div class="version-toast" id="version-toast">✦ Build Jun 04 · 8:45 PM CT ✓</div>
+<div class="version-toast" id="version-toast">✦ Build Jun 04 · 9:22 PM CT ✓</div>
 <!-- TIMELINE FULLSCREEN MODAL -->
 <div class="tl-fs-overlay hidden" id="tl-fs-overlay">
   <div class="tl-fs-header">
