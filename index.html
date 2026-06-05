@@ -1531,6 +1531,7 @@ function restoreStoryTab(){
 
 /* ── DRAG AND DROP GOALS ─────────────────────────────────── */
 let dragCtx=null;
+let goalsHaveRendered=false;
 
 function dragGoalStart(e, bucket, sub, cat, idx){
   dragCtx={bucket,sub,cat,idx};
@@ -2720,10 +2721,10 @@ function renderGoals(){
   const currentOpen=[];
   document.querySelectorAll('.sub-goals.open,.cat-goals.open').forEach(el=>{if(el.id)currentOpen.push(el.id);});
   if(currentOpen.length>0){try{localStorage.setItem('bp_goals_open',JSON.stringify(currentOpen));}catch(e){}}
-  // Use current DOM state as wasOpen; only fall back to localStorage on first load (empty DOM)
   const wasOpen={};
   currentOpen.forEach(id=>wasOpen[id]=true);
-  const isFirstLoad=currentOpen.length===0;
+  // isFirstLoad: true only on actual page load before goals have ever rendered
+  const isFirstLoad=!goalsHaveRendered;
 
   const c=document.getElementById('buckets-container');c.innerHTML='';
   [{key:'personal',label:'Personal',cls:'personal',icon:'🌱'},{key:'professional',label:'Professional',cls:'professional',icon:'🚀'}].forEach(b=>{
@@ -2821,6 +2822,7 @@ function renderGoals(){
     try{const raw=localStorage.getItem('bp_goals_open');if(raw)JSON.parse(raw).forEach(id=>wasOpen[id]=true);}catch(e){}
   }
   restoreOpenState(wasOpen);
+  goalsHaveRendered=true;
   syncBucketToggleLabels();
   initMacroTimelines();
 }
@@ -5310,7 +5312,7 @@ window.addEventListener('beforeunload',e=>{
     <button class="hype-close" onclick="closeHype()">Let's get it →</button>
   </div>
 </div>
-<div class="version-toast" id="version-toast">✦ Build Jun 04 · 11:02 PM CT ✓</div>
+<div class="version-toast" id="version-toast">✦ Build Jun 04 · 11:18 PM CT ✓</div>
 <!-- TIMELINE FULLSCREEN MODAL -->
 <div class="tl-fs-overlay hidden" id="tl-fs-overlay">
   <div class="tl-fs-header">
