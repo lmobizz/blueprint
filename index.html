@@ -1532,6 +1532,11 @@ function restoreStoryTab(){
 /* ── DRAG AND DROP GOALS ─────────────────────────────────── */
 let dragCtx=null;
 let goalsHaveRendered=false;
+// Clear stale goals open state from before collapse-by-default was introduced
+if(localStorage.getItem('bp_goals_open_v2')!=='1'){
+  localStorage.removeItem('bp_goals_open');
+  localStorage.setItem('bp_goals_open_v2','1');
+}
 
 function dragGoalStart(e, bucket, sub, cat, idx){
   dragCtx={bucket,sub,cat,idx};
@@ -2404,17 +2409,8 @@ function getOpenState(){
 }
 
 function restoreOpenState(open){
-  const hasSaved=Object.keys(open).length>0;
-  // If nothing saved yet (first load), default all cat-goals open
-  if(!hasSaved){
-    document.querySelectorAll('.cat-goals').forEach(el=>{
-      el.classList.add('open');
-      const chev=document.getElementById('chev-'+el.id);
-      if(chev)chev.classList.add('open');
-    });
-    return;
-  }
-  // Apply exact saved state: open what's in list, close what isn't
+  // Apply exact saved state: open what's in list, close everything else
+  // Default is collapsed — users open what they want and that state persists
   document.querySelectorAll('.sub-goals,.cat-goals').forEach(el=>{
     if(!el.id)return;
     const on=!!open[el.id];
@@ -5312,7 +5308,7 @@ window.addEventListener('beforeunload',e=>{
     <button class="hype-close" onclick="closeHype()">Let's get it →</button>
   </div>
 </div>
-<div class="version-toast" id="version-toast">✦ Build Jun 04 · 11:18 PM CT ✓</div>
+<div class="version-toast" id="version-toast">✦ Build Jun 04 · 11:35 PM CT ✓</div>
 <!-- TIMELINE FULLSCREEN MODAL -->
 <div class="tl-fs-overlay hidden" id="tl-fs-overlay">
   <div class="tl-fs-header">
