@@ -911,6 +911,52 @@ body.dark-mode .profile-dropdown{background:var(--paper2);border-color:var(--lin
 .why-questions-chev.open{transform:rotate(90deg)}
 .why-questions-body{display:none;padding:1.25rem 1.25rem .5rem}
 .why-questions-body.open{display:block}
+
+/* ── IMPORTANT DON'T FORGETS ────────────────────────────── */
+.idf-card{background:var(--paper2);border:1px solid var(--line);border-radius:var(--r2);margin-top:1.5rem}
+.idf-header{display:flex;align-items:center;gap:10px;padding:.9rem 1.1rem;cursor:pointer;user-select:none;transition:background .15s;border-radius:var(--r2)}
+.idf-header:hover{background:var(--paper3)}
+.idf-title{font-size:13px;font-weight:700;color:var(--ink1);flex:1}
+.idf-count{font-size:11px;color:var(--ink3);background:var(--paper3);padding:2px 8px;border-radius:10px}
+.idf-chev{font-size:10px;color:var(--ink3);transition:transform .2s}
+.idf-chev.open{transform:rotate(90deg)}
+.idf-body{display:none;padding:0 1.1rem 1.1rem}
+.idf-body.open{display:block}
+.idf-list{display:flex;flex-direction:column;gap:8px;margin-bottom:1rem}
+.idf-item{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--paper);border:1px solid var(--line);border-radius:var(--r);transition:all .15s}
+.idf-item.done{opacity:.45}
+.idf-item.urgent{border-left:3px solid var(--rose)!important}
+.idf-item.warn{border-left:3px solid #C9900A!important}
+.idf-item-icon{font-size:16px;flex-shrink:0}
+.idf-item-main{flex:1;min-width:0}
+.idf-item-title{font-size:13px;font-weight:600;color:var(--ink1);margin-bottom:2px}
+.idf-item-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.idf-item-value{font-size:11px;color:#4D9E7A;font-weight:600}
+.idf-item-deadline{font-size:11px;color:var(--ink3)}
+.idf-item-deadline.urgent{color:var(--rose);font-weight:600}
+.idf-item-deadline.warn{color:#C9900A;font-weight:600}
+.idf-item-cat{font-size:10px;color:var(--ink3);background:var(--paper2);padding:1px 6px;border-radius:8px}
+.idf-item-notes{font-size:11px;color:var(--ink3);margin-top:3px;font-style:italic}
+.idf-item-actions{display:flex;gap:6px;align-items:center;flex-shrink:0}
+.idf-done-btn{font-size:10px;padding:3px 8px;border-radius:6px;border:1px solid var(--line);background:transparent;color:var(--ink3);cursor:pointer;transition:all .15s;font-family:inherit}
+.idf-done-btn:hover{border-color:#4D9E7A;color:#4D9E7A}
+.idf-del-btn{font-size:11px;color:var(--ink3);cursor:pointer;padding:2px 5px;border-radius:4px;transition:all .15s;background:transparent;border:none}
+.idf-del-btn:hover{color:var(--rose)}
+.idf-add-form{border-top:1px solid var(--line);padding-top:1rem;display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.idf-input{width:100%;box-sizing:border-box;background:var(--paper);border:1px solid var(--line);border-radius:var(--r);padding:7px 10px;font-size:12px;color:var(--ink1);font-family:inherit;outline:none;transition:border-color .15s}
+.idf-input:focus{border-color:var(--gold)}
+.idf-add-btn{grid-column:1/-1;background:var(--gold-l);color:var(--gold);border:1px solid var(--gold);border-radius:var(--r);padding:7px 16px;font-size:12px;font-weight:600;font-family:inherit;cursor:pointer;transition:all .15s}
+.idf-add-btn:hover{background:var(--gold);color:#0E0D0C}
+.idf-widget{background:var(--paper2);border:1px solid var(--line);border-radius:var(--r2);padding:1rem 1.1rem;margin-bottom:1.25rem}
+.idf-widget-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3);margin-bottom:.75rem}
+.idf-widget-item{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--line)}
+.idf-widget-item:last-child{border-bottom:none}
+.idf-widget-item-title{font-size:12px;font-weight:600;color:var(--ink1);flex:1}
+.idf-widget-item-value{font-size:11px;color:#4D9E7A;font-weight:600}
+.idf-widget-item-days{font-size:11px;font-weight:600;padding:1px 7px;border-radius:8px}
+.idf-widget-item-days.urgent{background:rgba(220,80,80,.12);color:var(--rose)}
+.idf-widget-item-days.warn{background:rgba(201,144,10,.12);color:#C9900A}
+.idf-widget-item-days.ok{background:rgba(77,158,122,.1);color:#4D9E7A}
 </style>
 </head>
 <body>
@@ -1071,6 +1117,7 @@ body.dark-mode .profile-dropdown{background:var(--paper2);border-color:var(--lin
         </div>
       </div>
       <div class="todo-main-col">
+        <div id="idf-widget" class="idf-widget" style="display:none"></div>
         <div id="habits-today-wrap"></div>
         <div class="mobile-filter-row">
           <select onchange="setTodoFilter(this.value,this);updateFilterCounts()">
@@ -1168,6 +1215,31 @@ body.dark-mode .profile-dropdown{background:var(--paper2);border-color:var(--lin
           <span class="macro-tl-chev" id="macro-chev-professional">▶</span>
         </div>
         <div class="macro-tl-body" id="macro-body-professional"></div>
+      </div>
+    </div>
+    <div class="idf-card" id="idf-card">
+      <div class="idf-header" onclick="toggleIdf()">
+        <span style="font-size:16px">📌</span>
+        <span class="idf-title">Important — Don't Forgets</span>
+        <span class="idf-count" id="idf-count"></span>
+        <span class="idf-chev" id="idf-chev">▶</span>
+      </div>
+      <div class="idf-body" id="idf-body">
+        <div class="idf-list" id="idf-list"></div>
+        <div class="idf-add-form">
+          <input class="idf-input" style="grid-column:1/-1" id="idf-title-input" placeholder="What can't you forget? e.g. EyeMed insurance"/>
+          <input class="idf-input" id="idf-value-input" placeholder="Value (e.g. $200)"/>
+          <input class="idf-input" id="idf-deadline-input" type="date"/>
+          <select class="idf-input" id="idf-cat-input">
+            <option value="Insurance">Insurance</option>
+            <option value="Benefits">Benefits</option>
+            <option value="Credits">Credits</option>
+            <option value="Subscriptions">Subscriptions</option>
+            <option value="Other">Other</option>
+          </select>
+          <input class="idf-input" id="idf-notes-input" placeholder="Notes (optional)"/>
+          <button class="idf-add-btn" onclick="addIdfItem()">+ Add reminder</button>
+        </div>
       </div>
     </div>
   </div>
@@ -1770,6 +1842,8 @@ async function loadFromCloud(){
       updateFilterCounts();
       fetchMorningQuote();
       restoreActiveTab();
+      renderIdfWidget();
+      restoreIdfState();
       restoreWhyOpenState();
       restoreStoryTab();
     }catch(e){}
@@ -1793,6 +1867,8 @@ async function loadFromCloud(){
       restoreActiveTab();
       restoreWhyOpenState();
       restoreStoryTab();
+      renderIdfWidget();
+      restoreIdfState();
     } else {
       updateBackupStatus('Ready');
     }
@@ -1864,9 +1940,9 @@ function showView(v,btn){
   document.getElementById('view-'+v).classList.add('active');
   btn.classList.add('active');
   localStorage.setItem('bp_active_tab',v);
-  if(v==='goals')renderGoals();
+  if(v==='goals'){renderGoals();restoreIdfState();}
   if(v==='story'){renderStory();restoreStoryTab();}
-  if(v==='overview')renderOverview();
+  if(v==='overview'){renderOverview();renderIdfWidget();}
   if(v==='todo'){renderTodos();updateFilterCounts();}
   if(v==='people')renderPeople();
   if(v==='calendar')renderCalendar();
@@ -1936,6 +2012,159 @@ function allGoals(){
   }
   return a;
 }
+/* ── IMPORTANT DON'T FORGETS ────────────────────────────── */
+const IDF_ICONS={Insurance:'🏥',Benefits:'🎁',Credits:'💳',Subscriptions:'📦',Other:'📌'};
+
+function idfDaysLeft(deadline){
+  if(!deadline) return null;
+  return Math.round((new Date(deadline+'T12:00:00')-NOW)/(1000*60*60*24));
+}
+
+function idfUrgencyClass(days){
+  if(days===null) return '';
+  if(days<=30) return 'urgent';
+  if(days<=60) return 'warn';
+  return 'ok';
+}
+
+function idfDeadlineLabel(deadline){
+  if(!deadline) return '';
+  const days=idfDaysLeft(deadline);
+  if(days<0) return `Expired ${Math.abs(days)}d ago`;
+  if(days===0) return 'Due today!';
+  if(days===1) return 'Due tomorrow!';
+  if(days<=30) return `${days}d left`;
+  return new Date(deadline+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'2-digit'});
+}
+
+function renderIdf(){
+  const items=D.reminders||[];
+  const list=document.getElementById('idf-list');
+  const count=document.getElementById('idf-count');
+  if(!list) return;
+  const pending=items.filter(i=>!i.done);
+  if(count) count.textContent=pending.length>0?`${pending.length} pending`:'';
+  if(!items.length){
+    list.innerHTML='<div style="font-size:12px;color:var(--ink3);padding:.5rem 0">No reminders yet — add one below.</div>';
+    return;
+  }
+  const sorted=[...items].sort((a,b)=>{
+    if(a.done!==b.done) return a.done?1:-1;
+    if(!a.deadline) return 1;
+    if(!b.deadline) return -1;
+    return new Date(a.deadline)-new Date(b.deadline);
+  });
+  list.innerHTML=sorted.map(item=>{
+    const days=idfDaysLeft(item.deadline);
+    const urg=idfUrgencyClass(days);
+    const dlLabel=idfDeadlineLabel(item.deadline);
+    return `<div class="idf-item${item.done?' done':''}${!item.done&&urg!=='ok'?' '+urg:''}" id="idf-${item.id}">
+      <span class="idf-item-icon">${IDF_ICONS[item.category]||'📌'}</span>
+      <div class="idf-item-main">
+        <div class="idf-item-title">${esc(item.title)}</div>
+        <div class="idf-item-meta">
+          ${item.value?`<span class="idf-item-value">${esc(item.value)}</span>`:''}
+          ${dlLabel?`<span class="idf-item-deadline${!item.done?' '+urg:''}">${dlLabel}</span>`:''}
+          <span class="idf-item-cat">${esc(item.category)}</span>
+        </div>
+        ${item.notes?`<div class="idf-item-notes">${esc(item.notes)}</div>`:''}
+      </div>
+      <div class="idf-item-actions">
+        <button class="idf-done-btn" onclick="toggleIdfDone(${item.id})">${item.done?'↩ Undo':'✓ Done'}</button>
+        <button class="idf-del-btn" onclick="deleteIdfItem(${item.id})">✕</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleIdf(){
+  const body=document.getElementById('idf-body');
+  const chev=document.getElementById('idf-chev');
+  if(!body) return;
+  const open=body.classList.toggle('open');
+  if(chev) chev.classList.toggle('open',open);
+  try{localStorage.setItem('bp_idf_open',open?'1':'0');}catch(e){}
+  if(open) renderIdf();
+}
+
+function restoreIdfState(){
+  const saved=localStorage.getItem('bp_idf_open');
+  if(saved==='1'){
+    const body=document.getElementById('idf-body');
+    const chev=document.getElementById('idf-chev');
+    if(body){body.classList.add('open');if(chev)chev.classList.add('open');renderIdf();}
+  }
+}
+
+function addIdfItem(){
+  const titleEl=document.getElementById('idf-title-input');
+  const title=titleEl.value.trim();
+  if(!title) return;
+  const value=document.getElementById('idf-value-input').value.trim();
+  const deadline=document.getElementById('idf-deadline-input').value;
+  const category=document.getElementById('idf-cat-input').value;
+  const notes=document.getElementById('idf-notes-input').value.trim();
+  if(!D.reminders) D.reminders=[];
+  D.reminders.push({id:Date.now(),title,value,deadline,category,notes,done:false});
+  save();
+  renderIdf();
+  renderIdfWidget();
+  ['idf-title-input','idf-value-input','idf-deadline-input','idf-notes-input'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.value='';
+  });
+}
+
+function toggleIdfDone(id){
+  const item=D.reminders&&D.reminders.find(r=>r.id===id);
+  if(!item) return;
+  item.done=!item.done;
+  save();renderIdf();renderIdfWidget();
+}
+
+function deleteIdfItem(id){
+  if(!D.reminders) return;
+  const idx=D.reminders.findIndex(r=>r.id===id);
+  if(idx<0) return;
+  const removed=D.reminders.splice(idx,1)[0];
+  save();renderIdf();renderIdfWidget();
+  let undone=false;
+  const toast=document.createElement('div');
+  toast.style.cssText='position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#1a1812;color:#F0EBE1;font-size:12px;padding:9px 16px;border-radius:8px;z-index:9999;display:flex;align-items:center;gap:12px;border:1px solid rgba(184,134,11,.3);box-shadow:0 4px 16px rgba(0,0,0,.4)';
+  const msg=document.createElement('span');msg.textContent='Reminder deleted — ';
+  const undo=document.createElement('span');
+  undo.textContent='Undo (10s)';
+  undo.style.cssText='color:var(--gold);cursor:pointer;font-weight:600;text-decoration:underline';
+  toast.appendChild(msg);toast.appendChild(undo);
+  document.body.appendChild(toast);
+  let secs=10;
+  const iv=setInterval(()=>{secs--;undo.textContent=`Undo (${secs}s)`;if(secs<=0){clearInterval(iv);if(!undone)toast.remove();}},1000);
+  undo.onclick=()=>{undone=true;clearInterval(iv);toast.remove();if(!D.reminders)D.reminders=[];D.reminders.splice(idx,0,removed);save();renderIdf();renderIdfWidget();};
+  setTimeout(()=>{if(!undone)toast.remove();},10500);
+}
+
+function renderIdfWidget(){
+  const widget=document.getElementById('idf-widget');
+  if(!widget) return;
+  const items=(D.reminders||[]).filter(r=>!r.done&&r.deadline);
+  const soon=items.filter(r=>{const d=idfDaysLeft(r.deadline);return d!==null&&d<=90;})
+    .sort((a,b)=>new Date(a.deadline)-new Date(b.deadline));
+  if(!soon.length){widget.style.display='none';return;}
+  widget.style.display='block';
+  widget.innerHTML=`<div class="idf-widget-title">📌 Don't forget</div>`+
+    soon.map(item=>{
+      const days=idfDaysLeft(item.deadline);
+      const urg=idfUrgencyClass(days);
+      const dlLabel=idfDeadlineLabel(item.deadline);
+      return `<div class="idf-widget-item">
+        <span style="font-size:14px">${IDF_ICONS[item.category]||'📌'}</span>
+        <span class="idf-widget-item-title">${esc(item.title)}</span>
+        ${item.value?`<span class="idf-widget-item-value">${esc(item.value)}</span>`:''}
+        <span class="idf-widget-item-days ${urg}">${dlLabel}</span>
+      </div>`;
+    }).join('');
+}
+
 function renderOverview(){
   checkReflection();
   fetchMorningQuote();
