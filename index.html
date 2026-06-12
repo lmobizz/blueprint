@@ -957,6 +957,28 @@ body.dark-mode .profile-dropdown{background:var(--paper2);border-color:var(--lin
 .idf-widget-item-days.urgent{background:rgba(220,80,80,.12);color:var(--rose)}
 .idf-widget-item-days.warn{background:rgba(201,144,10,.12);color:#C9900A}
 .idf-widget-item-days.ok{background:rgba(77,158,122,.1);color:#4D9E7A}
+
+/* ── DAILY AFFIRMATIONS ──────────────────────────────────── */
+.affirmations-card{background:var(--paper2);border:1px solid var(--line);border-left:3px solid var(--gold);border-radius:var(--r2);margin-bottom:1rem}
+.affirmations-header{display:flex;align-items:center;gap:10px;padding:.85rem 1.1rem;cursor:pointer;user-select:none;transition:background .15s}
+.affirmations-header:hover{background:var(--paper3)}
+.affirmations-title{font-size:12px;font-weight:700;color:var(--gold);letter-spacing:.04em;flex:1;text-transform:uppercase}
+.affirmations-chev{font-size:10px;color:var(--ink3);transition:transform .2s}
+.affirmations-chev.open{transform:rotate(90deg)}
+.affirmations-body{display:none;padding:0 1.1rem 1rem}
+.affirmations-body.open{display:block}
+.affirmation-item{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid var(--line)}
+.affirmation-item:last-child{border-bottom:none}
+.affirmation-text{flex:1;font-size:13px;color:var(--ink1);line-height:1.5;font-family:'Playfair Display',serif;font-style:italic}
+.affirmation-date{font-size:10px;color:var(--ink3);flex-shrink:0;margin-top:2px}
+.affirmation-del{font-size:11px;color:var(--ink3);cursor:pointer;padding:2px 5px;border-radius:4px;transition:all .15s;background:transparent;border:none;flex-shrink:0}
+.affirmation-del:hover{color:var(--rose)}
+.affirmation-add-row{display:flex;gap:8px;margin-top:.75rem;align-items:flex-end}
+.affirmation-textarea{flex:1;background:var(--paper);border:1px solid var(--line);border-radius:var(--r);padding:8px 10px;font-size:13px;color:var(--ink1);font-family:'Playfair Display',serif;font-style:italic;outline:none;resize:none;min-height:60px;transition:border-color .15s;line-height:1.5}
+.affirmation-textarea:focus{border-color:var(--gold)}
+.affirmation-add-btn{background:var(--gold-l);color:var(--gold);border:1px solid var(--gold);border-radius:var(--r);padding:7px 14px;font-size:12px;font-weight:600;font-family:inherit;cursor:pointer;transition:all .15s;white-space:nowrap}
+.affirmation-add-btn:hover{background:var(--gold);color:#0E0D0C}
+.affirmations-empty{font-size:12px;color:var(--ink3);padding:.5rem 0;font-style:italic}
 </style>
 </head>
 <body>
@@ -1306,6 +1328,21 @@ body.dark-mode .profile-dropdown{background:var(--paper2);border-color:var(--lin
 
     </div><!-- end story-panel-why -->
     <div id="story-panel-story">
+
+    <div class="affirmations-card" id="affirmations-card">
+      <div class="affirmations-header" onclick="toggleAffirmations()">
+        <span style="font-size:15px">✨</span>
+        <span class="affirmations-title">Daily Affirmations</span>
+        <span class="affirmations-chev" id="affirmations-chev">▶</span>
+      </div>
+      <div class="affirmations-body" id="affirmations-body">
+        <div id="affirmations-list"></div>
+        <div class="affirmation-add-row">
+          <textarea class="affirmation-textarea" id="affirmation-input" placeholder="Write an affirmation..." rows="2"></textarea>
+          <button class="affirmation-add-btn" onclick="addAffirmation()">+ Add</button>
+        </div>
+      </div>
+    </div>
 
     <div class="narrative-card" id="narrative-card">
       <div class="narrative-label" onclick="toggleNarrative()" style="cursor:pointer;user-select:none">
@@ -1824,8 +1861,21 @@ function save(){
       updateBackupStatus('⚠ Save failed — check connection');
       console.error('Save error:',e);
     }
-  },300);
+  },800);
 }
+
+// Flush any pending save before tab closes
+window.addEventListener('beforeunload', ()=>{
+  if(saveTimer){
+    clearTimeout(saveTimer);
+    if(currentUser&&sbClient){
+      try{
+        localStorage.setItem('blueprint_cache_'+currentUser.id, JSON.stringify(D));
+        sbClient.from('blueprint_data').upsert({user_id:currentUser.id,data:D,updated_at:new Date().toISOString()},{onConflict:'user_id'});
+      }catch(e){}
+    }
+  }
+});
 
 async function loadFromCloud(){
   if(!currentUser||!sbClient)return;
@@ -1846,6 +1896,7 @@ async function loadFromCloud(){
       restoreIdfState();
       restoreWhyOpenState();
       restoreStoryTab();
+      restoreAffirmationsState();
     }catch(e){}
   }
 
@@ -1869,6 +1920,7 @@ async function loadFromCloud(){
       restoreStoryTab();
       renderIdfWidget();
       restoreIdfState();
+      restoreAffirmationsState();
     } else {
       updateBackupStatus('Ready');
     }
@@ -1895,6 +1947,7 @@ function applyData(cloud){
   D.narrativeDate=cloud.narrativeDate||0;
   D.why=cloud.why||{};
   D.reminders=cloud.reminders||[];
+  D.affirmations=cloud.affirmations||[];
   if(cloud.goals) D.goals=cloud.goals;
   if(!D.people) D.people=[];
   let needsSave=false;
@@ -1942,7 +1995,7 @@ function showView(v,btn){
   btn.classList.add('active');
   localStorage.setItem('bp_active_tab',v);
   if(v==='goals'){renderGoals();restoreIdfState();}
-  if(v==='story'){renderStory();restoreStoryTab();}
+  if(v==='story'){renderStory();restoreStoryTab();restoreAffirmationsState();}
   if(v==='overview'){renderOverview();renderIdfWidget();}
   if(v==='todo'){renderTodos();updateFilterCounts();}
   if(v==='people')renderPeople();
@@ -2164,6 +2217,74 @@ function renderIdfWidget(){
         <span class="idf-widget-item-days ${urg}">${dlLabel}</span>
       </div>`;
     }).join('');
+}
+
+/* ── DAILY AFFIRMATIONS ──────────────────────────────────── */
+function toggleAffirmations(){
+  const body=document.getElementById('affirmations-body');
+  const chev=document.getElementById('affirmations-chev');
+  if(!body) return;
+  const open=body.classList.toggle('open');
+  if(chev) chev.classList.toggle('open',open);
+  try{localStorage.setItem('bp_affirm_open',open?'1':'0');}catch(e){}
+  if(open) renderAffirmations();
+}
+
+function restoreAffirmationsState(){
+  const saved=localStorage.getItem('bp_affirm_open');
+  if(saved==='1'){
+    const body=document.getElementById('affirmations-body');
+    const chev=document.getElementById('affirmations-chev');
+    if(body){body.classList.add('open');if(chev)chev.classList.add('open');renderAffirmations();}
+  }
+}
+
+function renderAffirmations(){
+  const list=document.getElementById('affirmations-list');
+  if(!list) return;
+  const items=(D.affirmations||[]).slice().reverse();
+  if(!items.length){
+    list.innerHTML='<div class="affirmations-empty">No affirmations yet — add one below.</div>';
+    return;
+  }
+  list.innerHTML=items.map(a=>`
+    <div class="affirmation-item" id="affirm-${a.id}">
+      <span class="affirmation-text">"${esc(a.text)}"</span>
+      <span class="affirmation-date">${new Date(a.date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'2-digit'})}</span>
+      <button class="affirmation-del" onclick="deleteAffirmation(${a.id})">✕</button>
+    </div>`).join('');
+}
+
+function addAffirmation(){
+  const ta=document.getElementById('affirmation-input');
+  const text=ta.value.trim();
+  if(!text) return;
+  if(!D.affirmations) D.affirmations=[];
+  D.affirmations.push({id:Date.now(),text,date:Date.now()});
+  save();
+  renderAffirmations();
+  ta.value='';
+}
+
+function deleteAffirmation(id){
+  if(!D.affirmations) return;
+  const idx=D.affirmations.findIndex(a=>a.id===id);
+  if(idx<0) return;
+  const removed=D.affirmations.splice(idx,1)[0];
+  save();
+  renderAffirmations();
+  // Undo toast
+  let undone=false;
+  const toast=document.createElement('div');
+  toast.style.cssText='position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#1a1812;color:#F0EBE1;font-size:12px;padding:9px 16px;border-radius:8px;z-index:9999;display:flex;align-items:center;gap:12px;border:1px solid rgba(184,134,11,.3);box-shadow:0 4px 16px rgba(0,0,0,.4)';
+  const msg=document.createElement('span');msg.textContent='Affirmation deleted — ';
+  const undo=document.createElement('span');
+  undo.textContent='Undo (10s)';undo.style.cssText='color:var(--gold);cursor:pointer;font-weight:600;text-decoration:underline';
+  toast.appendChild(msg);toast.appendChild(undo);document.body.appendChild(toast);
+  let secs=10;
+  const iv=setInterval(()=>{secs--;undo.textContent=`Undo (${secs}s)`;if(secs<=0){clearInterval(iv);if(!undone)toast.remove();}},1000);
+  undo.onclick=()=>{undone=true;clearInterval(iv);toast.remove();if(!D.affirmations)D.affirmations=[];D.affirmations.splice(idx,0,removed);save();renderAffirmations();};
+  setTimeout(()=>{if(!undone)toast.remove();},10500);
 }
 
 function renderOverview(){
@@ -5539,7 +5660,7 @@ window.addEventListener('beforeunload',e=>{
     <button class="hype-close" onclick="closeHype()">Let's get it →</button>
   </div>
 </div>
-<div class="version-toast" id="version-toast">✦ Build Jun 09 · 4:48 PM CT ✓</div>
+<div class="version-toast" id="version-toast">✦ Build Jun 09 · 5:22 PM CT ✓</div>
 <!-- TIMELINE FULLSCREEN MODAL -->
 <div class="tl-fs-overlay hidden" id="tl-fs-overlay">
   <div class="tl-fs-header">
