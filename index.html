@@ -3159,13 +3159,16 @@ function renderGoals(){
     addSubRow.innerHTML=`<input class="add-sub-input" id="add-sub-input-${b.key}" placeholder="New bucket name…"/><button class="add-sub-btn" onclick="confirmAddSub('${b.key}')">+ Add</button>`;
     addSubRow.querySelector('input').onkeydown=e=>{if(e.key==='Enter')confirmAddSub(b.key);};
     card.appendChild(addSubRow);
+    const addSubRow2=document.createElement('div');
+    addSubRow2.style.cssText='display:flex;justify-content:flex-end;padding:6px 0 2px';
     const addSubBtn=document.createElement('button');
-    addSubBtn.textContent='+ Add bucket';
-    addSubBtn.style.cssText="font-family:'Syne',sans-serif;font-size:10px;color:var(--ink3);background:none;border:none;cursor:pointer;padding:4px 0 6px;letter-spacing:.04em;opacity:.5;width:100%;text-align:left";
-    addSubBtn.onmouseover=()=>{addSubBtn.style.opacity=1;addSubBtn.style.color='var(--gold)';};
-    addSubBtn.onmouseout=()=>{addSubBtn.style.opacity=.5;addSubBtn.style.color='var(--ink3)';};
+    addSubBtn.innerHTML='＋ Add bucket';
+    addSubBtn.style.cssText="font-family:'Syne',sans-serif;font-size:10px;color:var(--ink3);background:none;border:1px dashed var(--line);border-radius:12px;cursor:pointer;padding:3px 10px;letter-spacing:.04em;transition:all .2s";
+    addSubBtn.onmouseover=()=>{addSubBtn.style.borderColor='var(--gold)';addSubBtn.style.color='var(--gold)';};
+    addSubBtn.onmouseout=()=>{addSubBtn.style.borderColor='var(--line)';addSubBtn.style.color='var(--ink3)';};
     addSubBtn.onclick=()=>toggleAddSubRow(b.key);
-    card.appendChild(addSubBtn);
+    addSubRow2.appendChild(addSubBtn);
+    card.appendChild(addSubRow2);
     c.appendChild(card);
     const sw=card.querySelector('#sub-'+b.key);
     Object.keys(subs).forEach((sn)=>{
@@ -3216,6 +3219,7 @@ function renderGoals(){
           <span class="sub-label-wrap">
             <span class="sub-label" id="sublabel-${sid}">${esc(sn)}</span>
             <button class="sub-rename-btn" onclick="event.stopPropagation();startSubRename('${b.key}','${esc(sn)}','${sid}')" title="Rename">✎</button>
+            <button class="sub-rename-btn" onclick="event.stopPropagation();deleteSub('${b.key}','${esc(sn)}')" title="Delete bucket" style="color:var(--rose);opacity:0">✕</button>
           </span>
           <span class="sub-prog">${p}%</span>
           <span class="sub-count">${subGoals.length}</span>
@@ -4003,6 +4007,30 @@ function commitSubRename(bucketKey, oldName, newName, sid){
   delete D.goals[bucketKey][oldName];
   save();
   renderGoals();
+}
+
+function deleteSub(bucketKey, subName){
+  const removed=D.goals[bucketKey][subName];
+  delete D.goals[bucketKey][subName];
+  save();
+  renderGoals();
+  // Undo toast
+  let undone=false;
+  const toast=document.createElement('div');
+  toast.style.cssText='position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#1a1812;color:#F0EBE1;font-size:12px;padding:9px 16px;border-radius:8px;z-index:9999;display:flex;align-items:center;gap:12px;border:1px solid rgba(184,134,11,.3);box-shadow:0 4px 16px rgba(0,0,0,.4)';
+  const msg=document.createElement('span');msg.textContent=`"${subName}" deleted — `;
+  const undo=document.createElement('span');
+  undo.textContent='Undo (10s)';
+  undo.style.cssText='color:var(--gold);cursor:pointer;font-weight:600;text-decoration:underline';
+  toast.appendChild(msg);toast.appendChild(undo);document.body.appendChild(toast);
+  let secs=10;
+  const iv=setInterval(()=>{secs--;undo.textContent=`Undo (${secs}s)`;if(secs<=0){clearInterval(iv);if(!undone)toast.remove();}},1000);
+  undo.onclick=()=>{
+    undone=true;clearInterval(iv);toast.remove();
+    D.goals[bucketKey][subName]=removed;
+    save();renderGoals();
+  };
+  setTimeout(()=>{if(!undone)toast.remove();},10500);
 }
 
 function toggleAddSubRow(bucketKey){
