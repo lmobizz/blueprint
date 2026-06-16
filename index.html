@@ -987,6 +987,18 @@ body.dark-mode .profile-dropdown{background:var(--paper2);border-color:var(--lin
 .affirmation-add-btn{background:var(--gold-l);color:var(--gold);border:1px solid var(--gold);border-radius:var(--r);padding:7px 14px;font-size:12px;font-weight:600;font-family:inherit;cursor:pointer;transition:all .15s;white-space:nowrap}
 .affirmation-add-btn:hover{background:var(--gold);color:#0E0D0C}
 .affirmations-empty{font-size:12px;color:var(--ink3);padding:.5rem 0;font-style:italic}
+
+/* ── BUCKET/SUB RENAME & ADD ─────────────────────────────── */
+.sub-label-wrap{display:flex;align-items:center;gap:6px;flex:1;min-width:0}
+.sub-rename-btn{font-size:10px;color:var(--ink3);background:none;border:none;cursor:pointer;opacity:0;transition:opacity .15s;padding:1px 4px;border-radius:3px;flex-shrink:0}
+.sub-header:hover .sub-rename-btn{opacity:.6}
+.sub-rename-btn:hover{opacity:1!important;color:var(--gold)}
+.sub-rename-input{font-size:13px;font-weight:600;color:var(--ink1);background:var(--paper);border:1px solid var(--gold);border-radius:4px;padding:1px 6px;outline:none;width:160px;font-family:inherit}
+.add-sub-row{display:flex;gap:6px;padding:8px 0 4px;border-top:1px dashed var(--line);margin-top:6px}
+.add-sub-input{flex:1;background:var(--paper);border:1px solid var(--line);border-radius:var(--r);padding:6px 10px;font-size:12px;color:var(--ink1);font-family:inherit;outline:none;transition:border-color .15s}
+.add-sub-input:focus{border-color:var(--gold)}
+.add-sub-btn{background:var(--gold-l);color:var(--gold);border:1px solid var(--gold);border-radius:var(--r);padding:6px 12px;font-size:11px;font-weight:600;font-family:inherit;cursor:pointer;transition:all .15s;white-space:nowrap}
+.add-sub-btn:hover{background:var(--gold);color:#0E0D0C}
 </style>
 </head>
 <body>
@@ -1858,6 +1870,7 @@ function save(){
     try{
       // write to localStorage cache immediately
       localStorage.setItem('blueprint_cache_'+currentUser.id, JSON.stringify(D));
+      D._savedAt=Date.now();
       const{error}=await sbClient.from('blueprint_data').upsert({
         user_id:currentUser.id,
         data:D,
@@ -1916,9 +1929,14 @@ async function loadFromCloud(){
     const{data,error}=await Promise.race([fetchPromise,timeoutPromise]);
     if(error&&error.code!=='PGRST116'){throw error;}
     if(data?.data){
-      applyData(data.data);
-      checkRecurringTodos();
-      // update cache
+      // Only apply cloud data if it's newer than what we have locally
+      const localSavedAt=D._savedAt||0;
+      const cloudSavedAt=data.data._savedAt||0;
+      if(cloudSavedAt>=localSavedAt){
+        applyData(data.data);
+        checkRecurringTodos();
+      }
+      // Always update cache with whichever is newer
       localStorage.setItem('blueprint_cache_'+currentUser.id, JSON.stringify(D));
       updateBackupStatus('Saved to cloud · '+new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}));
       renderOverview();
@@ -3133,6 +3151,21 @@ function renderGoals(){
       </div>
       <div class="bucket-prog"><div class="bucket-prog-fill" style="width:${pct}%"></div></div>
       <div class="sub-buckets" id="sub-${b.key}"></div>`;
+    // Add 'Add bucket' row via JS (avoids template literal escaping issues)
+    const addSubRow=document.createElement('div');
+    addSubRow.className='add-sub-row';
+    addSubRow.id='add-sub-row-'+b.key;
+    addSubRow.style.display='none';
+    addSubRow.innerHTML=`<input class="add-sub-input" id="add-sub-input-${b.key}" placeholder="New bucket name…"/><button class="add-sub-btn" onclick="confirmAddSub('${b.key}')">+ Add</button>`;
+    addSubRow.querySelector('input').onkeydown=e=>{if(e.key==='Enter')confirmAddSub(b.key);};
+    card.appendChild(addSubRow);
+    const addSubBtn=document.createElement('button');
+    addSubBtn.textContent='+ Add bucket';
+    addSubBtn.style.cssText="font-family:'Syne',sans-serif;font-size:10px;color:var(--ink3);background:none;border:none;cursor:pointer;padding:4px 0 6px;letter-spacing:.04em;opacity:.5;width:100%;text-align:left";
+    addSubBtn.onmouseover=()=>{addSubBtn.style.opacity=1;addSubBtn.style.color='var(--gold)';};
+    addSubBtn.onmouseout=()=>{addSubBtn.style.opacity=.5;addSubBtn.style.color='var(--ink3)';};
+    addSubBtn.onclick=()=>toggleAddSubRow(b.key);
+    card.appendChild(addSubBtn);
     c.appendChild(card);
     const sw=card.querySelector('#sub-'+b.key);
     Object.keys(subs).forEach((sn)=>{
@@ -3180,7 +3213,10 @@ function renderGoals(){
       el.innerHTML=`
         <div class="sub-header" onclick="toggleSub('${sid}')">
           <span class="chevron" id="chev-${sid}">▶</span>
-          <span class="sub-label">${esc(sn)}</span>
+          <span class="sub-label-wrap">
+            <span class="sub-label" id="sublabel-${sid}">${esc(sn)}</span>
+            <button class="sub-rename-btn" onclick="event.stopPropagation();startSubRename('${b.key}','${esc(sn)}','${sid}')" title="Rename">✎</button>
+          </span>
           <span class="sub-prog">${p}%</span>
           <span class="sub-count">${subGoals.length}</span>
         </div>
@@ -3941,6 +3977,52 @@ document.addEventListener('keydown',e=>{
     toggleGoalsFullscreen();
   }
 });
+
+/* ── BUCKET RENAME & ADD SUB ─────────────────────────────── */
+function startSubRename(bucketKey, subName, sid){
+  const label=document.getElementById('sublabel-'+sid);
+  if(!label) return;
+  const input=document.createElement('input');
+  input.className='sub-rename-input';
+  input.value=subName;
+  input.onclick=e=>e.stopPropagation();
+  input.onkeydown=e=>{
+    if(e.key==='Enter') commitSubRename(bucketKey,subName,input.value.trim(),sid);
+    if(e.key==='Escape') renderGoals();
+  };
+  input.onblur=()=>commitSubRename(bucketKey,subName,input.value.trim(),sid);
+  label.parentElement.replaceChild(input,label);
+  input.focus();input.select();
+}
+
+function commitSubRename(bucketKey, oldName, newName, sid){
+  if(!newName||newName===oldName){renderGoals();return;}
+  if(D.goals[bucketKey][newName]){alert('A bucket with that name already exists.');renderGoals();return;}
+  // Rename the key in D.goals
+  D.goals[bucketKey][newName]=D.goals[bucketKey][oldName];
+  delete D.goals[bucketKey][oldName];
+  save();
+  renderGoals();
+}
+
+function toggleAddSubRow(bucketKey){
+  const row=document.getElementById('add-sub-row-'+bucketKey);
+  const input=document.getElementById('add-sub-input-'+bucketKey);
+  if(!row) return;
+  const showing=row.style.display!=='none'&&row.style.display!=='';
+  row.style.display=showing?'none':'flex';
+  if(!showing&&input){input.focus();}
+}
+
+function confirmAddSub(bucketKey){
+  const input=document.getElementById('add-sub-input-'+bucketKey);
+  const name=input?.value.trim();
+  if(!name) return;
+  if(D.goals[bucketKey][name]){alert('A bucket with that name already exists.');return;}
+  D.goals[bucketKey][name]={};
+  save();
+  renderGoals();
+}
 
 function toggleSub(sid){
   const g=document.getElementById('goals-'+sid);
@@ -5695,7 +5777,7 @@ window.addEventListener('beforeunload',e=>{
     <button class="hype-close" onclick="closeHype()">Let's get it →</button>
   </div>
 </div>
-<div class="version-toast" id="version-toast">✦ Build Jun 12 · 12:18 PM CT ✓</div>
+<div class="version-toast" id="version-toast">✦ Build Jun 12 · 1:05 PM CT ✓</div>
 <!-- TIMELINE FULLSCREEN MODAL -->
 <div class="tl-fs-overlay hidden" id="tl-fs-overlay">
   <div class="tl-fs-header">
