@@ -1100,9 +1100,34 @@ body.dark-mode .profile-dropdown{background:var(--paper2);border-color:var(--lin
     <div id="recent-timeline-wrap">
       <div id="recent-timeline"></div>
     </div>
-    <div style="display:flex;justify-content:center;margin-top:2.5rem;padding-top:1.5rem;border-top:1px solid var(--line)">
-      <button onclick="exportPDF()" style="font-family:'Syne',sans-serif;font-size:13px;font-weight:500;padding:10px 24px;border-radius:20px;border:1px solid var(--line);background:var(--paper);color:var(--ink2);cursor:pointer;display:flex;align-items:center;gap:8px;transition:all .2s" onmouseover="this.style.borderColor='var(--gold)';this.style.color='var(--gold)';this.style.background='var(--gold-l)'" onmouseout="this.style.borderColor='var(--line)';this.style.color='var(--ink2)';this.style.background='var(--paper)'">
-        ⬇ Export my Blueprint
+    <div class="idf-card" id="idf-card" style="margin-top:1.5rem">
+      <div class="idf-header" onclick="toggleIdf()">
+        <span style="font-size:16px">📌</span>
+        <span class="idf-title">Perks & Benefits</span>
+        <span class="idf-count" id="idf-count"></span>
+        <span class="idf-chev" id="idf-chev">▶</span>
+      </div>
+      <div class="idf-body" id="idf-body">
+        <div class="idf-list" id="idf-list"></div>
+        <div class="idf-add-form">
+          <input class="idf-input" style="grid-column:1/-1" id="idf-title-input" placeholder="Add a perk, benefit, or reminder..."/>
+          <input class="idf-input" id="idf-value-input" placeholder="Value (e.g. $200)"/>
+          <input class="idf-input" id="idf-deadline-input" type="date"/>
+          <select class="idf-input" id="idf-cat-input">
+            <option value="Insurance">Insurance</option>
+            <option value="Benefits">Benefits</option>
+            <option value="Credits">Credits</option>
+            <option value="Subscriptions">Subscriptions</option>
+            <option value="Other">Other</option>
+          </select>
+          <input class="idf-input" id="idf-notes-input" placeholder="Notes (optional)"/>
+          <button class="idf-add-btn" onclick="addIdfItem()">+ Add reminder</button>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:flex-end;margin-top:2rem;padding-top:1rem;border-top:1px solid var(--line)">
+      <button onclick="exportPDF()" style="font-family:'Syne',sans-serif;font-size:11px;font-weight:400;padding:5px 12px;border-radius:12px;border:1px solid var(--line);background:transparent;color:var(--ink3);cursor:pointer;transition:all .2s" onmouseover="this.style.borderColor='var(--gold)';this.style.color='var(--gold)'" onmouseout="this.style.borderColor='var(--line)';this.style.color='var(--ink3)'">
+        ⬇ Export
       </button>
     </div>
   </div>
@@ -1245,31 +1270,6 @@ body.dark-mode .profile-dropdown{background:var(--paper2);border-color:var(--lin
           <span class="macro-tl-chev" id="macro-chev-professional">▶</span>
         </div>
         <div class="macro-tl-body" id="macro-body-professional"></div>
-      </div>
-    </div>
-    <div class="idf-card" id="idf-card">
-      <div class="idf-header" onclick="toggleIdf()">
-        <span style="font-size:16px">📌</span>
-        <span class="idf-title">Perks & Benefits</span>
-        <span class="idf-count" id="idf-count"></span>
-        <span class="idf-chev" id="idf-chev">▶</span>
-      </div>
-      <div class="idf-body" id="idf-body">
-        <div class="idf-list" id="idf-list"></div>
-        <div class="idf-add-form">
-          <input class="idf-input" style="grid-column:1/-1" id="idf-title-input" placeholder="Add a perk, benefit, or reminder..."/>
-          <input class="idf-input" id="idf-value-input" placeholder="Value (e.g. $200)"/>
-          <input class="idf-input" id="idf-deadline-input" type="date"/>
-          <select class="idf-input" id="idf-cat-input">
-            <option value="Insurance">Insurance</option>
-            <option value="Benefits">Benefits</option>
-            <option value="Credits">Credits</option>
-            <option value="Subscriptions">Subscriptions</option>
-            <option value="Other">Other</option>
-          </select>
-          <input class="idf-input" id="idf-notes-input" placeholder="Notes (optional)"/>
-          <button class="idf-add-btn" onclick="addIdfItem()">+ Add reminder</button>
-        </div>
       </div>
     </div>
   </div>
@@ -2002,9 +2002,9 @@ function showView(v,btn){
   document.getElementById('view-'+v).classList.add('active');
   btn.classList.add('active');
   localStorage.setItem('bp_active_tab',v);
-  if(v==='goals'){renderGoals();restoreIdfState();}
+  if(v==='goals')renderGoals();
   if(v==='story'){renderStory();restoreStoryTab();restoreAffirmationsState();}
-  if(v==='overview'){renderOverview();renderIdfWidget();}
+  if(v==='overview'){renderOverview();renderIdfWidget();restoreIdfState();}
   if(v==='todo'){renderTodos();updateFilterCounts();}
   if(v==='people')renderPeople();
   if(v==='calendar')renderCalendar();
@@ -5695,7 +5695,7 @@ window.addEventListener('beforeunload',e=>{
     <button class="hype-close" onclick="closeHype()">Let's get it →</button>
   </div>
 </div>
-<div class="version-toast" id="version-toast">✦ Build Jun 12 · 11:58 AM CT ✓</div>
+<div class="version-toast" id="version-toast">✦ Build Jun 12 · 12:18 PM CT ✓</div>
 <!-- TIMELINE FULLSCREEN MODAL -->
 <div class="tl-fs-overlay hidden" id="tl-fs-overlay">
   <div class="tl-fs-header">
