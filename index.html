@@ -942,6 +942,14 @@ body.dark-mode .profile-dropdown{background:var(--paper2);border-color:var(--lin
 .idf-done-btn:hover{border-color:#4D9E7A;color:#4D9E7A}
 .idf-del-btn{font-size:11px;color:var(--ink3);cursor:pointer;padding:2px 5px;border-radius:4px;transition:all .15s;background:transparent;border:none}
 .idf-del-btn:hover{color:var(--rose)}
+.idf-edit-btn{font-size:10px;padding:3px 8px;border-radius:6px;border:1px solid var(--line);background:transparent;color:var(--ink3);cursor:pointer;transition:all .15s;font-family:inherit}
+.idf-edit-btn:hover{border-color:var(--gold);color:var(--gold)}
+.idf-edit-form{display:none;padding:8px 0;flex-direction:column;gap:6px}
+.idf-edit-form.open{display:flex}
+.idf-edit-row{display:flex;gap:6px;flex-wrap:wrap}
+.idf-edit-input{background:var(--paper);border:1px solid var(--line);border-radius:var(--r);padding:5px 8px;font-size:12px;color:var(--ink1);font-family:inherit;outline:none;flex:1;min-width:80px}
+.idf-edit-input:focus{border-color:var(--gold)}
+.idf-edit-save{background:var(--gold);color:#0E0D0C;border:none;border-radius:var(--r);padding:5px 12px;font-size:11px;font-weight:600;font-family:inherit;cursor:pointer}
 .idf-add-form{border-top:1px solid var(--line);padding-top:1rem;display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .idf-input{width:100%;box-sizing:border-box;background:var(--paper);border:1px solid var(--line);border-radius:var(--r);padding:7px 10px;font-size:12px;color:var(--ink1);font-family:inherit;outline:none;transition:border-color .15s}
 .idf-input:focus{border-color:var(--gold)}
@@ -1242,14 +1250,14 @@ body.dark-mode .profile-dropdown{background:var(--paper2);border-color:var(--lin
     <div class="idf-card" id="idf-card">
       <div class="idf-header" onclick="toggleIdf()">
         <span style="font-size:16px">📌</span>
-        <span class="idf-title">Important — Don't Forgets</span>
+        <span class="idf-title">Perks & Benefits</span>
         <span class="idf-count" id="idf-count"></span>
         <span class="idf-chev" id="idf-chev">▶</span>
       </div>
       <div class="idf-body" id="idf-body">
         <div class="idf-list" id="idf-list"></div>
         <div class="idf-add-form">
-          <input class="idf-input" style="grid-column:1/-1" id="idf-title-input" placeholder="What can't you forget? e.g. EyeMed insurance"/>
+          <input class="idf-input" style="grid-column:1/-1" id="idf-title-input" placeholder="Add a perk, benefit, or reminder..."/>
           <input class="idf-input" id="idf-value-input" placeholder="Value (e.g. $200)"/>
           <input class="idf-input" id="idf-deadline-input" type="date"/>
           <select class="idf-input" id="idf-cat-input">
@@ -2117,15 +2125,25 @@ function renderIdf(){
       <div class="idf-item-main">
         <div class="idf-item-title">${esc(item.title)}</div>
         <div class="idf-item-meta">
-          ${item.value?`<span class="idf-item-value">${esc(item.value)}</span>`:''}
+          ${item.value?`<span class="idf-item-value">${item.value.startsWith('$')?'':' $'}${esc(item.value)}</span>`:''}
           ${dlLabel?`<span class="idf-item-deadline${!item.done?' '+urg:''}">${dlLabel}</span>`:''}
           <span class="idf-item-cat">${esc(item.category)}</span>
         </div>
         ${item.notes?`<div class="idf-item-notes">${esc(item.notes)}</div>`:''}
       </div>
       <div class="idf-item-actions">
+        <button class="idf-edit-btn" onclick="toggleIdfEdit(${item.id})">✎ Edit</button>
         <button class="idf-done-btn" onclick="toggleIdfDone(${item.id})">${item.done?'↩ Undo':'✓ Done'}</button>
         <button class="idf-del-btn" onclick="deleteIdfItem(${item.id})">✕</button>
+      </div>
+      <div class="idf-edit-form" id="idf-edit-${item.id}">
+        <input class="idf-edit-input" id="idf-et-${item.id}" value="${esc(item.title)}" placeholder="Title"/>
+        <div class="idf-edit-row">
+          <input class="idf-edit-input" id="idf-ev-${item.id}" value="${esc(item.value)}" placeholder="Value"/>
+          <input class="idf-edit-input" type="date" id="idf-ed-${item.id}" value="${item.deadline||''}"/>
+          <input class="idf-edit-input" id="idf-en-${item.id}" value="${esc(item.notes||'')}" placeholder="Notes"/>
+        </div>
+        <div><button class="idf-edit-save" onclick="saveIdfEdit(${item.id})">Save</button></div>
       </div>
     </div>`;
   }).join('');
@@ -2167,6 +2185,26 @@ function addIdfItem(){
     const el=document.getElementById(id);
     if(el) el.value='';
   });
+}
+
+function toggleIdfEdit(id){
+  const form=document.getElementById('idf-edit-'+id);
+  if(!form) return;
+  form.classList.toggle('open');
+}
+
+function saveIdfEdit(id){
+  const item=D.reminders&&D.reminders.find(r=>r.id===id);
+  if(!item) return;
+  const title=document.getElementById('idf-et-'+id)?.value.trim();
+  if(!title) return;
+  item.title=title;
+  item.value=document.getElementById('idf-ev-'+id)?.value.trim()||'';
+  item.deadline=document.getElementById('idf-ed-'+id)?.value||'';
+  item.notes=document.getElementById('idf-en-'+id)?.value.trim()||'';
+  save();
+  renderIdf();
+  renderIdfWidget();
 }
 
 function toggleIdfDone(id){
@@ -3250,9 +3288,6 @@ function getEntries(key){
   return D.why[key];
 }
 
-function fmtDate(ts){
-  return new Date(ts).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
-}
 
 function renderWhyQuestions(){
   const container=document.getElementById('why-questions-container');
@@ -5660,7 +5695,7 @@ window.addEventListener('beforeunload',e=>{
     <button class="hype-close" onclick="closeHype()">Let's get it →</button>
   </div>
 </div>
-<div class="version-toast" id="version-toast">✦ Build Jun 09 · 5:22 PM CT ✓</div>
+<div class="version-toast" id="version-toast">✦ Build Jun 12 · 11:58 AM CT ✓</div>
 <!-- TIMELINE FULLSCREEN MODAL -->
 <div class="tl-fs-overlay hidden" id="tl-fs-overlay">
   <div class="tl-fs-header">
