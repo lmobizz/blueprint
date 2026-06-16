@@ -993,6 +993,7 @@ body.dark-mode .profile-dropdown{background:var(--paper2);border-color:var(--lin
 .sub-rename-btn{font-size:10px;color:var(--ink3);background:none;border:none;cursor:pointer;opacity:0;transition:opacity .15s;padding:1px 4px;border-radius:3px;flex-shrink:0}
 .sub-header:hover .sub-rename-btn{opacity:.6}
 .sub-rename-btn:hover{opacity:1!important;color:var(--gold)}
+.sub-delete-btn:hover{opacity:1!important;color:var(--rose)!important}
 .sub-rename-input{font-size:13px;font-weight:600;color:var(--ink1);background:var(--paper);border:1px solid var(--gold);border-radius:4px;padding:1px 6px;outline:none;width:160px;font-family:inherit}
 .add-sub-row{display:flex;gap:6px;padding:8px 0 4px;border-top:1px dashed var(--line);margin-top:6px}
 .add-sub-input{flex:1;background:var(--paper);border:1px solid var(--line);border-radius:var(--r);padding:6px 10px;font-size:12px;color:var(--ink1);font-family:inherit;outline:none;transition:border-color .15s}
@@ -3160,10 +3161,10 @@ function renderGoals(){
     addSubRow.querySelector('input').onkeydown=e=>{if(e.key==='Enter')confirmAddSub(b.key);};
     card.appendChild(addSubRow);
     const addSubRow2=document.createElement('div');
-    addSubRow2.style.cssText='display:flex;justify-content:flex-end;padding:6px 0 2px';
+    addSubRow2.style.cssText='display:flex;justify-content:flex-end;padding:6px 4px 4px;box-sizing:border-box;width:100%';
     const addSubBtn=document.createElement('button');
     addSubBtn.innerHTML='＋ Add bucket';
-    addSubBtn.style.cssText="font-family:'Syne',sans-serif;font-size:10px;color:var(--ink3);background:none;border:1px dashed var(--line);border-radius:12px;cursor:pointer;padding:3px 10px;letter-spacing:.04em;transition:all .2s";
+    addSubBtn.style.cssText="font-family:'Syne',sans-serif;font-size:10px;color:var(--ink3);background:none;border:1px dashed var(--line);border-radius:12px;cursor:pointer;padding:3px 10px;letter-spacing:.04em;transition:all .2s;max-width:100%;box-sizing:border-box";
     addSubBtn.onmouseover=()=>{addSubBtn.style.borderColor='var(--gold)';addSubBtn.style.color='var(--gold)';};
     addSubBtn.onmouseout=()=>{addSubBtn.style.borderColor='var(--line)';addSubBtn.style.color='var(--ink3)';};
     addSubBtn.onclick=()=>toggleAddSubRow(b.key);
@@ -3219,7 +3220,7 @@ function renderGoals(){
           <span class="sub-label-wrap">
             <span class="sub-label" id="sublabel-${sid}">${esc(sn)}</span>
             <button class="sub-rename-btn" onclick="event.stopPropagation();startSubRename('${b.key}','${esc(sn)}','${sid}')" title="Rename">✎</button>
-            <button class="sub-rename-btn" onclick="event.stopPropagation();deleteSub('${b.key}','${esc(sn)}')" title="Delete bucket" style="color:var(--rose);opacity:0">✕</button>
+            <button class="sub-rename-btn sub-delete-btn" onclick="event.stopPropagation();deleteSub('${b.key}','${esc(sn)}')" title="Delete bucket">✕</button>
           </span>
           <span class="sub-prog">${p}%</span>
           <span class="sub-count">${subGoals.length}</span>
