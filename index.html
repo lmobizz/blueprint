@@ -353,7 +353,7 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
 /* BUCKETS */
 .buckets{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:1.5rem}
 @media(max-width:640px){.buckets{grid-template-columns:1fr}}
-.bucket{background:var(--paper);border:1px solid var(--line);border-radius:var(--r2);overflow:hidden}
+.bucket{background:var(--paper);border:1px solid var(--line);border-radius:var(--r2);overflow:hidden;display:flex;flex-direction:column}
 .bucket-header{padding:.9rem 1.2rem .7rem;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px}
 .bucket-icon{font-size:1rem}
 .bucket-name{font-family:'Playfair Display',serif;font-size:1rem;font-weight:600}
@@ -362,7 +362,7 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
 .bucket-meta{margin-left:auto;font-size:11px;color:var(--ink3)}
 .bucket-prog{height:3px;background:var(--line);margin:0 1.2rem 0;border-radius:99px;overflow:hidden;margin-top:-1px}
 .bucket-prog-fill{height:100%;background:var(--gold);border-radius:99px;transition:width .4s ease}
-.sub-buckets{padding:.6rem}
+.sub-buckets{padding:.6rem;flex:1}
 .sub-bucket{margin-bottom:.3rem}
 .sub-header{display:flex;align-items:center;gap:8px;padding:.5rem .8rem;border-radius:8px;cursor:pointer;transition:background .1s;user-select:none;background:var(--paper2);margin-bottom:2px}
 .sub-header:hover{background:var(--paper3)}
@@ -5806,7 +5806,7 @@ window.addEventListener('beforeunload',e=>{
     <button class="hype-close" onclick="closeHype()">Let's get it →</button>
   </div>
 </div>
-<div class="version-toast" id="version-toast">✦ Build Jun 12 · 1:05 PM CT ✓</div>
+<div class="version-toast" id="version-toast">✦ Build Jun 12 · 2:50 PM CT ✓</div>
 <!-- TIMELINE FULLSCREEN MODAL -->
 <div class="tl-fs-overlay hidden" id="tl-fs-overlay">
   <div class="tl-fs-header">
