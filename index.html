@@ -519,9 +519,6 @@ nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px 
 .profile-del-btn:hover{background:var(--rose-l)}
 .profile-cancel-btn{font-family:'Syne',sans-serif;font-size:13px;padding:9px 16px;background:transparent;color:var(--ink3);border:1px solid var(--line);border-radius:9px;cursor:pointer}
 .profile-cancel-btn:hover{background:var(--paper2)}
-.ai-suggest-btn{font-family:'Syne',sans-serif;font-size:12px;font-weight:500;padding:6px 14px;border-radius:20px;border:1px solid var(--gold);background:var(--gold-l);color:var(--gold);cursor:pointer;transition:all .15s}
-.ai-suggest-btn:hover{background:var(--gold);color:white}
-.ai-suggestion-box{background:var(--ink);color:rgba(255,255,255,.9);border-radius:var(--r);padding:1rem 1.1rem;margin-top:.75rem;font-size:13px;line-height:1.65;font-style:italic}
 
 /* UNDO TOAST */
 .undo-toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:.75rem 1.25rem;border-radius:var(--r);display:flex;align-items:center;gap:12px;font-size:13px;z-index:999;animation:fadeUp .2s ease;box-shadow:0 4px 20px rgba(0,0,0,.2)}
@@ -817,6 +814,11 @@ body.dark-mode .profile-dropdown{background:var(--paper2);border-color:var(--lin
 .prel-tag.mentor{background:var(--gold-l);color:var(--gold)}
 .prel-tag.acquaintance{background:var(--paper3);color:var(--ink3)}
 .prel-tag.other{background:var(--paper3);color:var(--ink3)}
+.pnet-tag{display:inline-block;font-size:10px;padding:1px 8px;border-radius:20px;font-weight:500;white-space:nowrap}
+.pnet-tag.immediate{background:var(--green-l);color:var(--green)}
+.pnet-tag.medium{background:var(--gold-l);color:var(--gold)}
+.pnet-tag.distant{background:var(--blue-l);color:var(--blue)}
+.pnet-tag.none{background:var(--paper3);color:var(--ink3)}
 .ppri-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:4px}
 .ppri-dot.h{background:var(--rose)}
 .ppri-dot.m{background:var(--gold)}
@@ -1540,6 +1542,12 @@ body.dark-mode .profile-dropdown{background:var(--paper2);border-color:var(--lin
           <option value="">All priorities</option>
           <option value="h">High</option><option value="m">Medium</option><option value="l">Low</option>
         </select>
+        <select class="people-filter-select" id="pf-net" onchange="renderPeople()">
+          <option value="">All networks</option>
+          <option value="Immediate">Immediate</option>
+          <option value="Medium">Medium</option>
+          <option value="Distant">Distant</option>
+        </select>
         <select class="people-filter-select" id="pf-sort" onchange="renderPeople()">
           <option value="days-desc">Overdue first</option>
           <option value="name-asc">Name A–Z</option>
@@ -1571,10 +1579,9 @@ body.dark-mode .profile-dropdown{background:var(--paper2);border-color:var(--lin
             <th>Name</th>
             <th>Location</th>
             <th>Relationship</th>
-            <th>Last text</th>
-            <th>Last call</th>
+            <th>Network</th>
+            <th>Last connect</th>
             <th>Days since</th>
-            <th>Convo left on</th>
             <th>Their updates</th>
             <th>Next reach-out</th>
             <th>Priority</th>
@@ -1613,12 +1620,17 @@ body.dark-mode .profile-dropdown{background:var(--paper2);border-color:var(--lin
         <select class="form-select" id="pm-pri">
           <option value="h">High</option><option value="m" selected>Medium</option><option value="l">Low</option>
         </select></div>
-      <div class="form-row"><label class="form-label">Last text</label><input class="form-input" type="date" id="pm-last-text"/></div>
-      <div class="form-row"><label class="form-label">Last call</label><input class="form-input" type="date" id="pm-last-call"/></div>
+      <div class="form-row"><label class="form-label">Network</label>
+        <select class="form-select" id="pm-net">
+          <option value="">— none —</option>
+          <option value="Immediate">Immediate</option>
+          <option value="Medium">Medium</option>
+          <option value="Distant">Distant</option>
+        </select></div>
+      <div class="form-row"><label class="form-label">Last connect</label><input class="form-input" type="date" id="pm-last-connect"/></div>
       <div class="form-row"><label class="form-label">Next reach-out</label><input class="form-input" type="date" id="pm-next"/></div>
-      <div class="form-row"><label class="form-label">Priority</label><!-- spacer --></div>
+      <div class="form-row"><!-- spacer --></div>
     </div>
-    <div class="form-row"><label class="form-label">Convo left on</label><input class="form-input" id="pm-convo" placeholder="e.g. They mentioned starting a new job..."/></div>
     <div class="form-row"><label class="form-label">Their life updates</label><textarea class="form-textarea" id="pm-updates" placeholder="Big things happening in their life..."></textarea></div>
     <div class="form-row"><label class="form-label">Notes</label><textarea class="form-textarea" id="pm-notes" placeholder="Anything else to remember..."></textarea></div>
     <div class="modal-actions">
@@ -2042,6 +2054,18 @@ function applyData(cloud){
   if(cloud.goals) D.goals=cloud.goals;
   if(!D.people) D.people=[];
   let needsSave=false;
+  // migrate people: merge lastText/lastCall -> lastConnect, drop convo, ensure network field
+  D.people.forEach(p=>{
+    if(p.lastConnect===undefined){
+      const ds=[p.lastText,p.lastCall].filter(Boolean).map(d=>new Date(d).getTime()).filter(t=>!isNaN(t));
+      p.lastConnect = ds.length ? new Date(Math.max(...ds)).toISOString().split('T')[0] : '';
+      needsSave=true;
+    }
+    if(p.network===undefined){ p.network=''; needsSave=true; }
+    if('lastText' in p || 'lastCall' in p || 'convo' in p){
+      delete p.lastText; delete p.lastCall; delete p.convo; needsSave=true;
+    }
+  });
   if(D.goals?.professional?.['My Company']!==undefined){
     D.goals.professional['Current Company: BCG']=D.goals.professional['My Company'];
     delete D.goals.professional['My Company'];
@@ -2466,7 +2490,7 @@ function renderOverview(){
       <div id="sg-rel-wrap">
       <div class="stat-group-grid cols-2">
         <div class="stat-card" onclick="navToSection('people')" title="Go to People"><div class="stat-num">${people}</div><div class="stat-label">People tracked</div></div>
-        <div class="stat-card" onclick="navToSection('people')" title="Go to People"><div class="stat-num" style="${D.people.filter(p=>{const d=(p.lastText||p.lastCall)?Math.floor((Date.now()-Math.max(...[p.lastText,p.lastCall].filter(Boolean).map(d=>new Date(d).getTime())))/(1000*60*60*24)):null;return d!==null&&d>30;}).length>0?'color:var(--rose)':''}">${D.people.filter(p=>{const dates=[p.lastText,p.lastCall].filter(Boolean);if(!dates.length)return false;const d=Math.floor((Date.now()-Math.max(...dates.map(d=>new Date(d).getTime())))/(1000*60*60*24));return d>30;}).length}</div><div class="stat-label">Need reach-out</div></div>
+        <div class="stat-card" onclick="navToSection('people')" title="Go to People"><div class="stat-num" style="${D.people.filter(p=>{const d=daysSinceContact(p);return d!==null&&d>30;}).length>0?'color:var(--rose)':''}">${D.people.filter(p=>{const d=daysSinceContact(p);return d!==null&&d>30;}).length}</div><div class="stat-label">Need reach-out</div></div>
       </div>
     </div>
       </div></div>
@@ -4759,9 +4783,9 @@ function clearAllPeople(){
 }
 
 function daysSinceContact(p){
-  const dates=[p.lastText,p.lastCall].filter(Boolean).map(d=>new Date(d).getTime());
-  if(!dates.length) return null;
-  const latest=Math.max(...dates);
+  if(!p.lastConnect) return null;
+  const latest=new Date(p.lastConnect).getTime();
+  if(isNaN(latest)) return null;
   return Math.floor((Date.now()-latest)/(1000*60*60*24));
 }
 
@@ -4775,6 +4799,12 @@ function daysBadge(days){
 function relTag(rel){
   const cls=(rel||'other').toLowerCase().replace(/\s+/g,'-');
   return`<span class="prel-tag ${cls}">${esc(rel||'—')}</span>`;
+}
+
+function netTag(net){
+  const v=(net||'').toLowerCase();
+  const cls=(v==='immediate'||v==='medium'||v==='distant')?v:'none';
+  return`<span class="pnet-tag ${cls}">${esc(net||'—')}</span>`;
 }
 
 function priDot(p){
@@ -4799,11 +4829,13 @@ function filterSortPeople(){
   const q=(document.getElementById('people-search').value||'').toLowerCase();
   const rel=(document.getElementById('pf-rel').value||'').toLowerCase();
   const pri=document.getElementById('pf-pri').value||'';
+  const net=(document.getElementById('pf-net').value||'').toLowerCase();
   const sort=document.getElementById('pf-sort').value||'days-desc';
   let list=[...D.people];
-  if(q) list=list.filter(p=>[p.name,p.location,p.notes,p.updates,p.convo].join(' ').toLowerCase().includes(q));
+  if(q) list=list.filter(p=>[p.name,p.location,p.notes,p.updates].join(' ').toLowerCase().includes(q));
   if(rel) list=list.filter(p=>(p.relationship||'').toLowerCase()===rel.toLowerCase());
   if(pri) list=list.filter(p=>p.priority===pri);
+  if(net) list=list.filter(p=>(p.network||'').toLowerCase()===net);
   const priOrder={h:0,m:1,l:2};
   list.sort((a,b)=>{
     if(sort==='name-asc') return(a.name||'').localeCompare(b.name||'');
@@ -4846,10 +4878,9 @@ function renderPeople(){
       <td><div class="pname">${esc(p.name||'')}</div></td>
       <td style="font-size:12px;color:var(--ink3)">${esc(p.location||'—')}</td>
       <td>${relTag(p.relationship)}</td>
-      <td style="font-size:12px;color:var(--ink3)">${p.lastText?fmtDate(new Date(p.lastText+'T12:00:00').getTime()):'—'}</td>
-      <td style="font-size:12px;color:var(--ink3)">${p.lastCall?fmtDate(new Date(p.lastCall+'T12:00:00').getTime()):'—'}</td>
+      <td>${netTag(p.network)}</td>
+      <td style="font-size:12px;color:var(--ink3)">${p.lastConnect?fmtDate(new Date(p.lastConnect+'T12:00:00').getTime()):'—'}</td>
       <td>${daysBadge(days)}</td>
-      <td class="truncate" title="${esc(p.convo||'')}" style="font-size:12px">${esc(p.convo||'—')}</td>
       <td class="truncate" title="${esc(p.updates||'')}" style="font-size:12px">${esc(p.updates||'—')}</td>
       <td>${nextBadge(p.nextReachout)}</td>
       <td>${priDot(p.priority)}</td>
@@ -4888,14 +4919,11 @@ function openProfile(idx){
   document.getElementById('pp-f-location').value=p.location||'';
   document.getElementById('pp-f-rel').value=p.relationship||'Friend';
   document.getElementById('pp-f-pri').value=p.priority||'m';
-  document.getElementById('pp-f-text').value=p.lastText||'';
-  document.getElementById('pp-f-call').value=p.lastCall||'';
+  document.getElementById('pp-f-net').value=p.network||'';
+  document.getElementById('pp-f-connect').value=p.lastConnect||'';
   document.getElementById('pp-f-next').value=p.nextReachout||'';
-  document.getElementById('pp-f-convo').value=p.convo||'';
   document.getElementById('pp-f-updates').value=p.updates||'';
   document.getElementById('pp-f-notes').value=p.notes||'';
-  document.getElementById('pp-ai-box').style.display='none';
-  document.getElementById('pp-ai-box').textContent='';
   document.getElementById('profile-overlay').classList.remove('hidden');
   document.body.style.overflow='hidden';
 }
@@ -4917,10 +4945,9 @@ function savePersonFromProfile(){
   p.location=document.getElementById('pp-f-location').value.trim();
   p.relationship=document.getElementById('pp-f-rel').value;
   p.priority=document.getElementById('pp-f-pri').value;
-  p.lastText=document.getElementById('pp-f-text').value;
-  p.lastCall=document.getElementById('pp-f-call').value;
+  p.network=document.getElementById('pp-f-net').value;
+  p.lastConnect=document.getElementById('pp-f-connect').value;
   p.nextReachout=document.getElementById('pp-f-next').value;
-  p.convo=document.getElementById('pp-f-convo').value.trim();
   p.updates=document.getElementById('pp-f-updates').value.trim();
   p.notes=document.getElementById('pp-f-notes').value.trim();
   save();closeProfile();renderPeople();
@@ -4939,31 +4966,6 @@ function deletePersonFromProfile(){
   });
 }
 
-async function generateConvoStarter(){
-  if(profileIdx===null)return;
-  const p=D.people[profileIdx];
-  const box=document.getElementById('pp-ai-box');
-  const btn=document.querySelector('.ai-suggest-btn');
-  box.style.display='block';
-  box.textContent='Generating...';
-  btn.textContent='Generating...';btn.disabled=true;
-  const days=daysSinceContact(p);
-  const prompt='Generate a natural, warm conversation starter for reaching out to '+(p.name||'this person')+'.\n\nAbout them: '+(p.relationship||'friend')+' based in '+(p.location||'unknown location')+'.\nLast conversation topic: '+(p.convo||'not recorded')+'.\nTheir life updates: '+(p.updates||'not recorded')+'.\nDays since last contact: '+(days!==null?days+'days':'unknown')+'.\nNext planned reach-out: '+(p.nextReachout||'not set')+'.\n\nWrite 2-3 sentences as if you are the user reaching out. Make it feel genuine and personal, not generic. Reference something specific about their life if available. Don\'t start with "Hey" or "Hi". Just the message text, nothing else.';
-  try{
-    const res=await fetch('https://api.anthropic.com/v1/messages',{
-      method:'POST',
-      headers:{'Content-Type':'application/json','anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true','x-api-key':getApiKey()},
-      body:JSON.stringify({model:'claude-sonnet-4-5',max_tokens:1000,messages:[{role:'user',content:prompt}]})
-    });
-    const data=await res.json();
-    const text=data.content?.find(b=>b.type==='text')?.text||'';
-    box.textContent=text||'Could not generate — try again.';
-  }catch(e){
-    box.textContent='Could not generate — check connection.';
-  }
-  btn.textContent='✦ Regenerate';btn.disabled=false;
-}
-
 let editPersonIdx=null;
 function openPersonModal(idx){
   editPersonIdx=idx;
@@ -4973,10 +4975,9 @@ function openPersonModal(idx){
   document.getElementById('pm-location').value=p.location||'';
   document.getElementById('pm-rel').value=p.relationship||'Friend';
   document.getElementById('pm-pri').value=p.priority||'m';
-  document.getElementById('pm-last-text').value=p.lastText||'';
-  document.getElementById('pm-last-call').value=p.lastCall||'';
+  document.getElementById('pm-net').value=p.network||'';
+  document.getElementById('pm-last-connect').value=p.lastConnect||'';
   document.getElementById('pm-next').value=p.nextReachout||'';
-  document.getElementById('pm-convo').value=p.convo||'';
   document.getElementById('pm-updates').value=p.updates||'';
   document.getElementById('pm-notes').value=p.notes||'';
   document.getElementById('person-modal').classList.remove('hidden');
@@ -4990,10 +4991,9 @@ function savePerson(){
     location:document.getElementById('pm-location').value.trim(),
     relationship:document.getElementById('pm-rel').value,
     priority:document.getElementById('pm-pri').value,
-    lastText:document.getElementById('pm-last-text').value,
-    lastCall:document.getElementById('pm-last-call').value,
+    network:document.getElementById('pm-net').value,
+    lastConnect:document.getElementById('pm-last-connect').value,
     nextReachout:document.getElementById('pm-next').value,
-    convo:document.getElementById('pm-convo').value.trim(),
     updates:document.getElementById('pm-updates').value.trim(),
     notes:document.getElementById('pm-notes').value.trim(),
     id:editPersonIdx!==null?D.people[editPersonIdx].id:Date.now()
@@ -5015,10 +5015,9 @@ const PEOPLE_FIELDS=[
   {key:'name',label:'Name'},
   {key:'location',label:'Location'},
   {key:'relationship',label:'Relationship'},
-  {key:'lastText',label:'Last text'},
-  {key:'lastCall',label:'Last call'},
+  {key:'network',label:'Network (Immediate/Medium/Distant)'},
+  {key:'lastConnect',label:'Last connect'},
   {key:'daysSince',label:'Days since contact (skip — auto-calc)'},
-  {key:'convo',label:'Convo left on'},
   {key:'updates',label:'Their life updates'},
   {key:'nextReachout',label:'Next reach-out'},
   {key:'priority',label:'Priority (h/m/l)'},
@@ -5136,9 +5135,8 @@ function confirmImport(){
       name,
       location:get('location'),
       relationship:get('relationship')||'Friend',
-      lastText:normDate(get('lastText')),
-      lastCall:normDate(get('lastCall')),
-      convo:get('convo'),
+      network:get('network'),
+      lastConnect:normDate(get('lastConnect')),
       updates:get('updates'),
       nextReachout:normDate(get('nextReachout')),
       priority:normPri(get('priority')),
@@ -5151,10 +5149,10 @@ function confirmImport(){
 }
 
 function exportPeopleCsv(){
-  const headers=['Name','Location','Relationship','Last Text','Last Call','Days Since','Convo Left On','Their Life Updates','Next Reach-Out','Priority','Notes'];
+  const headers=['Name','Location','Relationship','Network','Last Connect','Days Since','Their Life Updates','Next Reach-Out','Priority','Notes'];
   const rows=D.people.map(p=>[
-    p.name,p.location,p.relationship,p.lastText,p.lastCall,
-    daysSinceContact(p)??'',p.convo,p.updates,p.nextReachout,
+    p.name,p.location,p.relationship,p.network,p.lastConnect,
+    daysSinceContact(p)??'',p.updates,p.nextReachout,
     p.priority==='h'?'High':p.priority==='l'?'Low':'Medium',p.notes
   ].map(v=>`"${String(v||'').replace(/"/g,'""')}"`).join(','));
   const csv=[headers.join(','),...rows].join('\n');
@@ -5845,29 +5843,29 @@ window.addEventListener('beforeunload',e=>{
             <select class="form-select" id="pp-f-pri">
               <option value="h">High</option><option value="m">Medium</option><option value="l">Low</option>
             </select></div>
+          <div class="profile-field"><label>Network</label>
+            <select class="form-select" id="pp-f-net">
+              <option value="">— none —</option>
+              <option value="Immediate">Immediate</option>
+              <option value="Medium">Medium</option>
+              <option value="Distant">Distant</option>
+            </select></div>
         </div>
       </div>
       <div class="profile-section">
         <div class="profile-section-label">Last contact</div>
         <div class="profile-grid">
-          <div class="profile-field"><label>Last text</label><input class="form-input" type="date" id="pp-f-text"/></div>
-          <div class="profile-field"><label>Last call</label><input class="form-input" type="date" id="pp-f-call"/></div>
+          <div class="profile-field"><label>Last connect</label><input class="form-input" type="date" id="pp-f-connect"/></div>
           <div class="profile-field"><label>Next reach-out</label><input class="form-input" type="date" id="pp-f-next"/></div>
         </div>
       </div>
       <div class="profile-section">
-        <div class="profile-section-label">Conversation</div>
-        <div class="profile-field" style="margin-bottom:12px"><label>Convo left on</label><input class="form-input" id="pp-f-convo" placeholder="Where did you leave things?"/></div>
+        <div class="profile-section-label">Life updates</div>
         <div class="profile-field"><label>Their life updates</label><textarea class="form-textarea" id="pp-f-updates" placeholder="What's going on in their life?"></textarea></div>
       </div>
       <div class="profile-section">
         <div class="profile-section-label">Notes</div>
         <div class="profile-field"><textarea class="form-textarea" id="pp-f-notes" placeholder="Anything else to remember..."></textarea></div>
-      </div>
-      <div class="profile-section">
-        <div class="profile-section-label">✦ AI conversation starter</div>
-        <button class="ai-suggest-btn" onclick="generateConvoStarter()">✦ Generate conversation starter</button>
-        <div id="pp-ai-box" style="display:none" class="ai-suggestion-box"></div>
       </div>
     </div>
     <div class="profile-footer">
